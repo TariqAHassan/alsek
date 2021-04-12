@@ -604,14 +604,14 @@ from typing import Any
 from alsek.core import Message
 from alsek.core.task import Task, task
 
-class CustomTask0(Task):
+class CustomTask1(Task):
     def do_callback(self, message: Message, result: Any) -> bool:
         if result > 1:
             return True
         else:
             return False
 
-@task(..., base_task=CustomTask0)
+@task(..., base_task=CustomTask1)
 def simple_task() -> int:
     return 99
 ```
@@ -633,7 +633,7 @@ To do this, a new `base_task` must be created.
 from alsek.core import Message
 from alsek.core.task import Task, task
 
-class CustomTask1(Task):
+class CustomTask2(Task):
     def pre_op(self, message: Message) -> None:
         print(f"About to process {message.summary}!")
         
@@ -641,7 +641,7 @@ class CustomTask1(Task):
         print(f"Processed {message.summary} and got '{result}'!")
 
 
-@task(..., base_task=CustomTask1)
+@task(..., base_task=CustomTask2)
 def simple_task() -> int:
     return 99
 ```
@@ -659,7 +659,7 @@ class be overridden.
 from alsek.core import Message
 from alsek.core.task import Task, task
 
-class CustomTask2(Task):
+class CustomTask3(Task):
     def do_retry(self, message: Message, exception: BaseException) -> bool:
         if isinstance(exception, ZeroDivisionError):
             return False
@@ -668,7 +668,7 @@ class CustomTask2(Task):
         else:
             return message.retries < self.max_retries
 
-@task(..., base_task=CustomTask2)
+@task(..., base_task=CustomTask3)
 def simple_task() -> int:
     return 99
 ```
