@@ -7,7 +7,7 @@ import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from copy import deepcopy
-from multiprocessing import Process, Queue, cpu_count
+from multiprocessing import Process, Queue
 from platform import python_implementation
 from threading import Thread
 from typing import Any, Collection, DefaultDict, Dict, List, Optional, Tuple, Type, cast
