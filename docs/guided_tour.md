@@ -592,7 +592,7 @@ _identical_.
     *not* the root callback.  
 
 
-#### Callback Control
+#### Control
 
 If a callback is present for a message it will be executed by default.
 However, it is possible to override this behaviour by reasoning about
