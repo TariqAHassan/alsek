@@ -1,0 +1,240 @@
+"""
+
+    Disk Backend
+
+"""
+import shutil
+from pathlib import Path
+from typing import Any, Callable, Iterable, Optional, Union, cast
+
+from alsek import DEFAULT_NAMESPACE
+from alsek._utils.printing import auto_repr
+from alsek.storage.backends import Backend, LazyClient
+from alsek.storage.serialization import JsonSerializer, Serializer
+
+try:
+    from diskcache import Cache as DiskCache
+except ImportError:
+    raise ImportError(
+        "diskcache is not installed. Please install in order to use DiskCacheBackend."
+    )
+
+
+def name_matcher(pattern: Optional[str], name: str) -> bool:
+    """Determine if ``pattern`` matches ``name``.
+
+    This function supports the following forms
+    of matching:
+
+        * none (all names considered to be matches)
+        * direct (pattern == name)
+        * leading astrix (e.g., "*pattern") for tail matching
+        * trailing astrix (e.g., "pattern*") for head matching
+        * leading and trailing astrix (e.g., "*pattern*") for substring matching
+
+    Args:
+        pattern (str, optional): the pattern to match against
+        name (str): the target name.
+
+    Returns:
+        bool
+
+    Examples:
+        >>> assert name_matcher(None, name="cats")
+        >>> assert name_matcher("cats", name="cats")
+        >>> assert name_matcher("*cats", name="happy_cats")
+        >>> assert name_matcher("cats*", name="cats_happy")
+        >>> assert name_matcher("*cats*", name="many cats happy")
+
+    """
+    if pattern is None:
+        return True
+    elif pattern == name:
+        return True
+    elif pattern.startswith("*") and pattern.endswith("*"):
+        return pattern.strip("*") in name
+    elif pattern.startswith("*"):
+        return name.endswith(pattern.lstrip("*"))
+    elif pattern.endswith("*"):
+        return name.startswith(pattern.rstrip("*"))
+    else:
+        return False
+
+
+class DiskCacheBackend(Backend):
+    """DiskCache Backend.
+
+    Backend powered by DiskCache.
+
+    Args:
+        conn (str, Path, DiskCache, LazyClient, optional): a directory, ``DiskCache()`` object
+            or ``LazyClient``.
+        name_match_func (callable): a callable to determine if
+            a name matches a specified pattern when scanning
+            the backend.
+        namespace (str): prefix to use when inserting
+            names in the backend
+        serializer (Serializer): tool for encoding and decoding
+            values written into the backend.
+
+    Warning:
+        ``DiskCache`` persists data to a local (Sqlite) database and does
+        not implement 'server-side' "if not exist" on `SET` (`nx`) support. For
+        these reasons, ``DiskCacheBackend()`` is recommended for development
+        and testing purposes only.
+
+    """
+
+    def __init__(
+        self,
+        conn: Optional[Union[str, Path, DiskCache, LazyClient]] = None,
+        name_match_func: Callable[[Optional[str], str], bool] = name_matcher,
+        namespace: str = DEFAULT_NAMESPACE,
+        serializer: Serializer = JsonSerializer(),
+    ) -> None:
+        super().__init__(namespace, serializer=serializer)
+        self._conn = self._conn_parse(conn)
+        self.name_match_func = name_match_func
+
+    @staticmethod
+    def _conn_parse(
+        conn: Optional[Union[str, DiskCache, LazyClient]]
+    ) -> Union[DiskCache, Callable[[], DiskCache]]:
+        if isinstance(conn, LazyClient):
+            return conn
+
+        if conn is None:
+            parsed = DiskCache()
+        elif isinstance(conn, DiskCache):
+            parsed = conn
+        elif isinstance(conn, (str, Path)):
+            parsed = DiskCache(str(conn))
+        else:
+            raise ValueError(f"Unsupported `cache` {conn}")
+        return parsed
+
+    @property
+    def conn(self) -> DiskCache:
+        """Connection to the backend."""
+        if isinstance(self._conn, LazyClient):
+            self._conn = self._conn.get()
+        return cast(DiskCache, self._conn)
+
+    def __repr__(self) -> str:
+        return auto_repr(
+            self,
+            cache=self.conn,
+            key_match_func=self.name_match_func,
+            namespace=self.namespace,
+            serializer=self.serializer,
+        )
+
+    def destroy(self) -> None:
+        """Destroy the cache.
+
+        Returns:
+            None
+
+        Warning:
+            * This method recursively delete the cache directory.
+              Use with caution.
+            * The backend will not be usable following execution
+              of this method.
+
+        """
+        shutil.rmtree(self.conn.directory)
+
+    def exists(self, name: str) -> bool:
+        """Check if ``name`` exists in the disk backend.
+
+        Args:
+            name (str): name of the item
+
+        Returns:
+            bool
+
+        """
+        return self.full_name(name) in self.conn
+
+    def set(
+        self,
+        name: str,
+        value: Any,
+        nx: bool = False,
+        ttl: Optional[int] = None,
+    ) -> None:
+        """Set ``name`` to ``value`` in the disk backend.
+
+        Args:
+            name (str): name of the item
+            value (Any): value to set for ``name``
+            nx (bool): whether or not the item must not exist prior to being set
+            ttl (int, optional): time to live for the entry in milliseconds
+
+        Returns:
+            None
+
+        Warning:
+            * ``nx`` is implement client-side for ``DiskCache``.
+               For this reason, it should not be relied upon for
+               critical tasks.
+
+        Raises:
+            KeyError: if ``nx`` is ``True`` and ``name`` already exists
+
+        """
+        if nx and name in self.conn:
+            raise KeyError(f"Name '{name}' already exists")
+
+        self.conn.set(
+            self.full_name(name),
+            value=self.serializer.forward(value),
+            expire=ttl if ttl is None else ttl / 1000,
+        )
+
+    def get(self, name: str) -> Any:
+        """Get ``name`` from the disk backend.
+
+        Args:
+            name (str): name of the item
+
+        Returns:
+            Any
+
+        """
+        encoded = self.conn.get(self.full_name(name))
+        return self.serializer.reverse(encoded)
+
+    def delete(self, name: str, missing_ok: bool = False) -> None:
+        """Delete a ``name`` from the disk backend.
+
+        Args:
+            name (str): name of the item
+            missing_ok (bool): if ``True``, do not raise for missing
+
+        Returns:
+            None
+
+        Raises:
+            KeyError: if ``missing_ok`` is ``False`` and ``name`` is not found.
+
+        """
+        try:
+            self.conn.__delitem__(self.full_name(name), retry=False)
+        except KeyError:
+            if not missing_ok:
+                raise KeyError(f"No name '{name}' found")
+
+    def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
+        """Scan the disk backend for matching names.
+
+        Args:
+            pattern (str): pattern to limit search to
+
+        Returns:
+            name_stream (Iterable[str]): a stream of matching name
+
+        """
+        for name in map(self.short_name, self.conn):
+            if self.name_match_func(pattern, name):
+                yield name
