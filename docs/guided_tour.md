@@ -640,7 +640,7 @@ class CustomTask2(Task):
         else:
             return message.retries < self.max_retries
 
-@task(..., base_task=CustomTask)
+@task(..., base_task=CustomTask2)
 def simple_task() -> int:
     return 99
 ```
