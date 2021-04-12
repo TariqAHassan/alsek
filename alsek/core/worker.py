@@ -370,9 +370,9 @@ class WorkerPool(Consumer):
         self._task_map = {t.name: t for t in tasks}
         self._futures: Dict[str, List[TaskFuture]] = dict(thread=list(), process=list())
 
-        self._task_manager = BackgroundScheduler()
-        self._task_manager.add_job(
-            self._manage_tasks,
+        self._pool_manager = BackgroundScheduler()
+        self._pool_manager.add_job(
+            self._manage_futures,
             trigger=IntervalTrigger(seconds=self.management_interval / 1000),
         )
 
@@ -381,7 +381,7 @@ class WorkerPool(Consumer):
             for future in futures:
                 future.stop(TerminationError)
 
-    def _manage_tasks(self) -> None:
+    def _manage_futures(self) -> None:
         for mechanism, futures in self._futures.items():
             to_remove = list()
             for future in futures:
@@ -439,12 +439,12 @@ class WorkerPool(Consumer):
             None
 
         """
-        self._task_manager.start()
+        self._pool_manager.start()
         log.info("Worker pool online.")
         for message in self.stream():
             if self._ready(message, wait=True):
                 self._futures[message.mechanism].append(self._make_future(message))
 
         log.info("Worker pool shutting down...")
-        self._task_manager.shutdown()
+        self._pool_manager.shutdown()
         self._stop_all_futures()
