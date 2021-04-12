@@ -834,6 +834,20 @@ alsek my_project --max_threads 8
 alsek my_project --max_processes 2
 ```
 
+#### Multiprocessing Backend
+
+Lazy, it is possible to configure the multiprocessing library used.
+By default, [`multiprocessing`](https://docs.python.org/3/library/multiprocessing.html) from 
+the Python standard library will be used. However, it is possible to switch to the version of 
+multiprocessing implemented in [PyTorch](https://pytorch.org) [here](https://pytorch.org/docs/stable/multiprocessing.html)
+by setting the `ALSEK_MULTIPROCESS_BACKEND` environment variable. 
+
+```shell
+export ALSEK_MULTIPROCESS_BACKEND=pytorch
+
+alsek my_project
+```
+
 !!! note
     The worker pool's `Consumer` will respect the order in which queues
     are listed for the `-q`/`--queues` option. If, this option is not specified, 

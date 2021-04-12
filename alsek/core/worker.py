@@ -3,11 +3,11 @@
     Worker Pool
 
 """
+import os
 import logging
 from abc import ABC, abstractmethod
 from collections import defaultdict
 from copy import deepcopy
-from multiprocessing import Process, Queue
 from platform import python_implementation
 from threading import Thread
 from typing import Any, Collection, DefaultDict, Dict, List, Optional, Tuple, Type, cast
@@ -28,6 +28,15 @@ from alsek.core.task import Task
 from alsek.exceptions import MultipleBrokersError, NoTasksFoundError, TerminationError
 
 log = logging.getLogger(__name__)
+
+MULTIPROCESS_BACKEND = os.getenv("ALSEK_MULTIPROCESS_BACKEND", "standard").lower()
+
+if MULTIPROCESS_BACKEND == "standard":
+    from multiprocessing import Process, Queue
+elif MULTIPROCESS_BACKEND == "pytorch":
+    from torch.multiprocessing import Process, Queue
+else:
+    raise ImportError(f"Unsupported multiprocessing backend '{MULTIPROCESS_BACKEND}'")
 
 
 def _extract_broker(tasks: Collection[Task]) -> Broker:
