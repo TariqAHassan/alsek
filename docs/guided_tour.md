@@ -591,6 +591,34 @@ _identical_.
     The progenitor for a callback message is considered to be the previous message,
     *not* the root callback.  
 
+
+#### Callback Control
+
+If a callback is present for a message it will be executed by default.
+However, it is possible to override this behaviour by reasoning about
+the original message itself, the result of the task or both. 
+
+```python
+from typing import Any
+
+from alsek.core import Message
+from alsek.core.task import Task, task
+
+class CustomTask3(Task):
+    def do_callback(self, message: Message, result: Any) -> bool:
+        if result > 1:
+            return True
+        else:
+            return False
+
+@task(..., base_task=CustomTask3)
+def simple_task() -> int:
+    return 99
+```
+
+!!! warning
+    The `do_callback()` is only evaluated for messages which contain callbacks.
+
 !!! danger
     While it is valid for a task with a trigger to have callbacks,
     such tasks should not be used as callbacks themselves.

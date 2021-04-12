@@ -363,6 +363,23 @@ class Task:
         """
         return self.max_retries is None or message.retries < self.max_retries
 
+    def do_callback(self, message: Message, result: Any) -> bool:  # noqa
+        """Whether or to submit the callback provided.
+
+        Args:
+            message (Message): message with the callback
+            result (Any): output of ``op()``
+
+        Returns:
+            bool
+
+        Warning:
+            * If the task message does not have a callback this
+              this method will *not* be invoked.
+
+        """
+        return True
+
 
 class TriggerTask(Task):
     """Triggered Task.
