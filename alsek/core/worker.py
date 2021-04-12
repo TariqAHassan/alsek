@@ -229,11 +229,15 @@ class ProcessTaskFuture(TaskFuture):
     Args:
         task (Task): a task to perform
         message (Message): a message to run ``task`` against
+        patience (int): time to wait (in milliseconds) after issuing
+            a SIGTERM signal to the process at shutdown. If the process
+            is still active after this time, a SIGKILL will be issued.
 
     """
 
-    def __init__(self, task: Task, message: Message) -> None:
+    def __init__(self, task: Task, message: Message, patience: int = 1 * 1000) -> None:
         super().__init__(task, message=message)
+        self.patience = patience
 
         self._wrapper_exit_queue: Queue = Queue()
         self._process = Process(
@@ -279,6 +283,12 @@ class ProcessTaskFuture(TaskFuture):
 
         wrapper_exit_queue.put(1)
 
+    def _shutdown(self) -> None:
+        self._process.terminate()
+        self._process.join(self.patience / 1000)
+        if self._process.is_alive():
+            self._process.kill()
+
     def stop(self, exception: Type[BaseException]) -> None:
         """Stop the future.
 
@@ -293,7 +303,7 @@ class ProcessTaskFuture(TaskFuture):
             )
             return None
 
-        self._process.kill()
+        self._shutdown()
         if self._wrapper_exit_queue.empty():
             self._wrapper_exit_queue.put(1)
             try:
