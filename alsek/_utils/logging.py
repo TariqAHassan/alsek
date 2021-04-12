@@ -40,7 +40,7 @@ def setup_logging(level: int) -> None:
 
 
 def _magic_parser(
-    function_raw: Callable[..., Any],
+    function_raw: Any,
     args_raw: Any,
     kwargs_raw: Dict[str, Any],
 ) -> Tuple[Callable[..., Any], Any, Any]:

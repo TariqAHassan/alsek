@@ -307,7 +307,7 @@ class ProcessTaskFuture(TaskFuture):
         if self._wrapper_exit_queue.empty():
             self._wrapper_exit_queue.put(1)
             try:
-                raise exception(f"Stopped process {self._process.ident}")
+                raise exception(f"Stopped process {self._process.ident}")  # type: ignore
             except BaseException as error:
                 log.error("Error processing %s.", self.message.summary, exc_info=True)
                 _retry_future_handler(self.task, self.message, exception=error)
