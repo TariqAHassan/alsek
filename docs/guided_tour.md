@@ -836,7 +836,7 @@ alsek my_project --max_processes 2
 
 #### Multiprocessing Backend
 
-Lazy, it is possible to configure the multiprocessing library used.
+Lastly, it is possible to configure the multiprocessing library used.
 By default, [`multiprocessing`](https://docs.python.org/3/library/multiprocessing.html) from 
 the Python standard library will be used. However, it is possible to switch to the version of 
 multiprocessing implemented in [PyTorch](https://pytorch.org) [here](https://pytorch.org/docs/stable/multiprocessing.html)
