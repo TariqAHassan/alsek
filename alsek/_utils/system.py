@@ -40,7 +40,7 @@ def thread_raise(ident: int, exception: Type[BaseException]) -> None:
         * https://docs.python.org/3/c-api/init.html#c.PyThreadState_SetAsyncExc
 
     Warning:
-        * Indend for use with CPython only
+        * Intended for use with CPython only
 
     """
     n = ctypes.pythonapi.PyThreadState_SetAsyncExc(
