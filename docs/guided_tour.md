@@ -604,14 +604,14 @@ from typing import Any
 from alsek.core import Message
 from alsek.core.task import Task, task
 
-class CustomTask3(Task):
+class CustomTask0(Task):
     def do_callback(self, message: Message, result: Any) -> bool:
         if result > 1:
             return True
         else:
             return False
 
-@task(..., base_task=CustomTask3)
+@task(..., base_task=CustomTask0)
 def simple_task() -> int:
     return 99
 ```
