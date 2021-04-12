@@ -19,7 +19,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from alsek import __version__
 from alsek._utils.logging import get_logger, magic_logger, setup_logging
 from alsek._utils.sorting import dict_sort
-from alsek._utils.system import thread_raise
+from alsek._utils.system import smart_cpu_count, thread_raise
 from alsek._utils.temporal import utcnow_timestamp_ms
 from alsek.core.broker import Broker
 from alsek.core.consumer import Consumer
@@ -28,11 +28,6 @@ from alsek.core.task import Task
 from alsek.exceptions import MultipleBrokersError, NoTasksFoundError, TerminationError
 
 log = logging.getLogger(__name__)
-
-
-def _smart_cpu_count() -> int:
-    # Attempt to leave one cpu for the main process.
-    return max(1, cpu_count() - 1)
 
 
 def _extract_broker(tasks: Collection[Task]) -> Broker:
@@ -363,7 +358,7 @@ class WorkerPool(Consumer):
         self.tasks = tasks
         self.queues = queues
         self.max_threads = max_threads
-        self.max_processes = max_processes or _smart_cpu_count()
+        self.max_processes = max_processes or smart_cpu_count()
         self.management_interval = management_interval
         self.slot_wait_interval = slot_wait_interval
 

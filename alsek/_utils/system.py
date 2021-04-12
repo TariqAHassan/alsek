@@ -7,6 +7,7 @@ import ctypes
 import logging
 import signal
 import sys
+from multiprocessing import cpu_count
 from signal import Signals
 from threading import Event
 from typing import Any, Optional, Tuple, Type, Union
@@ -94,3 +95,14 @@ class StopSignalListener:
     def received(self) -> bool:
         """Whether or not a stop signal has been received."""
         return self.exit_event.is_set()
+
+
+def smart_cpu_count() -> int:
+    """Count the number of CPUs, with one reserved
+    for the main process.
+
+    Returns:
+        count (int): number of cpus
+
+    """
+    return max(1, cpu_count() - 1)
