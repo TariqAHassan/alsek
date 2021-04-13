@@ -24,7 +24,6 @@ class _ConsumptionMutex(Lock):
             name=message.uuid,
             backend=backend,
             ttl=message.timeout + ttl_buffer,
-            limit=1,
             auto_release=False,
         )
 

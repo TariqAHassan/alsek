@@ -710,7 +710,7 @@ def task_c() -> int:
 ## Concurrency
 
 Alsek's concurrency `Lock()` provides a straightforward way limit 
-simultaneity across a distributed application, as shown here:
+simultaneity across a distributed application to a single task, as shown here:
 
 ```python
 from alsek.core import Lock, task
@@ -720,7 +720,7 @@ backend = DiskCacheBackend()
 
 @task(...)
 def send_data() -> int:
-    with Lock("send_data", backend=backend, limit=1) as lock:
+    with Lock("send_data", backend=backend) as lock:
         if lock.acquire():
             """SEND DATA HERE"""
         else:

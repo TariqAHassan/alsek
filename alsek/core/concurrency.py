@@ -14,21 +14,15 @@ from alsek.storage.backends import Backend
 
 
 class Lock:
-    """Distributed concurrency lock.
+    """Distributed mutual exclusion lock (MUTEX).
 
     Args:
         name (str): name of the lock
         backend (Backend): backend for data storage
         ttl (int, optional): time to live in milliseconds.
             If ``None``, the lock will not expire automatically.
-        limit (int): the maximum number of hosts
-            permitted to hold the lock at any one time.
         auto_release (bool): if ``True`` automatically release
             the lock on context exit.
-
-    Notes:
-        * Use ``limit=1`` (the default) to obtained a
-          mutual exclusion (MUTEX) lock.
 
     Warning:
         * Locks are global and do not consider queues, unless
@@ -41,17 +35,12 @@ class Lock:
         name: str,
         backend: Backend,
         ttl: Optional[int] = 60 * 60 * 1000,
-        limit: int = 1,
         auto_release: bool = True,
     ) -> None:
         self.name = name
         self.backend = backend
         self.ttl = ttl
-        self.limit = limit
         self.auto_release = auto_release
-
-        if limit < 1:
-            raise ValueError("`limit` must be greater than one")
 
     def __repr__(self) -> str:
         return auto_repr(
@@ -59,7 +48,6 @@ class Lock:
             name=self.name,
             backend=self.backend,
             ttl=self.ttl,
-            limit=self.limit,
             auto_release=self.auto_release,
         )
 
@@ -74,9 +62,14 @@ class Lock:
         return f"{self.subnamespace}:{gethostname()}"
 
     @property
-    def acquired(self) -> bool:
-        """Whether or not the host currently holds the lock."""
-        return self.backend.exists(self.long_name)
+    def holder(self) -> Optional[str]:
+        """Name of the host that currently holds the lock, if any."""
+        return self.backend.get(self.long_name)
+
+    @property
+    def held(self) -> str:
+        """If the lock is held by the current host."""
+        return self.holder == gethostname()
 
     def acquire(self) -> bool:
         """Try to acquire the lock.
@@ -87,13 +80,13 @@ class Lock:
                 host.
 
         """
-        # ToDo: switch to pessimistic mechanism
-        if self.acquired:
+        if self.held:
             return False
-        elif self.backend.count(self.subnamespace) < self.limit:
-            self.backend.set(self.long_name, value=None, ttl=self.ttl)
+
+        try:
+            self.backend.set(self.long_name, value=gethostname(), nx=True, ttl=self.ttl)
             return True
-        else:
+        except KeyError:
             return False
 
     def release(self) -> bool:
@@ -104,10 +97,10 @@ class Lock:
                 found and released.
 
         """
-        try:
-            self.backend.delete(self.long_name, missing_ok=False)
+        if self.held:
+            self.backend.delete(self.name, missing_ok=True)
             return True
-        except KeyError:
+        else:
             return False
 
     def __enter__(self) -> Lock:
