@@ -193,6 +193,6 @@ class Backend(ABC):
         """
         count: int = 0
         for name in self.scan():
-            self.delete(name)
+            self.delete(name, missing_ok=True)
             count += 1
         return count
