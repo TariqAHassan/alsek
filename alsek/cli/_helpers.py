@@ -54,7 +54,7 @@ def collect_tasks(name: str) -> Tuple[Task, ...]:
     """
     all_tasks: Dict[str, Task] = dict()
     for module in _enumerate_modules(import_module(name)):
-        for name, task in getmembers(module, _is_task):
+        for name, task in getmembers(module, predicate=_is_task):
             if name in all_tasks:
                 if task != all_tasks[name]:
                     raise TaskNameCollisionError(f"Multiple tasks '{name}'")
