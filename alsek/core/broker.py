@@ -182,7 +182,7 @@ class Broker:
         after=lambda input_: log.debug("Failed %s.", input_["message"].summary),
     )
     def fail(self, message: Message) -> None:
-        """Acknowlege and fail a message by removing it from the backend.
+        """Acknowledge and fail a message by removing it from the backend.
         If ``dlq_ttl`` is not null, the messages will be persisted to
         the dead letter queue for the prescribed amount of time.
 
