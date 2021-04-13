@@ -32,7 +32,7 @@ def _is_task(obj: Any) -> bool:
 
 
 @magic_logger(
-    before=lambda name: log.debug("Scanning %r for tasks", name),
+    before=lambda name: log.debug("Scanning %r for tasks...", name),
     after=lambda output: log.debug(
         "Found %s task%s.",
         len(output),
