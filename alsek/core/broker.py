@@ -75,7 +75,7 @@ class Broker:
 
     @magic_logger(
         before=lambda message: log.debug("Submitting %s...", message.summary),
-        after=lambda input_: log.debug("Sumbitted %s.", input_["message"].summary),
+        after=lambda input_: log.debug("Submitted %s.", input_["message"].summary),
     )
     def submit(self, message: Message, ttl: int = 60 * 60 * 24 * 7 * 1000) -> None:
         """Submit a message for processing.
