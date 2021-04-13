@@ -31,7 +31,7 @@ class Broker:
         self.dlq_ttl = dlq_ttl
 
     def __repr__(self) -> str:
-        return auto_repr(self, backend=self.backend)
+        return auto_repr(self, backend=self.backend, dlq_ttl=self.dlq_ttl)
 
     @staticmethod
     def get_subnamespace(
