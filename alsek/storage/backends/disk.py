@@ -216,7 +216,8 @@ class DiskCacheBackend(Backend):
             None
 
         Raises:
-            KeyError: if ``missing_ok`` is ``False`` and ``name`` is not found.
+            KeyError: if ``missing_ok`` is ``False`` and ``name`` is not found
+                of if ``name`` has a non-expired TTL.
 
         """
         try:
