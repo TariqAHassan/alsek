@@ -18,7 +18,6 @@ is available:
   * Callbacks
   * Dead Letter Queue (DLQ)
 
-
 ## Installing
 
 A complete installation of Alsek is recommended and can be installed performed with `pip`:
