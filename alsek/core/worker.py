@@ -217,7 +217,7 @@ class ThreadTaskFuture(TaskFuture):
         elif python_implementation() != "CPython":
             log.error(
                 f"Unable to raise exception {exception} in thread {self._thread.ident}. "
-                f"Unsupported platform '{python_implementation()}'"
+                f"Unsupported platform '{python_implementation()}'."
             )
             return None
 
