@@ -114,13 +114,13 @@ class Broker:
         if not self.backend.exists(name):
             raise MessageDoesNotExistsError(f"'{name}' not found in backend")
 
-        updated_message = message.clone().increment()
-        self.backend.set(name, value=updated_message.data)
+        message.increment()
+        self.backend.set(name, value=message.data)
         self.nack(message)
         log.info(
             "Retrying %s in %s ms...",
             message.summary,
-            format(updated_message.get_backoff_duration(), ","),
+            format(message.get_backoff_duration(), ","),
         )
 
     @magic_logger(
