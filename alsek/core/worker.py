@@ -29,7 +29,7 @@ from alsek.exceptions import MultipleBrokersError, NoTasksFoundError, Terminatio
 
 log = logging.getLogger(__name__)
 
-MULTIPROCESS_BACKEND = os.getenv("ALSEK_MULTIPROCESS_BACKEND", "standard").lower()
+MULTIPROCESS_BACKEND = os.getenv("ALSEK_MULTIPROCESS_BACKEND", "standard").strip().lower()
 
 if MULTIPROCESS_BACKEND == "standard":
     from multiprocessing import Process, Queue
