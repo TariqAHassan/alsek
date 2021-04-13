@@ -114,7 +114,7 @@ class Broker:
         if not self.backend.exists(name):
             raise MessageDoesNotExistsError(f"'{name}' not found in backend")
 
-        updated_message = message.increment()
+        updated_message = message.clone().increment()
         self.backend.set(name, value=updated_message.data)
         self.nack(message)
         log.info(
