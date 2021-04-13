@@ -159,7 +159,7 @@ class Broker:
         """
         self.remove(message)
 
-    @magic_logger(
+    @magic_logger(  # noqa
         before=lambda message: log.debug("Nacking %s...", message.summary),
         after=lambda input_: log.debug("Nacked %s.", input_["message"].summary),
     )
