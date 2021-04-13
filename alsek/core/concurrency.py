@@ -7,7 +7,7 @@ from __future__ import annotations
 
 from socket import gethostname
 from types import TracebackType
-from typing import Optional, Type
+from typing import Optional, Type, cast
 
 from alsek._utils.printing import auto_repr
 from alsek.storage.backends import Backend
@@ -64,10 +64,10 @@ class Lock:
     @property
     def holder(self) -> Optional[str]:
         """Name of the host that currently holds the lock, if any."""
-        return self.backend.get(self.long_name)
+        return cast(Optional[str], self.backend.get(self.long_name))
 
     @property
-    def held(self) -> str:
+    def held(self) -> bool:
         """If the lock is held by the current host."""
         return self.holder == gethostname()
 
