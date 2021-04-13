@@ -21,7 +21,7 @@ is available:
 A complete installation of Alsek is recommended and can be installed performed with `pip`:
 
 ```shell
-pip install alsek[redis,diskcache]
+pip install 'alsek[redis,diskcache]'
 ```
 
 ## Getting Started
