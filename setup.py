@@ -12,5 +12,5 @@ setup(
         "redis": ["redis==3.5.3"],
         "diskcache": ["diskcache==5.2.1"],
     },
-    entry_points={"console_scripts": ["alsek = alsek.cli:cli"]},
+    entry_points={"console_scripts": ["alsek = alsek.cli.cli:alsek"]},
 )
