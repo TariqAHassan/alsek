@@ -131,15 +131,15 @@ class TaskFuture(ABC):
 
     @property
     @abstractmethod
-    def ready(self) -> bool:
-        """Whether or not the task is complete."""
+    def complete(self) -> bool:
+        """Whether or not the task has finished."""
         raise NotImplementedError()
 
     @property
     def time_limit_exceeded(self) -> bool:
         """Whether or not task has been running longer
         than the allowed time window."""
-        if self.ready:
+        if self.complete:
             return False
         return (utcnow_timestamp_ms() - self.created_at) > self.message.timeout
 
@@ -174,8 +174,8 @@ class ThreadTaskFuture(TaskFuture):
         self._thread.start()
 
     @property
-    def ready(self) -> bool:
-        """Whether or not the task is complete."""
+    def complete(self) -> bool:
+        """Whether or not the task has finished."""
         return not self._thread.is_alive()
 
     def _wrapper(self) -> None:
@@ -256,8 +256,8 @@ class ProcessTaskFuture(TaskFuture):
         self._process.start()
 
     @property
-    def ready(self) -> bool:
-        """Whether or not the task is complete."""
+    def complete(self) -> bool:
+        """Whether or not the task has finished."""
         return not self._process.is_alive()
 
     @staticmethod
@@ -389,7 +389,7 @@ class WorkerPool(Consumer):
         for mechanism, futures in self._futures.items():
             to_remove = list()
             for future in futures:
-                if future.ready:
+                if future.complete:
                     to_remove.append(future)
                 elif future.time_limit_exceeded:
                     future.stop(TimeoutError)
