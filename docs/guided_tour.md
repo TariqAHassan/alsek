@@ -591,6 +591,9 @@ _identical_.
     The progenitor for a callback message is considered to be the previous message,
     *not* the root callback.  
 
+!!! danger
+    While it is valid for a task with a trigger to have callbacks,
+    such tasks should not be used as callbacks themselves.
 
 #### Control
 
@@ -618,10 +621,6 @@ def simple_task() -> int:
 
 !!! warning
     The `do_callback()` is only evaluated for messages which contain callbacks.
-
-!!! danger
-    While it is valid for a task with a trigger to have callbacks,
-    such tasks should not be used as callbacks themselves.
 
 ### Pre/Post Ops
 
