@@ -26,7 +26,7 @@ def get_logger() -> logging.Logger:
 
 
 def setup_logging(level: int) -> None:
-    """Setup Alsek-stype logging.
+    """Setup Alsek-style logging.
 
     Args:
         level (int): logging level to use
