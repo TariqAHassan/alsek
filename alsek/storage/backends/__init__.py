@@ -3,6 +3,7 @@
     Backend
 
 """
+import logging
 import re
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Iterable, Optional
@@ -10,6 +11,8 @@ from typing import Any, Callable, Iterable, Optional
 from alsek import DEFAULT_NAMESPACE
 from alsek._utils.printing import auto_repr
 from alsek.storage.serialization import JsonSerializer, Serializer
+
+log = logging.getLogger(__name__)
 
 
 class LazyClient:
@@ -193,6 +196,9 @@ class Backend(ABC):
         """
         count: int = 0
         for name in self.scan():
-            self.delete(name, missing_ok=True)
-            count += 1
+            try:
+                self.delete(name, missing_ok=False)
+                count += 1
+            except KeyError:
+                log.warning("Unable to delete %r", name)
         return count
