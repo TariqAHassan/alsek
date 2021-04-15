@@ -27,7 +27,7 @@ def utcfromtimestamp_ms(timestamp: int) -> datetime:
         datetime
 
     """
-    return datetime.utcfromtimestamp(timestamp / 1000)
+    return datetime.fromtimestamp(timestamp / 1000)
 
 
 def time_ms() -> int:
