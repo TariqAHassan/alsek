@@ -23,4 +23,4 @@ def test_dict_sort(
     key: Callable[[Any], Any],
     expected: Dict[Any, Any],
 ) -> None:
-    assert dict_sort(input_, key) == expected
+    assert dict_sort(input_, key=key) == expected
