@@ -3,17 +3,19 @@
     Test Logging
 
 """
-import pytest
 import logging
+from typing import Any, Callable, Dict, List
+
+import pytest
+
 from alsek._utils.logging import (
-    get_logger,
-    setup_logging,
     _magic_parser,
     _merge_args_kwargs,
     _run_func,
+    get_logger,
     magic_logger,
+    setup_logging,
 )
-from typing import Callable, Dict, Any, List
 
 
 def test_get_logger() -> None:

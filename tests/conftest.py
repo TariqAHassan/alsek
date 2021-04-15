@@ -4,6 +4,7 @@
 
 """
 import pytest
+
 from alsek.storage.backends.disk import DiskCacheBackend
 
 
