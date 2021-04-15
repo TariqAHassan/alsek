@@ -41,9 +41,9 @@ def setup_logging(level: int) -> None:
 
 def _magic_parser(
     function_raw: Any,
-    args_raw: Any,
+    args_raw: Tuple[Any, ...],
     kwargs_raw: Dict[str, Any],
-) -> Tuple[Callable[..., Any], Any, Any]:
+) -> Tuple[Callable[..., Any], Tuple[Any, ...], Dict[str, Any]]:
     if hasattr(function_raw, "__func__"):
         return function_raw.__func__, args_raw[1:], kwargs_raw
     else:
