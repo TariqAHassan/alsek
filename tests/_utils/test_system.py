@@ -37,7 +37,7 @@ def _wait_for_signal(
         if c == 0:
             first_iter_queue.put(1)
         c += 1
-        time.sleep(0.1)
+        stop_signal.wait(0.1)
 
 
 def test_numeric_python_version() -> None:
