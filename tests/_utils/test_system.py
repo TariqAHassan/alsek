@@ -73,7 +73,7 @@ def test_thread_raise() -> None:
     # Ensure that the thread exited
     assert not thread.is_alive()
 
-    # Ensure that what caused the output was a timeout error
+    # Ensure that what caused the exit was a timeout error
     assert thread_output and isinstance(thread_output[0], TimeoutError)
 
 
