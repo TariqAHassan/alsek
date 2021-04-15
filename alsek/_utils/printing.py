@@ -6,8 +6,6 @@
 from datetime import datetime
 from typing import Any, Dict, Optional
 
-DEFAULT_NEW_LINE_THRESHOLD: int = 5
-
 
 def _format_value(value: Any) -> Any:
     if isinstance(value, (str, datetime)):
@@ -20,11 +18,7 @@ def _format_params(params: Dict[str, Any], join_on: str) -> str:
     return join_on.join((f"{k}={_format_value(v)}" for k, v in params.items()))
 
 
-def auto_repr(
-    obj: object,
-    new_line_threshold: Optional[int] = DEFAULT_NEW_LINE_THRESHOLD,
-    **params: Any,
-) -> str:
+def auto_repr(obj: object, new_line_threshold: Optional[int] = 5, **params: Any) -> str:
     """Autogenerate a class repr string.
 
     Args:
