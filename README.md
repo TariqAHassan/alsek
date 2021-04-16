@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://github.com/TariqAHassan/alsek/raw/master/docs/assets/logos/logo.png"><br>
-</div>
+</div>``
 
 ----
 
@@ -20,7 +20,13 @@ is available:
 
 ## Installing
 
-A complete installation of Alsek is recommended and can be installed performed with `pip`:
+Alsek can be installed with `pip` as follows:
+
+```shell
+pip install alsek
+```
+
+The optional `diskcache` dependency can be included by running:
 
 ```shell
 pip install 'alsek[diskcache]'
@@ -74,3 +80,4 @@ Documentation can be found [here]().
 ## Examples
 
 Examples can be found in the [examples](examples) directory.
+``

@@ -18,11 +18,19 @@ is available:
 
 ## Installing
 
-A complete installation of Alsek is recommended and can be installed performed with `pip`:
+Alsek can be installed with `pip` as follows:
+
+```shell
+pip install alsek
+```
+
+The optional `diskcache` dependency can be included by running:
 
 ```shell
 pip install 'alsek[diskcache]'
 ```
+
+Requires Python 3.7+
 
 ## Getting Started
 
