@@ -52,14 +52,9 @@ class Lock:
         )
 
     @property
-    def subnamespace(self) -> str:
+    def long_name(self) -> str:
         """Subnamespace for the lock."""
         return f"locks:{self.name}"
-
-    @property
-    def long_name(self) -> str:
-        """Long name of lock, including the subnamespace and current host."""
-        return f"{self.subnamespace}:{gethostname()}"
 
     @property
     def holder(self) -> Optional[str]:
