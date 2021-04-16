@@ -25,9 +25,12 @@ def test_waiter(
 ) -> None:
     start = time_ms()
 
+    def condition_satisfied() -> bool:
+        return (time_ms() - start) > condition_time
+
     def run():
         waiter(
-            condition=lambda: (time_ms() - start) > condition_time,
+            condition=condition_satisfied,
             sleep_interval=1,
             timeout=timeout,
             timeout_msg="Timeout",
@@ -35,7 +38,7 @@ def test_waiter(
 
     if exception is None:
         run()
-        assert (time_ms() - start) > condition_time
+        assert condition_satisfied()
     else:
         with pytest.raises(exception):
             run()
