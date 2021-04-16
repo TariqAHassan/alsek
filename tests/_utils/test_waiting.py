@@ -3,39 +3,39 @@
     Test Waiting
 
 """
-import time
 from typing import Any, Optional
 
 import pytest
 
+from alsek._utils.temporal import time_ms
 from alsek._utils.waiting import waiter
 
 
 @pytest.mark.parametrize(
     "condition_time,timeout,exception",
     [
-        (500, 5000, None),
-        (1000, 5000, None),
+        (100, 5000, None),
         (1000, 250, TimeoutError),
     ],
 )
 def test_waiter(
     condition_time: int,
     timeout: int,
-    exception: Optional[BaseException],
+    exception: Optional[TimeoutError],
 ) -> None:
-    start = time.time()
+    start = time_ms()
 
     def run():
         waiter(
-            condition=lambda: (time.time() - start) > condition_time,
-            sleep_interval=500,
+            condition=lambda: (time_ms() - start) > condition_time,
+            sleep_interval=1,
             timeout=timeout,
             timeout_msg="Timeout",
         )
 
-    if isinstance(exception, BaseException):
+    if exception is None:
+        run()
+        assert (time_ms() - start) > condition_time
+    else:
         with pytest.raises(exception):
             run()
-    else:
-        assert (time.time() - start) < condition_time
