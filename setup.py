@@ -17,4 +17,13 @@ setup(
         "diskcache": ["diskcache==5.2.1"],
     },
     entry_points={"console_scripts": ["alsek = alsek.cli.cli:alsek"]},
+    classifiers=[
+        "Development Status :: 4 - Beta",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3 :: Only",
+        "License :: OSI Approved :: MIT License",
+        "Natural Language :: English",
+        "Topic :: System :: Distributed Computing",
+    ],
 )
