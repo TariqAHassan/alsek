@@ -1,6 +1,6 @@
 <div align="center">
   <img src="https://github.com/TariqAHassan/alsek/raw/master/docs/assets/logos/logo.png"><br>
-</div>``
+</div>
 
 ----
 
