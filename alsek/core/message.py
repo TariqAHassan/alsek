@@ -11,7 +11,7 @@ from uuid import uuid1
 
 from alsek import DEFAULT_MECHANISM, DEFAULT_TASK_TIMEOUT
 from alsek._utils.printing import auto_repr
-from alsek._utils.temporal import utcfromtimestamp_ms, utcnow_timestamp_ms
+from alsek._utils.temporal import fromtimestamp_ms, utcnow_timestamp_ms
 from alsek.core.backoff import ExponentialBackoff, settings2backoff
 from alsek.core.concurrency import Lock
 
@@ -143,7 +143,7 @@ class Message:
         params = self.data
         params["lock"] = self.lock
         for k in ("created_at", "updated_at"):
-            params[k] = utcfromtimestamp_ms(params[k])
+            params[k] = fromtimestamp_ms(params[k])
         return auto_repr(self, **params)
 
     @property
