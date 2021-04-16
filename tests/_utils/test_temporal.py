@@ -5,7 +5,7 @@
 """
 import pytest
 
-from alsek._utils.temporal import time_ms, fromtimestamp_ms, utcnow_timestamp_ms
+from alsek._utils.temporal import fromtimestamp_ms, time_ms, utcnow_timestamp_ms
 
 
 def test_utcnow_timestamp_ms() -> None:
