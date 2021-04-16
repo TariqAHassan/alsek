@@ -41,7 +41,4 @@ def waiter(
         elif timeout is not None and (time_ms() - start) > timeout:
             raise TimeoutError(timeout_msg or "")
         else:
-            stop_signal.wait(
-                min(sleep_interval, timeout)
-                if timeout else sleep_interval
-            )
+            stop_signal.wait(min(sleep_interval, timeout or float("inf")))
