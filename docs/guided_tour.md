@@ -74,7 +74,7 @@ class CustomBackend(Backend):
 
     @property
     def conn(self) -> Client:
-        if isinstance(self._conn, LazyClient):  # lazy conn support
+        if isinstance(self._conn, LazyClient):
             self._conn = self._conn.get()
         return self._conn
 
