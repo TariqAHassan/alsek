@@ -19,7 +19,7 @@ class Model(nn.Module):
         return self.linear(x)
 
 
-model = Model()
+model = Model().eval()
 
 
 @task(broker, queue="ml_ops", result_store=result_store)
