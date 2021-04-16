@@ -36,23 +36,22 @@ Requires Python 3.7+
 
 ## Quick Start
 
-Here will add the following to a file named `quick_start.py`:
-
-  * create Redis-backed broker
-  * define a task
-  * submit an instance of the task for processing
+First, add the following to a file named `quick_start.py`:
 
 ```python
 from alsek.core import Broker, task
 from alsek.storage.backends.redis import RedisBackend
 
+# 1. Create a Redis-backed Broker
 backend = RedisBackend()  # uses localhost by default
 broker = Broker(backend)
 
+# 2. Define a Task
 @task(broker, queue="math_ops")
 def add(a: int, b: int) -> int:
     return a + b
 
+# 3. Generate a sample message
 if __name__ == "__main__":
     message = add.generate(args=(1, 1))
     print(f"Task submitted. UUID: {message.uuid}.")
