@@ -97,8 +97,8 @@ Message(
 
 Here we can see the name of the original task was "add" and that it was enqueued on the "math_ops" queue. 
 We can also see more advanced information, such as the backoff procedure that will be used in the case of 
-retries as well as the mechanism that workers will use to execute the task. 
-(In this case, the worker will execute the task in a distinct process.)
+retries as well as the mechanism that will use to execute the task. 
+(In this case, the _Worker Pool_ will execute the task in a distinct process.)
 
 In order for this message to be processed, we will need to start up a worker pool. 
 This can be accomplished using Alsek's command line interface (CLI).
