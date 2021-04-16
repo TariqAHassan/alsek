@@ -22,4 +22,4 @@ def dict_sort(
         sorted_dictionary (dict): ``dictionary`` sorted
 
     """
-    return dict(sorted(dictionary.items(), key=lambda x: key(x[0])))
+    return dict(sorted(dictionary.items(), key=lambda x: key(x[0])))  # type: ignore

@@ -48,14 +48,13 @@ class RedisBackend(Backend):
             return conn
 
         if conn is None:
-            parsed = Redis(decode_responses=True)
+            return Redis(decode_responses=True)
         elif isinstance(conn, Redis):
-            parsed = conn
+            return conn
         elif isinstance(conn, str):
-            parsed = Redis.from_url(conn, decode_responses=True)
+            return Redis.from_url(conn, decode_responses=True)
         else:
             raise ValueError(f"Unsupported `conn` {conn}")
-        return parsed
 
     @property
     def conn(self) -> Redis:

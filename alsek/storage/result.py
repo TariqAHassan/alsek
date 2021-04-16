@@ -86,7 +86,7 @@ class ResultStore:
     def _multi_get(self, names: Iterable[str], with_timestamp: bool) -> List[Any]:
         raw_results = sorted(
             [self.backend.get(n) for n in names],
-            key=lambda d: d["timestamp"],
+            key=lambda d: d["timestamp"],  # type: ignore
         )
         return raw_results if with_timestamp else [r["result"] for r in raw_results]
 
