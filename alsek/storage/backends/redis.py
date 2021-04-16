@@ -5,17 +5,11 @@
 """
 from typing import Any, Iterable, Optional, Union, cast
 
+from redis import Redis
 from alsek import DEFAULT_NAMESPACE
 from alsek._utils.printing import auto_repr
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.serialization import JsonSerializer, Serializer
-
-try:
-    from redis import Redis
-except ImportError:
-    raise ImportError(
-        "redis is not installed. Please install in order to use RedisBackend."
-    )
 
 
 class RedisBackend(Backend):
