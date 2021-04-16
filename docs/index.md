@@ -121,8 +121,8 @@ information about the workers will be logged to the console, which we can see be
 [2021-04-06 10:00:30.261] [PID 74897] [INFO] alsek.core.worker: Successfully processed Message(uuid='e49806be-96ad-11eb-9216-acde48001122', queue='math_ops', task='add').
 ```
 
-Above we can see that after the worker pool boot up, a worker consumed the 
-message we created above and processed it successfully.
+Above we can see that once the worker pool boot up, a worker consumed the 
+message we created above and then processed it successfully.
 
 ---
 
