@@ -157,4 +157,4 @@ class RedisBackend(Backend):
 
         """
         match = self.full_name(pattern or "")
-        yield from map(self.short_name, self.conn.scan_iter(match))
+        yield from map(self.short_name, self.conn.scan_iter(f"{match}*"))
