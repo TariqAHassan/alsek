@@ -183,7 +183,7 @@ class DiskCacheBackend(Backend):
             KeyError: if ``nx`` is ``True`` and ``name`` already exists
 
         """
-        if nx and name in self.conn:
+        if nx and self.exists(name):
             raise KeyError(f"Name '{name}' already exists")
 
         self.conn.set(
