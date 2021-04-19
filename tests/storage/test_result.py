@@ -169,14 +169,13 @@ def test_get_descendants(result_store: ResultStore) -> None:
 def test_get_with_metadata(with_metadata: bool, result_store: ResultStore) -> None:
     message, result = Message("task"), 1
     result_store.set(message, result=result)
-    result = result_store.get(message, with_metadata=with_metadata)
 
     if with_metadata:
         schema = Schema({"result": type(result), "timestamp": int, "uuid": str})
     else:
         schema = Schema(type(result))
 
-    schema.validate(result)
+    schema.validate(result_store.get(message, with_metadata=with_metadata))
 
 
 def test_delete(result_store: ResultStore) -> None:
