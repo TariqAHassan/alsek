@@ -3,7 +3,6 @@
     Test System
 
 """
-import pytest
 import ctypes
 import time
 from multiprocessing import Process, Queue, cpu_count
