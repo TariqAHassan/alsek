@@ -26,6 +26,19 @@ def _get_redis_path(command: str = "which redis-server") -> str:
     return value.decode().strip("\n")
 
 
+def _parse_backend_request(
+    request: SubRequest,
+    custom_redisdb: Redis,
+    tmp_path: Path,
+) -> Backend:
+    if request.param == "redis":
+        return RedisBackend(custom_redisdb)
+    elif request.param == "diskcache":
+        return DiskCacheBackend(tmp_path)
+    else:
+        raise ValueError(f"Unknown backend '{request.param}'")
+
+
 custom_redisdb_proc = redis_factories.redis_proc(
     executable=_get_redis_path(),
     port=None,
@@ -77,12 +90,11 @@ def rolling_backend(
     tmp_path: Path,
     custom_redisdb: Redis,
 ) -> Backend:
-    if request.param == "redis":
-        return RedisBackend(custom_redisdb)
-    elif request.param == "diskcache":
-        return DiskCacheBackend(tmp_path)
-    else:
-        raise ValueError(f"Unknown backend '{request.param}'")
+    return _parse_backend_request(
+        request=request,
+        custom_redisdb=custom_redisdb,
+        tmp_path=tmp_path,
+    )
 
 
 @pytest.fixture(params=["redis", "diskcache"])
@@ -91,10 +103,9 @@ def rolling_result_store(
     custom_redisdb: Redis,
     tmp_path: Path,
 ) -> ResultStore:
-    if request.param == "redis":
-        backend = RedisBackend(custom_redisdb)
-    elif request.param == "diskcache":
-        backend = DiskCacheBackend(tmp_path)
-    else:
-        raise ValueError(f"Unknown backend '{request.param}'")
+    backend = _parse_backend_request(
+        request=request,
+        custom_redisdb=custom_redisdb,
+        tmp_path=tmp_path,
+    )
     return ResultStore(backend)
