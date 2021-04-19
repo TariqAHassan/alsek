@@ -19,7 +19,7 @@ from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.result import ResultStore
 
 
-def _get_redis_path(command: str = "which redis-server") -> str:
+def _get_redis_path() -> str:
     r = Popen(["which", "redis-server"], stdout=PIPE)
     value, error = r.communicate()
     if error:
