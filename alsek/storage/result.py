@@ -132,13 +132,16 @@ class ResultStore:
             >>> result_store.get(Message(uuid="..."))
 
         """
-        if timeout:
-            waiter(
-                lambda: self.exists(message),
-                timeout=timeout,
-                timeout_msg=f"Timeout waiting on result for {message.summary}",
-                sleep_interval=_GET_RESULT_WAIT_SLEEP_INTERVAL,
-            )
+        if not self.exists(message):
+            if timeout:
+                waiter(
+                    lambda: self.exists(message),
+                    timeout=timeout,
+                    timeout_msg=f"Timeout waiting on result for {message.summary}",
+                    sleep_interval=_GET_RESULT_WAIT_SLEEP_INTERVAL,
+                )
+            else:
+                raise KeyError(f"No results for {message.uuid}")
 
         if descendants:
             names = list(self.backend.scan(f"{self._get_stable_prefix(message)}*"))
