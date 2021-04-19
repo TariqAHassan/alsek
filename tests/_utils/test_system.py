@@ -3,6 +3,7 @@
     Test System
 
 """
+import pytest
 import ctypes
 import time
 from multiprocessing import Process, Queue, cpu_count
@@ -52,6 +53,7 @@ def test_cast_ident_to_ctype(ident: int) -> None:
     )
 
 
+@pytest.mark.flaky(max_runs=3)
 def test_thread_raise() -> None:
     thread_output = list()
 
@@ -77,6 +79,7 @@ def test_thread_raise() -> None:
     assert thread_output and isinstance(thread_output[0], TimeoutError)
 
 
+@pytest.mark.flaky(max_runs=3)
 def test_stop_signal_listener() -> None:
     start_time = time.time()
     process = Process(
