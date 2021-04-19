@@ -201,7 +201,7 @@ def test_fail(dlq_ttl: Optional[int], rolling_broker: Broker) -> None:
     # Check that the broker removed the message
     assert not rolling_broker.exists(message)
 
-    # # Check that the lock has been fully released.
+    # Check that the lock has been fully released.
     assert message.lock is None
     assert not testing_lock.held
 
