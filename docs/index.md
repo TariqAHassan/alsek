@@ -2,7 +2,7 @@
 
 ## Overview
 
-Alsek is a distributed task queue for Python. It has been built to be highly 
+Alsek is a distributed task queue library for Python. It has been built to be highly 
 capable while remaining very lightweight. Currently, the following functionality
 is available:
 
