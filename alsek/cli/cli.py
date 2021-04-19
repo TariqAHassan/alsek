@@ -114,7 +114,7 @@ def alsek(
           by the consumer which do not yield any actionable messages.
         * A single SIGTERM or SIGINT signal will trigger a graceful
           shutdown of the system. A second such signal of this type
-          will cause an immediate and non-graceful shutdown.
+          will precipitate an immediate and non-graceful shutdown.
 
     Examples:
 
