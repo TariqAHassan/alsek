@@ -8,6 +8,7 @@ from subprocess import PIPE, Popen
 from typing import Any, Iterable, Optional
 
 import pytest
+from _pytest.fixtures import SubRequest
 from pytest_redis import factories as redis_factories
 from redis import Redis
 
@@ -71,7 +72,9 @@ def disk_cache_backend(tmp_path: Path) -> DiskCacheBackend:
 
 
 @pytest.fixture(params=["redis", "diskcache"])
-def rolling_backend(request, tmp_path: Path, custom_redisdb: Redis) -> Backend:
+def rolling_backend(
+    request: SubRequest, tmp_path: Path, custom_redisdb: Redis
+) -> Backend:
     if request.param == "redis":
         return RedisBackend(custom_redisdb)
     elif request.param == "diskcache":
@@ -82,7 +85,7 @@ def rolling_backend(request, tmp_path: Path, custom_redisdb: Redis) -> Backend:
 
 @pytest.fixture(params=["redis", "diskcache"])
 def rolling_result_store(
-    request,
+    request: SubRequest,
     custom_redisdb: Redis,
     tmp_path: Path,
 ) -> ResultStore:
