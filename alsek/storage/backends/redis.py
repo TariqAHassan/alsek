@@ -96,7 +96,7 @@ class RedisBackend(Backend):
         Args:
             name (str): name of the item
             value (Any): value to set for ``name``
-            nx (bool): whether or not the item must not exist prior to being set
+            nx (bool): if ``True`` the item must not exist prior to being set
             ttl (int, optional): time to live for the entry in milliseconds
 
         Returns:

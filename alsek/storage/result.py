@@ -67,7 +67,7 @@ class ResultStore:
         Args:
             message (Message): an Alsek message.
             result (Any): the result to persist
-            nx (bool): whether or not the item must not exist prior to being set
+            nx (bool): if ``True`` the item must not exist prior to being set
 
         Returns:
             None
