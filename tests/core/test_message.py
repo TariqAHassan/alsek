@@ -5,14 +5,15 @@
 """
 import copy
 import time
+from typing import Any, Dict, Optional
 
 import pytest
-from alsek.core.message import Message
-from alsek.core.backoff import ConstantBackoff
+
 from alsek._utils.temporal import utcnow_timestamp_ms
+from alsek.core.backoff import ConstantBackoff
 from alsek.core.concurrency import Lock
+from alsek.core.message import Message
 from alsek.storage.backends import Backend
-from typing import Dict, Any, Optional
 
 
 @pytest.mark.parametrize(
