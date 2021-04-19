@@ -178,7 +178,7 @@ class Message:
         """Time to ready in milliseconds."""
         if self.ready:
             return 0
-        return max(utcnow_timestamp_ms() - self.ready_at, 0)
+        return max(self.ready_at - utcnow_timestamp_ms(), 0)
 
     @property
     def ready(self) -> bool:
