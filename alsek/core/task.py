@@ -538,8 +538,7 @@ def task(
         * ValueError: if a ``trigger`` and not supported by ``base_task``
 
     Examples:
-        >>> from alsek.core.broker import Broker
-        >>> from alsek.task import task
+        >>> from alsek import Broker, task
         >>> from alsek.storage.backends.disk import DiskCacheBackend
 
         >>> backend = DiskCacheBackend()

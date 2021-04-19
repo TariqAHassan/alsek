@@ -25,7 +25,7 @@ from alsek.core.broker import Broker
 from alsek.core.consumer import Consumer
 from alsek.core.message import Message
 from alsek.exceptions import MultipleBrokersError, NoTasksFoundError, TerminationError
-from alsek.task import Task
+from alsek.core.task import Task
 
 log = logging.getLogger(__name__)
 
