@@ -112,7 +112,7 @@ and, perhaps more importantly, a `ResultsStore`.
 
 ### Namespaces
 
-Backends store all of their data in a predefined 'namespace'.
+Backends store all of their data in a predefined _namespace_.
 This is simply a prefix that will be prepended to all "keys" (names) 
 the backend writes to storage.
 
