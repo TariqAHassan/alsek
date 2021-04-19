@@ -4,9 +4,11 @@
     ~~~~~~~~~~~~~~~~~
 
 """
-import pytest
-from alsek._utils.string import name_matcher
 from typing import Optional
+
+import pytest
+
+from alsek._utils.string import name_matcher
 
 
 @pytest.mark.parametrize(
