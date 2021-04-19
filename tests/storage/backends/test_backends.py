@@ -9,18 +9,12 @@ from typing import Any, List, Optional, Tuple
 import pytest
 
 from alsek.storage.backends import Backend
+from tests._helpers import expand_params_factory
 from alsek.storage.backends.disk import DiskCacheBackend
 from alsek.storage.backends.redis import RedisBackend
 
 _ALL_BACKENDS = ("disk_cache_backend", "redis_backend")
-
-
-def _expand_to_all_backends(*params: Any) -> List[Tuple[Any, ...]]:
-    expanded = list()
-    for b in _ALL_BACKENDS:
-        for p in params:
-            expanded.append((*p, b) if isinstance(p, (list, tuple)) else (p, b))
-    return expanded
+_expand_to_all_backends = expand_params_factory(_ALL_BACKENDS)
 
 
 @pytest.mark.parametrize(
