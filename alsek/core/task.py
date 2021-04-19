@@ -229,7 +229,7 @@ class Task:
             args (list, tuple, optional): positional arguments to pass to ``function``
             kwargs (dict, optional): keyword arguments to pass to ``function``
             metadata (dict, optional): a dictionary of user-defined message metadata.
-                This can store any data types supported by the backend's seralizer.
+                This can store any data types supported by the backend's serializer.
             store_result (bool): if ``True`` persist the result to a result store.
             result_ttl (int, optional): time to live (in milliseconds) for the
                 result in the result store. If ``None``, the result will be
