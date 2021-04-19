@@ -400,8 +400,8 @@ First, we can pause the scheduler:
 ```python
 check_resource_usage.pause()
 
-# This can be undone by running:
-# check_resource_usage.resume()
+# Note: this can be undone by running:
+check_resource_usage.resume()
 ```
 
 Second, we can clear the scheduled task:
