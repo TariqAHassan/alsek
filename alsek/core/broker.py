@@ -6,6 +6,7 @@
 import logging
 from typing import Optional
 
+from alsek._defaults import DEFAULT_TASK_TTL
 from alsek._utils.logging import magic_logger
 from alsek._utils.printing import auto_repr
 from alsek.core.message import Message
@@ -90,7 +91,7 @@ class Broker:
         before=lambda message: log.debug("Submitting %s...", message.summary),
         after=lambda input_: log.debug("Submitted %s.", input_["message"].summary),
     )
-    def submit(self, message: Message, ttl: int = 60 * 60 * 24 * 7 * 1000) -> None:
+    def submit(self, message: Message, ttl: int = DEFAULT_TASK_TTL) -> None:
         """Submit a message for processing.
 
         Args:
