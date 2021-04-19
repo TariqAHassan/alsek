@@ -23,9 +23,9 @@ from alsek.storage.result import ResultStore
 def test_get_stable_prefix(
     message: Message,
     expected: str,
-    result_store: ResultStore,
+    rolling_result_store: ResultStore,
 ) -> None:
-    assert result_store._get_stable_prefix(message) == expected
+    assert rolling_result_store._get_stable_prefix(message) == expected
 
 
 @pytest.mark.parametrize(
@@ -41,9 +41,9 @@ def test_get_stable_prefix(
 def test_get_storage_name(
     message: Message,
     expected: str,
-    result_store: ResultStore,
+    rolling_result_store: ResultStore,
 ) -> None:
-    assert result_store.get_storage_name(message) == expected
+    assert rolling_result_store.get_storage_name(message) == expected
 
 
 @pytest.mark.parametrize(
@@ -56,9 +56,9 @@ def test_get_storage_name(
 def test_extract_uuid(
     storage_name: Message,
     expected: str,
-    result_store: ResultStore,
+    rolling_result_store: ResultStore,
 ) -> None:
-    assert result_store._extract_uuid(storage_name) == expected
+    assert rolling_result_store._extract_uuid(storage_name) == expected
 
 
 @pytest.mark.parametrize(
@@ -71,12 +71,12 @@ def test_extract_uuid(
 def test_exists(
     do_set: bool,
     expected: bool,
-    result_store: ResultStore,
+    rolling_result_store: ResultStore,
 ) -> None:
     message = Message("task")
     if do_set:
-        result_store.set(message, result=1)
-    assert result_store.exists(message) is expected
+        rolling_result_store.set(message, result=1)
+    assert rolling_result_store.exists(message) is expected
 
 
 @pytest.mark.parametrize(
@@ -91,15 +91,15 @@ def test_exists(
 def test_set(
     message: Message,
     nx: bool,
-    result_store: ResultStore,
+    rolling_result_store: ResultStore,
 ) -> None:
-    result_store.set(message, result=1, nx=nx)
+    rolling_result_store.set(message, result=1, nx=nx)
     if nx:
         with pytest.raises(KeyError):
-            result_store.set(message, result=1, nx=nx)
+            rolling_result_store.set(message, result=1, nx=nx)
     if message.result_ttl:
         time.sleep((message.result_ttl / 1000) + 0.1)
-        assert not result_store.exists(message)
+        assert not rolling_result_store.exists(message)
 
 
 @pytest.mark.parametrize(
@@ -108,15 +108,15 @@ def test_set(
 )
 def test_get_standard(
     do_set: bool,
-    result_store: ResultStore,
+    rolling_result_store: ResultStore,
 ) -> None:
     message, result = Message("task"), 1
     if do_set:
-        result_store.set(message, result=result)
-        assert result_store.get(message) == result
+        rolling_result_store.set(message, result=result)
+        assert rolling_result_store.get(message) == result
     else:
         with pytest.raises(KeyError):
-            result_store.get(message)
+            rolling_result_store.get(message)
 
 
 @pytest.mark.parametrize(
@@ -128,60 +128,64 @@ def test_get_standard(
         (False, 100),
     ],
 )
-def test_get_no_timeout(do_set: bool, timeout: int, result_store: ResultStore) -> None:
+def test_get_no_timeout(
+    do_set: bool, timeout: int, rolling_result_store: ResultStore
+) -> None:
     message, result = Message("task"), 1
     if do_set:
-        result_store.set(message, result=result)
-        assert result_store.get(message, timeout=timeout) == result
+        rolling_result_store.set(message, result=result)
+        assert rolling_result_store.get(message, timeout=timeout) == result
     else:
         with pytest.raises(TimeoutError):
-            result_store.get(message, timeout=timeout)
+            rolling_result_store.get(message, timeout=timeout)
 
 
 @pytest.mark.parametrize(
     "keep",
     [True, False],
 )
-def test_get_no_keep(keep: bool, result_store: ResultStore) -> None:
+def test_get_no_keep(keep: bool, rolling_result_store: ResultStore) -> None:
     message, result = Message("task"), 1
-    result_store.set(message, result=result)
-    result_store.get(message, keep=keep)
+    rolling_result_store.set(message, result=result)
+    rolling_result_store.get(message, keep=keep)
 
     if keep:
-        assert result_store.exists(message)
+        assert rolling_result_store.exists(message)
     else:
-        assert not result_store.exists(message)
+        assert not rolling_result_store.exists(message)
 
 
-def test_get_descendants(result_store: ResultStore) -> None:
+def test_get_descendants(rolling_result_store: ResultStore) -> None:
     progenitor = Message("task")
     decendant_messages = [Message("task", progenitor=progenitor.uuid) for _ in range(3)]
     for msg in (progenitor, *decendant_messages):
-        result_store.set(msg, result=1)
+        rolling_result_store.set(msg, result=1)
 
-    assert result_store.get(progenitor, descendants=True) == [1] * 4
+    assert rolling_result_store.get(progenitor, descendants=True) == [1] * 4
 
 
 @pytest.mark.parametrize(
     "with_metadata",
     [True, False],
 )
-def test_get_with_metadata(with_metadata: bool, result_store: ResultStore) -> None:
+def test_get_with_metadata(
+    with_metadata: bool, rolling_result_store: ResultStore
+) -> None:
     message, result = Message("task"), 1
-    result_store.set(message, result=result)
+    rolling_result_store.set(message, result=result)
 
     if with_metadata:
         schema = Schema({"result": result, "timestamp": int, "uuid": str})
     else:
         schema = Schema(result)
 
-    schema.validate(result_store.get(message, with_metadata=with_metadata))
+    schema.validate(rolling_result_store.get(message, with_metadata=with_metadata))
 
 
-def test_delete(result_store: ResultStore) -> None:
+def test_delete(rolling_result_store: ResultStore) -> None:
     message, result = Message("task"), 1
-    result_store.set(message, result=result)
+    rolling_result_store.set(message, result=result)
 
-    assert result_store.exists(message)
-    result_store.delete(message)
-    assert not result_store.exists(message)
+    assert rolling_result_store.exists(message)
+    rolling_result_store.delete(message)
+    assert not rolling_result_store.exists(message)

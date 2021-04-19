@@ -81,7 +81,7 @@ def rolling_backend(request, tmp_path: Path, custom_redisdb: Redis) -> Backend:
 
 
 @pytest.fixture(params=["redis", "diskcache"])
-def result_store(
+def rolling_result_store(
     request,
     custom_redisdb: Redis,
     tmp_path: Path,
