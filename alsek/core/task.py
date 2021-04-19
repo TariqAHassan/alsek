@@ -16,7 +16,12 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from alsek._defaults import DEFAULT_QUEUE, DEFAULT_MAX_RETRIES, DEFAULT_TASK_TIMEOUT, DEFAULT_MECHANISM
+from alsek._defaults import (
+    DEFAULT_MAX_RETRIES,
+    DEFAULT_MECHANISM,
+    DEFAULT_QUEUE,
+    DEFAULT_TASK_TIMEOUT,
+)
 from alsek._utils.printing import auto_repr
 from alsek.core.backoff import Backoff, ExponentialBackoff
 from alsek.core.broker import Broker

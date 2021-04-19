@@ -24,8 +24,8 @@ from alsek._utils.temporal import utcnow_timestamp_ms
 from alsek.core.broker import Broker
 from alsek.core.consumer import Consumer
 from alsek.core.message import Message
-from alsek.exceptions import MultipleBrokersError, NoTasksFoundError, TerminationError
 from alsek.core.task import Task
+from alsek.exceptions import MultipleBrokersError, NoTasksFoundError, TerminationError
 
 log = logging.getLogger(__name__)
 

@@ -9,7 +9,7 @@ from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid1
 
-from alsek._defaults import DEFAULT_TASK_TIMEOUT, DEFAULT_MECHANISM
+from alsek._defaults import DEFAULT_MECHANISM, DEFAULT_TASK_TIMEOUT
 from alsek._utils.printing import auto_repr
 from alsek._utils.temporal import fromtimestamp_ms, utcnow_timestamp_ms
 from alsek.core.backoff import ExponentialBackoff, settings2backoff
