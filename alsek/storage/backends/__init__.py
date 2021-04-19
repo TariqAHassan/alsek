@@ -61,6 +61,21 @@ class Backend(ABC):
     def __repr__(self) -> str:
         return auto_repr(self, namespace=self.namespace, serializer=self.serializer)
 
+    def in_namespace(self, name: str) -> bool:
+        """Determine if ``name`` belong to the current namespace.
+
+        Args:
+            name (str): a name (key)
+
+        Returns:
+            bool
+
+        Warning:
+            * ``name`` should be a complete (i.e., _full_) name.
+
+        """
+        return name.startswith(f"{self.namespace}:")
+
     def full_name(self, name: str) -> str:
         """Get an item's complete name, including the namespace
         in which it exists.
