@@ -196,6 +196,7 @@ class DiskCacheBackend(Backend):
             name_stream (Iterable[str]): a stream of matching name
 
         """
-        for name in map(self.short_name, self.conn):
-            if self.name_match_func(pattern, name):
-                yield name
+        for name in filter(self.in_namespace, self.conn):
+            short_name = self.short_name(name)
+            if self.name_match_func(pattern, short_name):
+                yield short_name
