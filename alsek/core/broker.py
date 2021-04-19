@@ -123,6 +123,9 @@ class Broker:
         Returns:
             None
 
+        Warning:
+            * This method will mutate ``message`` by incrementing it.
+
         """
         if not self.exists(message):
             raise MessageDoesNotExistsError(
