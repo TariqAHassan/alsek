@@ -8,6 +8,7 @@ from typing import Any, Union
 
 import pytest
 
+from schema import Schema
 from alsek.core.message import Message
 from alsek.storage.result import ResultStore
 
@@ -43,6 +44,21 @@ def test_get_storage_name(
     result_store: ResultStore,
 ) -> None:
     assert result_store.get_storage_name(message) == expected
+
+
+@pytest.mark.parametrize(
+    "storage_name,expected",
+    [
+        ("results:uuid", "uuid"),
+        ("results:uuid-0:descendants:uuid", "uuid"),
+    ],
+)
+def test_get_extract_uuid(
+    storage_name: Message,
+    expected: str,
+    result_store: ResultStore,
+) -> None:
+    assert result_store._extract_uuid(storage_name) == expected
 
 
 @pytest.mark.parametrize(
@@ -144,6 +160,13 @@ def test_get_descendants(result_store: ResultStore) -> None:
         result_store.set(msg, result=1)
 
     assert result_store.get(progenitor, descendants=True) == [1] * 4
+
+
+def test_get_with_metadata(result_store: ResultStore) -> None:
+    message, result = Message("task"), 1
+    result_store.set(message, result=result)
+    result = result_store.get(message, with_metadata=True)
+    Schema({"result": int, "timestamp": int, "uuid": str}).validate(result)
 
 
 def test_delete(result_store: ResultStore) -> None:

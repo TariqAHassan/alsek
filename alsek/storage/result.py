@@ -3,8 +3,7 @@
     Result Storage
 
 """
-from datetime import datetime
-from typing import Any, Iterable, List, Union
+from typing import Any, Iterable, List, Union, Dict
 
 from alsek._utils.waiting import waiter
 from alsek.core.message import Message
@@ -51,6 +50,10 @@ class ResultStore:
         else:
             return f"results:{message.uuid}"
 
+    @staticmethod
+    def _extract_uuid(storage_name: str) -> str:
+        return storage_name.rsplit(":", 1)[-1]
+
     def exists(self, message: Message) -> bool:
         """Whether or not data for ``message`` exists in the store.
 
@@ -87,19 +90,25 @@ class ResultStore:
         else:
             return [self.get_storage_name(message)]
 
-    def _get_engine(self, names: Iterable[str], with_timestamp: bool) -> List[Any]:
-        raw_results = sorted(
-            [self.backend.get(n) for n in names],
+    def _get_engine(self, names: Iterable[str], with_metadata: bool) -> List[Any]:
+        def bundle_data(n: str) -> Dict[str, Any]:
+            data = self.backend.get(n)
+            if with_metadata:
+                data["uuid"] = self._extract_uuid(n)
+            return data
+
+        results = sorted(
+            [bundle_data(n) for n in names],
             key=lambda d: d["timestamp"],  # type: ignore
         )
-        return raw_results if with_timestamp else [r["result"] for r in raw_results]
+        return results if with_metadata else [r["result"] for r in results]
 
     def get(
         self,
         message: Message,
         timeout: int = 0,
         keep: bool = False,
-        with_timestamp: bool = False,
+        with_metadata: bool = False,
         descendants: bool = False,
     ) -> Union[Any, List[Any]]:
         """Get the result for ``message``.
@@ -110,9 +119,11 @@ class ResultStore:
                 for the result to become available
             keep (bool): whether or not to keep the result afer fetching it.
                 Defaults to ``False`` to conserve storage space.
-            with_timestamp (bool): if ``True`` return results of the form
-                ``{"result": <result>, "timestamp": int}``, where "timestamp"
-                is the time at which the result was written to the backend.
+            with_metadata (bool): if ``True`` return results of the form
+                ``{"result": <result>, "uuid": str, "timestamp": int}``, where
+                "result" is the result persisted to the backend, "uuid" if the uuid
+                 of the message associated with the result and "timestamp" is the
+                time at which the result was written to the backend.
             descendants (bool): if ``True`` fetch any decendant results.
 
         Returns:
@@ -151,7 +162,7 @@ class ResultStore:
                 raise KeyError(f"No results for {message.uuid}")
 
         names = self._determine_names(message, descendants=descendants)
-        results = self._get_engine(names, with_timestamp=with_timestamp)
+        results = self._get_engine(names, with_metadata=with_metadata)
         if not keep:
             for n in names:
                 self.backend.delete(n)

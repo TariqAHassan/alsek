@@ -449,10 +449,13 @@ def harvest_data() -> int:
 # Start 
 message = harvest_data.generate()
 
-# Get the result of the message. By setting `descendants=True` we
+# Get all of the results as a list. By setting `descendants=True` we
 # will also data for any descendant messages which have completed.
 results = result_storage.get(message, timeout=30 * 1000, descendants=True)
 ```
+
+!!! note
+    Metadata for each result can be included by specifying ``with_metadata=True``.
 
 !!! warning
     The order of results when ``descendants=True`` is determined by the 
