@@ -156,5 +156,5 @@ class RedisBackend(Backend):
             names_stream (Iterable[str]): a stream of matching name
 
         """
-        match = self.full_name(pattern or "")
-        yield from map(self.short_name, self.conn.scan_iter(f"{match}*"))
+        match = self.full_name(pattern or "*")
+        yield from map(self.short_name, self.conn.scan_iter(match))
