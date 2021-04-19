@@ -245,7 +245,7 @@ class Task:
             delay (int, optional): delay before message is ready
             previous_result (Any): result of a previous task.
             callback (Message, Tuple[Message, ...], optional): one ore more messages
-                to be submitted to the broker after the prceeding messeage has been
+                to be submitted to the broker after the proceeding message has been
                 successfully processed by a worker.
             submit (bool): if ``True`` submit the task to the broker
             options (Keyword Args): options to use when submitting
