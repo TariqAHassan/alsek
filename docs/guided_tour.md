@@ -138,7 +138,8 @@ Task results can be persisted to a `backend` using `ResultStore()`.
 ```python
 from typing import Dict
 
-from alsek.core import Broker, task
+from alsek.core import Broker
+from alsek.task import task
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.result import ResultStore
 
@@ -157,7 +158,8 @@ This is illustrated in the example below.
 
 ```python
 from typing import Dict
-from alsek.core import Broker, task
+from alsek.core import Broker
+from alsek.task import task
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.backends.disk import DiskCacheBackend
 from alsek.storage.result import ResultStore
@@ -189,7 +191,8 @@ Messages have a lot of helpful functionality, the most
 notable of which is explored here.
 
 ```python
-from alsek.core import Broker, task
+from alsek.core import Broker
+from alsek.task import task
 from alsek.storage.backends.disk import DiskCacheBackend
 
 broker = Broker(DiskCacheBackend())
@@ -286,7 +289,7 @@ Tasks can be executed on a _Worker Pool_ using either a `'thread'` or `'process'
 We can specify which mechanism the worker pool should use when we construct the task.
 
 ```python
-from alsek.core import task
+from alsek.task import task
 
 @task(..., mechanism="thread")
 def my_task() -> int:
@@ -317,7 +320,7 @@ pool. If a task is eligible to be retried (see below) against a `TimeoutError`,
 it will be. Otherwise, the corresponding message will be deleted.
 
 ```python
-from alsek.core import task
+from alsek.task import task
 
 @task(..., timeout=90 * 1000)  # lower timeout to 90 seconds
 def my_task() -> int:
@@ -351,7 +354,7 @@ is enforced within, but not between, queues (which themselves can be prioritized
 Let's take a look at an example.
 
 ```python
-from alsek.core import task
+from alsek.task import task
 
 @task(..., queue="my_queue", priority=0)
 def task_a() -> str:
@@ -371,7 +374,8 @@ instances of `task_b()`.
 Alsek supports cron, date as well as interval triggers. Let's explore this using the example below.
 
 ```python
-from alsek.core import Broker, task
+from alsek.core import Broker
+from alsek.task import task
 from alsek.storage.backends.disk import DiskCacheBackend
 from apscheduler.triggers.interval import IntervalTrigger
 
@@ -431,7 +435,8 @@ we can obtain all _descendant_ messages.
 from random import randint
 from apscheduler.triggers.interval import IntervalTrigger
 
-from alsek.core import Broker, task
+from alsek.core import Broker
+from alsek.task import task
 from alsek.storage.backends.disk import DiskCacheBackend
 from alsek.storage.result import ResultStore
 
@@ -465,7 +470,8 @@ results = result_storage.get(message, timeout=30 * 1000, descendants=True)
 The message itself will be passed to `task`s which include a `message` parameter. 
 
 ```python
-from alsek.core import Broker, Message, task
+from alsek.core import Broker, Message
+from alsek.task import task
 from alsek.storage.backends.disk import DiskCacheBackend
 
 broker = Broker(DiskCacheBackend())
@@ -489,7 +495,8 @@ the use of a _callback_.
 To see this, let's contrive two simple tasks: `add_1()` and `print_result()`:
 
 ```python
-from alsek.core import Broker, Message, task
+from alsek.core import Broker, Message
+from alsek.task import task
 from alsek.storage.backends.disk import DiskCacheBackend
 
 broker = Broker(DiskCacheBackend())
@@ -680,7 +687,7 @@ is used with "sensible" default. However, the type of backoff algorithm
 as well as its parameters are extremely customizable. 
 
 ```python
-from alsek.core import task
+from alsek.task import task
 from alsek.core.backoff import (
     ConstantBackoff, 
     ExponentialBackoff,
@@ -713,7 +720,8 @@ Alsek's concurrency `Lock()` provides a straightforward way limit
 simultaneity across a distributed application to a single task, as shown here:
 
 ```python
-from alsek.core import Lock, task
+from alsek.core import Lock
+from alsek.task import task
 from alsek.storage.backends.disk import DiskCacheBackend
 
 backend = DiskCacheBackend()

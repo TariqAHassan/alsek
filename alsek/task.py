@@ -544,7 +544,7 @@ def task(
 
     Examples:
         >>> from alsek.core.broker import Broker
-        >>> from alsek.core.task import task
+        >>> from alsek.task import task
         >>> from alsek.storage.backends.disk import DiskCacheBackend
 
         >>> backend = DiskCacheBackend()
