@@ -16,7 +16,7 @@ setup(
     extras_require={
         "diskcache": ["diskcache==5.2.1"],
     },
-    entry_points={"console_scripts": ["alsek = alsek.cli.cli:alsek"]},
+    entry_points={"console_scripts": ["alsek = alsek.cli.cli:main"]},
     classifiers=[
         "Development Status :: 4 - Beta",
         "Programming Language :: Python :: 3.7",

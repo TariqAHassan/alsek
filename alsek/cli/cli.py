@@ -89,7 +89,7 @@ def _get_logging_level(debug: bool, verbose: bool) -> int:
     help="Enable debugging logging",
 )
 @click.option("-v", "--verbose", is_flag=True, help="Enable detailed logging.")
-def alsek(
+def main(
     module: str,
     queues: Optional[str],  # noqa
     max_threads: int,  # noqa
@@ -144,4 +144,4 @@ def alsek(
 
 
 if __name__ == "__main__":
-    alsek()
+    main()
