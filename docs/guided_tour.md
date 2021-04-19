@@ -35,7 +35,7 @@ backend = DiskCacheBackend()
 
 ### Lazy Initialization
 
-Both the `DiskCacheBackend` and `RedisBackend` support lazy initialization.
+Both `DiskCacheBackend` and `RedisBackend` support lazy initialization.
 In this mode, an attempt to establish a connection with the database will be 
 deferred until the first time it is absolutely needed (e.g., for a `SET`, `GET`, 
 `DELETE`, etc.). This can be useful in applications such as REST APIs where the 
