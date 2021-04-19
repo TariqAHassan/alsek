@@ -283,7 +283,7 @@ Tasks can be executed on a _Worker Pool_ using either a `'thread'` or `'process'
 We can specify which mechanism the worker pool should use when we construct the task.
 
 ```python
-from alsek.task import task
+from alsek import task
 
 @task(..., mechanism="thread")
 def my_task() -> int:
@@ -314,7 +314,7 @@ pool. If a task is eligible to be retried (see below) against a `TimeoutError`,
 it will be. Otherwise, the corresponding message will be deleted.
 
 ```python
-from alsek.task import task
+from alsek import task
 
 @task(..., timeout=90 * 1000)  # lower timeout to 90 seconds
 def my_task() -> int:
@@ -348,7 +348,7 @@ is enforced within, but not between, queues (which themselves can be prioritized
 Let's take a look at an example.
 
 ```python
-from alsek.task import task
+from alsek import task
 
 @task(..., queue="my_queue", priority=0)
 def task_a() -> str:
@@ -605,7 +605,7 @@ the original message itself, the result of the task or both.
 from typing import Any
 
 from alsek import Message
-from alsek.task import Task, task
+from alsek.core.task import Task, task
 
 class CustomTask1(Task):
     def do_callback(self, message: Message, result: Any) -> bool:
@@ -630,7 +630,7 @@ To do this, a new `base_task` must be created.
 
 ```python
 from alsek import Message
-from alsek.task import Task, task
+from alsek.core.task import Task, task
 
 class CustomTask2(Task):
     def pre_op(self, message: Message) -> None:
@@ -656,7 +656,7 @@ class be overridden.
 
 ```python
 from alsek import Message
-from alsek.task import Task, task
+from alsek.core.task import Task, task
 
 class CustomTask3(Task):
     def do_retry(self, message: Message, exception: BaseException) -> bool:
