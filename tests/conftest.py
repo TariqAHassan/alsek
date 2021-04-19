@@ -12,6 +12,7 @@ from _pytest.fixtures import SubRequest
 from pytest_redis import factories as redis_factories
 from redis import Redis
 
+from alsek.core.broker import Broker
 from alsek.storage.backends import Backend
 from alsek.storage.backends.disk import DiskCacheBackend
 from alsek.storage.backends.redis import RedisBackend
@@ -109,3 +110,17 @@ def rolling_result_store(
         tmp_path=tmp_path,
     )
     return ResultStore(backend)
+
+
+@pytest.fixture(params=["redis", "diskcache"])
+def rolling_broker(
+    request: SubRequest,
+    custom_redisdb: Redis,
+    tmp_path: Path,
+) -> Broker:
+    backend = _parse_backend_request(
+        request=request,
+        custom_redisdb=custom_redisdb,
+        tmp_path=tmp_path,
+    )
+    return Broker(backend)
