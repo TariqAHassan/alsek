@@ -73,6 +73,19 @@ class Broker:
         subnamespace = self.get_subnamespace(message.queue, message.task_name)
         return f"{subnamespace}:messages:{message.uuid}"
 
+    def exists(self, message: Message) -> bool:
+        """Determine if the message exists in the backend.
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            exists (bool): whether or not the message exists.
+
+        """
+        name = self.get_message_name(message)
+        return self.backend.exists(name)
+
     @magic_logger(
         before=lambda message: log.debug("Submitting %s...", message.summary),
         after=lambda input_: log.debug("Submitted %s.", input_["message"].summary),
@@ -110,12 +123,13 @@ class Broker:
             None
 
         """
-        name = self.get_message_name(message)
-        if not self.backend.exists(name):
-            raise MessageDoesNotExistsError(f"'{name}' not found in backend")
+        if not self.exists(message):
+            raise MessageDoesNotExistsError(
+                f"Message '{message.uuid}' not found in backend"
+            )
 
         message.increment()
-        self.backend.set(name, value=message.data)
+        self.backend.set(self.get_message_name(message), value=message.data)
         self.nack(message)
         log.info(
             "Retrying %s in %s ms...",

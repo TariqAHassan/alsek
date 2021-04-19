@@ -259,6 +259,7 @@ message.ready
 A message broker is responsible for adding and managing tasks on the backend.
 In Alsek, the `Broker` class provides the following methods:
 
+  * `exists()`: whether a message exists on the backend
   * `sumbit()`: submit a message to a queue
   * `retry()`: retry a message on a queue
   * `remove()`: remove a message from the backend
