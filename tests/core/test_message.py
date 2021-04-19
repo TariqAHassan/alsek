@@ -168,5 +168,5 @@ def test_increment() -> None:
 
     time.sleep(0.1)
     msg.increment()
-    assert msg.retries > original_retries
+    assert msg.retries == 1
     assert msg.updated_at > original_updated_at
