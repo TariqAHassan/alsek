@@ -174,16 +174,16 @@ class Message:
         return self.created_at + self.delay + self.get_backoff_duration()
 
     @property
+    def ready(self) -> bool:
+        """If the messages is currently ready for processing."""
+        return self.ready_at <= utcnow_timestamp_ms()
+
+    @property
     def ttr(self) -> int:
         """Time to ready in milliseconds."""
         if self.ready:
             return 0
         return max(self.ready_at - utcnow_timestamp_ms(), 0)
-
-    @property
-    def ready(self) -> bool:
-        """If the messages is currently ready for processing."""
-        return self.ready_at <= utcnow_timestamp_ms()
 
     def link_lock(self, lock: Lock) -> Message:
         """Link a lock to the current message.
