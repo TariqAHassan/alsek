@@ -259,7 +259,7 @@ message.ready
 ## Brokers
 
 A message broker is responsible for adding and managing tasks on the backend.
-In Alsek, the `Broker` class exposes the following methods:
+In Alsek, the `Broker` class provides the following methods:
 
   * `sumbit()`: submit a message to a queue
   * `retry()`: retry a message on a queue
