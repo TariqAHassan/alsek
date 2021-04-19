@@ -6,7 +6,7 @@
 import torch
 from torch import nn
 
-from alsek.core.task import task
+from alsek.task import task
 from examples.ml.singletons import broker, result_store
 
 

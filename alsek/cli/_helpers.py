@@ -11,8 +11,8 @@ from types import ModuleType
 from typing import Any, Dict, Iterable, Tuple
 
 from alsek._utils.logging import magic_logger
-from alsek.core.task import Task
 from alsek.exceptions import NoTasksFoundError, TaskNameCollisionError
+from alsek.task import Task
 
 log = logging.getLogger(__name__)
 
