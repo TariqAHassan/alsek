@@ -74,6 +74,12 @@ class Lock:
                 acquired or already acquired by the current
                 host.
 
+        Warning:
+            * ``True`` is only returned if execution of this method
+              resulted in acquisition of the lock. This means that
+              ``False`` will be returned if the current host already
+              holds the lock.
+
         """
         if self.held:
             return False
