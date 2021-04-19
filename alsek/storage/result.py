@@ -86,7 +86,7 @@ class ResultStore:
         else:
             return [self.get_storage_name(message)]
 
-    def _multi_get(self, names: Iterable[str], with_timestamp: bool) -> List[Any]:
+    def _get_engine(self, names: Iterable[str], with_timestamp: bool) -> List[Any]:
         raw_results = sorted(
             [self.backend.get(n) for n in names],
             key=lambda d: d["timestamp"],  # type: ignore
@@ -150,7 +150,7 @@ class ResultStore:
                 raise KeyError(f"No results for {message.uuid}")
 
         names = self._determine_names(message, descendants=descendants)
-        results = self._multi_get(names, with_timestamp=with_timestamp)
+        results = self._get_engine(names, with_timestamp=with_timestamp)
         if not keep:
             for n in names:
                 self.backend.delete(n)
