@@ -162,11 +162,21 @@ def test_get_descendants(result_store: ResultStore) -> None:
     assert result_store.get(progenitor, descendants=True) == [1] * 4
 
 
-def test_get_with_metadata(result_store: ResultStore) -> None:
+@pytest.mark.parametrize(
+    "with_metadata",
+    [True, False],
+)
+def test_get_with_metadata(with_metadata: bool, result_store: ResultStore) -> None:
     message, result = Message("task"), 1
     result_store.set(message, result=result)
-    result = result_store.get(message, with_metadata=True)
-    Schema({"result": int, "timestamp": int, "uuid": str}).validate(result)
+    result = result_store.get(message, with_metadata=with_metadata)
+
+    if with_metadata:
+        schema = Schema({"result": int, "timestamp": int, "uuid": str})
+    else:
+        schema = Schema(type(result))
+
+    schema.validate(result)
 
 
 def test_delete(result_store: ResultStore) -> None:
