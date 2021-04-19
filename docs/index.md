@@ -54,7 +54,7 @@ broker = Broker(backend)
 Next, we can define a task to perform. Let's imagine we do this in a file named `my_tasks.py`.
 
 ```python
-from alsek.core import task
+from alsek.task import task
 from singletons import broker
 
 @task(broker, queue="math_ops")
