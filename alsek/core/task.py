@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import logging
 from inspect import signature
-from typing import Any, Callable, Dict, Iterable, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 from apscheduler.job import Job
 from apscheduler.jobstores.base import JobLookupError
