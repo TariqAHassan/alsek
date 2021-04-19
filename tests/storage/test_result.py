@@ -171,9 +171,9 @@ def test_get_with_metadata(with_metadata: bool, result_store: ResultStore) -> No
     result_store.set(message, result=result)
 
     if with_metadata:
-        schema = Schema({"result": type(result), "timestamp": int, "uuid": str})
+        schema = Schema({"result": result, "timestamp": int, "uuid": str})
     else:
-        schema = Schema(type(result))
+        schema = Schema(result)
 
     schema.validate(result_store.get(message, with_metadata=with_metadata))
 
