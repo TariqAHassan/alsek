@@ -280,7 +280,7 @@ Additionally, `Broker` also exposes:
 In this section we will take a closer look at the capabilities of Alsek tasks.
 
 !!! note
-    After a function has been decorated with `@task()` its previous behaviour
+    After a function has been decorated with `task` its previous behaviour
     is conserved. This is illustrated in the example below.
 
     ```python
