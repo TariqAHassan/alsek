@@ -77,7 +77,7 @@ def rolling_backend(request, tmp_path: Path, custom_redisdb: Redis) -> Backend:
     elif request.param == "diskcache":
         return DiskCacheBackend(tmp_path)
     else:
-        raise ValueError(f"Unknwon backend '{request.param}'")
+        raise ValueError(f"Unknown backend '{request.param}'")
 
 
 @pytest.fixture(params=["redis", "diskcache"])
@@ -91,5 +91,5 @@ def rolling_result_store(
     elif request.param == "diskcache":
         backend = DiskCacheBackend(tmp_path)
     else:
-        raise ValueError(f"Unknwon backend '{request.param}'")
+        raise ValueError(f"Unknown backend '{request.param}'")
     return ResultStore(backend)
