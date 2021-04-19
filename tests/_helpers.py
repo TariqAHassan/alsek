@@ -1,10 +1,9 @@
 """
 
     Test Helpers
-    ~~~~~~~~~~~~
 
 """
-from typing import Any, Callable, Iterable, List, Tuple
+from typing import Any, Callable, List, Tuple
 
 
 def expand_params_factory(
