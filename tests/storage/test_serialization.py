@@ -18,6 +18,8 @@ _expand_to_all_serializers = expand_params_factory(_ALL_SERIALIZERS)
         1,
         1.0,
         "string",
+        [[1, 2, 3]],
+        [[{"a": 1}, {"b": 2}]],
         [["list", "of", "strings"]],
         {"a": 1},
         {"a": [1, 2, 3]},
