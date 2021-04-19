@@ -3,14 +3,12 @@
     Test Result
 
 """
-import time
-from typing import Any, Union
-
 import pytest
 from schema import Schema
 
 from alsek.core.message import Message
 from alsek.storage.result import ResultStore
+from tests._helpers import sleeper
 
 
 @pytest.mark.parametrize(
@@ -98,7 +96,7 @@ def test_set(
         with pytest.raises(KeyError):
             rolling_result_store.set(message, result=1, nx=nx)
     if message.result_ttl:
-        time.sleep((message.result_ttl / 1000) + 0.1)
+        sleeper(message.result_ttl)
         assert not rolling_result_store.exists(message)
 
 

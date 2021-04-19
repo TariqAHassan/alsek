@@ -3,6 +3,7 @@
     Test Helpers
 
 """
+import time
 from typing import Any, Callable, List, Tuple
 
 
@@ -30,3 +31,19 @@ def expand_params_factory(
         return expanded
 
     return engine
+
+
+def sleeper(seconds: int, buffer: int = 100) -> None:
+    """Delay execution.
+
+    Args:
+        seconds (int): amount of time to delay for
+             in milliseconds.
+        buffer (int): buffer ontop of ``seconds``
+            in milliseconds
+
+    Returns:
+        None
+
+    """
+    time.sleep((seconds + buffer) / 1000)
