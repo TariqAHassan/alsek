@@ -30,7 +30,7 @@ backend = DiskCacheBackend()
 
 !!! warning
     ``DiskCache`` persists data to a local (Sqlite) database and does not 
-    implement 'server-side' "if not exist" on `SET` (`nx`) support. For these reasons, 
+    implement server-side "if not exist" on `SET` (`nx`) support. For these reasons, 
     ``DiskCacheBackend()`` is recommended for development and testing purposes only.
 
 ### Lazy Initialization
