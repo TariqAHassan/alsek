@@ -4,7 +4,7 @@
 
 """
 import time
-from typing import Any, List, Optional, Tuple
+from typing import Any, Optional
 
 import pytest
 
@@ -33,7 +33,7 @@ def test_exists(
     disk_cache_backend: DiskCacheBackend,
     redis_backend: RedisBackend,
 ) -> None:
-    backend = locals().get(backend_to_use)
+    backend: Backend = locals().get(backend_to_use)
 
     if do_set:
         backend.set(name, value=1)
@@ -58,7 +58,7 @@ def test_set(
     disk_cache_backend: DiskCacheBackend,
     redis_backend: RedisBackend,
 ) -> None:
-    backend = locals().get(backend_to_use)
+    backend: Backend = locals().get(backend_to_use)
 
     backend.set(name, value=value, nx=nx, ttl=ttl)
 
@@ -82,13 +82,13 @@ def test_set_ttl(
     disk_cache_backend: DiskCacheBackend,
     redis_backend: RedisBackend,
 ) -> None:
-    backend = locals().get(backend_to_use)
+    backend: Backend = locals().get(backend_to_use)
 
     value = "b"
     backend.set("a", value=value, nx=False, ttl=50)
     time.sleep(0.1)
     actual = backend.get("a")
-    assert actual == None
+    assert actual is None
 
 
 @pytest.mark.parametrize("backend_to_use", _ALL_BACKENDS)
@@ -97,7 +97,7 @@ def test_get(
     disk_cache_backend: DiskCacheBackend,
     redis_backend: RedisBackend,
 ) -> None:
-    backend = locals().get(backend_to_use)
+    backend: Backend = locals().get(backend_to_use)
 
     value = "b"
     backend.set("a", value=value)
@@ -110,7 +110,7 @@ def test_delete(
     disk_cache_backend: DiskCacheBackend,
     redis_backend: RedisBackend,
 ) -> None:
-    backend = locals().get(backend_to_use)
+    backend: Backend = locals().get(backend_to_use)
 
     value = "b"
     backend.set("a", value=value)
@@ -125,7 +125,7 @@ def test_scan(
     disk_cache_backend: DiskCacheBackend,
     redis_backend: RedisBackend,
 ) -> None:
-    backend = locals().get(backend_to_use)
+    backend: Backend = locals().get(backend_to_use)
 
     backend.set("prefix-a", value=1)
     backend.set("prefix-b", value=1)
@@ -152,7 +152,7 @@ def test_count(
     disk_cache_backend: DiskCacheBackend,
     redis_backend: RedisBackend,
 ) -> None:
-    backend = locals().get(backend_to_use)
+    backend: Backend = locals().get(backend_to_use)
 
     for i in range(expected):
         backend.set(f"{pattern}:{i}", value=1)
@@ -169,7 +169,7 @@ def test_clear_namespace(
     disk_cache_backend: DiskCacheBackend,
     redis_backend: RedisBackend,
 ) -> None:
-    backend = locals().get(backend_to_use)
+    backend: Backend = locals().get(backend_to_use)
 
     for i in range(to_add):
         backend.set(f"key-{i}", value=1)
