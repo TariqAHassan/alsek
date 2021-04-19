@@ -7,8 +7,8 @@ import time
 from typing import Any, Union
 
 import pytest
-
 from schema import Schema
+
 from alsek.core.message import Message
 from alsek.storage.result import ResultStore
 

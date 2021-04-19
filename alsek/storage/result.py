@@ -3,12 +3,12 @@
     Result Storage
 
 """
-from typing import Any, Iterable, List, Union, Dict
+from typing import Any, Dict, Iterable, List, Union
 
+from alsek._utils.temporal import utcnow_timestamp_ms
 from alsek._utils.waiting import waiter
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
-from alsek._utils.temporal import utcnow_timestamp_ms
 
 _GET_RESULT_WAIT_SLEEP_INTERVAL: int = 500
 
