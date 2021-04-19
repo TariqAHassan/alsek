@@ -258,8 +258,8 @@ message.ready
 
 ## Brokers
 
-The `Broker` is responsible for adding and managing tasks on the backend.
-An Alsek broker provides the following core methods:
+A message broker is responsible for adding and managing tasks on the backend.
+In Alsek, brokers expose the following methods:
 
   * `sumbit()`: submit a message to a queue
   * `retry()`: retry a message on a queue
