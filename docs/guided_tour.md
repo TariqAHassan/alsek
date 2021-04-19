@@ -290,7 +290,7 @@ In this section we will take a closer look at the capabilities of Alsek tasks.
     def add(a: int, b: int) -> int:
         return a + b
 
-    assert add(1, 1) == 2  # True
+    assert add(1, b=1) == 2  # True
     ```
 
 ### Mechanisms
