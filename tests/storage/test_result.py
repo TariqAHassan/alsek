@@ -53,7 +53,7 @@ def test_get_storage_name(
         ("results:uuid-0:descendants:uuid", "uuid"),
     ],
 )
-def test_get_extract_uuid(
+def test_extract_uuid(
     storage_name: Message,
     expected: str,
     result_store: ResultStore,
