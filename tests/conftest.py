@@ -14,6 +14,7 @@ from redis import Redis
 from alsek.storage.backends import Backend
 from alsek.storage.backends.disk import DiskCacheBackend
 from alsek.storage.backends.redis import RedisBackend
+from alsek.storage.result import ResultStore
 
 
 def _get_redis_path(command: str = "which redis-server") -> str:
@@ -67,3 +68,18 @@ def redis_backend(custom_redisdb: Redis) -> RedisBackend:
 @pytest.fixture()
 def disk_cache_backend(tmp_path: Path) -> DiskCacheBackend:
     return DiskCacheBackend(tmp_path)
+
+
+@pytest.fixture(params=["redis", "diskcache"])
+def result_store(
+    request,
+    custom_redisdb: Redis,
+    tmp_path: Path,
+) -> ResultStore:
+    if request.param == "redis":
+        backend = RedisBackend(custom_redisdb)
+    elif request.param == "diskcache":
+        backend = DiskCacheBackend(tmp_path)
+    else:
+        raise ValueError(f"Unknwon backend '{request.param}'")
+    return ResultStore(backend)
