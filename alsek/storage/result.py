@@ -80,6 +80,12 @@ class ResultStore:
             ttl=message.result_ttl,
         )
 
+    def _determine_names(self, message: Message, descendants: bool) -> List[str]:
+        if descendants:
+            return list(self.backend.scan(f"{self._get_stable_prefix(message)}*"))
+        else:
+            return [self.get_storage_name(message)]
+
     def _multi_get(self, names: Iterable[str], with_timestamp: bool) -> List[Any]:
         raw_results = sorted(
             [self.backend.get(n) for n in names],
@@ -143,11 +149,7 @@ class ResultStore:
             else:
                 raise KeyError(f"No results for {message.uuid}")
 
-        if descendants:
-            names = list(self.backend.scan(f"{self._get_stable_prefix(message)}*"))
-        else:
-            names = [self.get_storage_name(message)]
-
+        names = self._determine_names(message, descendants=descendants)
         results = self._multi_get(names, with_timestamp=with_timestamp)
         if not keep:
             for n in names:
