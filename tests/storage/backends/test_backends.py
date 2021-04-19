@@ -9,9 +9,9 @@ from typing import Any, Optional
 import pytest
 
 from alsek.storage.backends import Backend
-from tests._helpers import expand_params_factory
 from alsek.storage.backends.disk import DiskCacheBackend
 from alsek.storage.backends.redis import RedisBackend
+from tests._helpers import expand_params_factory
 
 _ALL_BACKENDS = ("disk_cache_backend", "redis_backend")
 _expand_to_all_backends = expand_params_factory(_ALL_BACKENDS)

@@ -4,7 +4,7 @@
     ~~~~~~~~~~~~
 
 """
-from typing import Iterable, Any, Callable, Tuple, List
+from typing import Any, Callable, Iterable, List, Tuple
 
 
 def expand_params_factory(
