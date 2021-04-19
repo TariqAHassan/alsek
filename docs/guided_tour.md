@@ -277,6 +277,22 @@ Additionally, `Broker` also exposes:
 
 ## Tasks
 
+In this section we will take a closer look at the capabilities of Alsek tasks.
+
+!!! note
+    After a function has been decorated with `@task()` its previous behaviour
+    is conserved. This is illustrated in the example below.
+
+    ```python
+    from alsek import task
+    
+    @task(...)
+    def add(a: int, b: int) -> int:
+        return a + b
+
+    assert add(1, 1) == 2  # True
+    ```
+
 ### Mechanisms
 
 Tasks can be executed on a _Worker Pool_ using either a `'thread'` or `'process'` mechanism.
