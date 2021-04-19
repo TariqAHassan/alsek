@@ -138,8 +138,7 @@ Task results can be persisted to a `backend` using `ResultStore()`.
 ```python
 from typing import Dict
 
-from alsek.core import Broker
-from alsek.task import task
+from alsek import Broker, task
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.result import ResultStore
 
@@ -158,8 +157,8 @@ This is illustrated in the example below.
 
 ```python
 from typing import Dict
-from alsek.core import Broker
-from alsek.task import task
+
+from alsek import Broker, task
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.backends.disk import DiskCacheBackend
 from alsek.storage.result import ResultStore
@@ -191,8 +190,7 @@ Messages have a lot of helpful functionality, the most
 notable of which is explored here.
 
 ```python
-from alsek.core import Broker
-from alsek.task import task
+from alsek import Broker, task
 from alsek.storage.backends.disk import DiskCacheBackend
 
 broker = Broker(DiskCacheBackend())
@@ -370,8 +368,7 @@ instances of `task_b()`.
 Alsek supports cron, date as well as interval triggers. Let's explore this using the example below.
 
 ```python
-from alsek.core import Broker
-from alsek.task import task
+from alsek import Broker, task
 from alsek.storage.backends.disk import DiskCacheBackend
 from apscheduler.triggers.interval import IntervalTrigger
 
@@ -431,8 +428,7 @@ we can obtain all _descendant_ messages.
 from random import randint
 from apscheduler.triggers.interval import IntervalTrigger
 
-from alsek.core import Broker
-from alsek.task import task
+from alsek import Broker, task
 from alsek.storage.backends.disk import DiskCacheBackend
 from alsek.storage.result import ResultStore
 
@@ -469,8 +465,7 @@ results = result_storage.get(message, timeout=30 * 1000, descendants=True)
 The message itself will be passed to `task`s which include a `message` parameter. 
 
 ```python
-from alsek.core import Broker, Message
-from alsek.task import task
+from alsek import Broker, Message, task
 from alsek.storage.backends.disk import DiskCacheBackend
 
 broker = Broker(DiskCacheBackend())
@@ -494,8 +489,7 @@ the use of a _callback_.
 To see this, let's contrive two simple tasks: `add_1()` and `print_result()`:
 
 ```python
-from alsek.core import Broker, Message
-from alsek.task import task
+from alsek import Broker, Message, task
 from alsek.storage.backends.disk import DiskCacheBackend
 
 broker = Broker(DiskCacheBackend())
@@ -610,8 +604,8 @@ the original message itself, the result of the task or both.
 ```python
 from typing import Any
 
-from alsek.core import Message
-from alsek.core.task import Task, task
+from alsek import Message
+from alsek.task import Task, task
 
 class CustomTask1(Task):
     def do_callback(self, message: Message, result: Any) -> bool:
@@ -635,8 +629,8 @@ perform operations before and/or after the `function` itself executes, respectiv
 To do this, a new `base_task` must be created.
 
 ```python
-from alsek.core import Message
-from alsek.core.task import Task, task
+from alsek import Message
+from alsek.task import Task, task
 
 class CustomTask2(Task):
     def pre_op(self, message: Message) -> None:
@@ -661,8 +655,8 @@ message should be retried, the `do_retry()` method of the `Task`
 class be overridden.
 
 ```python
-from alsek.core import Message
-from alsek.core.task import Task, task
+from alsek import Message
+from alsek.task import Task, task
 
 class CustomTask3(Task):
     def do_retry(self, message: Message, exception: BaseException) -> bool:
@@ -686,7 +680,7 @@ is used with "sensible" default. However, the type of backoff algorithm
 as well as its parameters are extremely customizable. 
 
 ```python
-from alsek.task import task
+from alsek import task
 from alsek.core.backoff import (
     ConstantBackoff, 
     ExponentialBackoff,
@@ -719,8 +713,7 @@ Alsek's concurrency `Lock()` provides a straightforward way limit
 simultaneity across a distributed application to a single task, as shown here:
 
 ```python
-from alsek.core import Lock
-from alsek.task import task
+from alsek import Lock, task
 from alsek.storage.backends.disk import DiskCacheBackend
 
 backend = DiskCacheBackend()
@@ -746,7 +739,7 @@ as they are managed by _Worker Pools_ (see below). However, in the interest
 of completeness, an illustrative example of how to do so is provided below.
 
 ```python
-from alsek.core import Broker
+from alsek import Broker
 from alsek.core.consumer import Consumer
 from alsek.storage.backends.redis import RedisBackend
 

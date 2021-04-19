@@ -7,7 +7,7 @@ from typing import Any, Iterable, Optional, Union, cast
 
 from redis import Redis
 
-from alsek import DEFAULT_NAMESPACE
+from alsek._defaults import DEFAULT_NAMESPACE
 from alsek._utils.printing import auto_repr
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.serialization import JsonSerializer, Serializer

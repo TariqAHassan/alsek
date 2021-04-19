@@ -8,7 +8,7 @@ import re
 from abc import ABC, abstractmethod
 from typing import Any, Callable, Iterable, Optional
 
-from alsek import DEFAULT_NAMESPACE
+from alsek._defaults import DEFAULT_NAMESPACE
 from alsek._utils.printing import auto_repr
 from alsek.storage.serialization import JsonSerializer, Serializer
 

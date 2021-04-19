@@ -44,7 +44,7 @@ First, we'll create a `Broker()` powered by a `Redis` backend.
 Let's suppose we do this in a file named `singletons.py`.
 
 ```python
-from alsek.core import Broker
+from alsek import Broker
 from alsek.storage.backends.redis import RedisBackend
 
 backend = RedisBackend("<connection_url>")
@@ -54,7 +54,7 @@ broker = Broker(backend)
 Next, we can define a task to perform. Let's imagine we do this in a file named `my_tasks.py`.
 
 ```python
-from alsek.task import task
+from alsek import task
 from singletons import broker
 
 @task(broker, queue="math_ops")

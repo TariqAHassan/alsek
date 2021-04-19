@@ -5,7 +5,7 @@
 """
 from pathlib import Path
 
-from alsek.core import Broker
+from alsek import Broker
 from alsek.storage.backends.disk import DiskCacheBackend
 
 cache_dir = Path("~/alsek/diskcache").expanduser()

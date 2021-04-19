@@ -39,8 +39,7 @@ Requires Python 3.7+
 First, add the following to a file named `quick_start.py`:
 
 ```python
-from alsek.core import Broker
-from alsek.task import task
+from alsek import Broker, task
 from alsek.storage.backends.redis import RedisBackend
 
 backend = RedisBackend()  # uses localhost by default

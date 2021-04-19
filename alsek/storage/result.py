@@ -140,7 +140,7 @@ class ResultStore:
               ``message`` must be set.
 
         Examples:
-            >>> from alsek.core import Message
+            >>> from alsek import Message
             >>> from alsek.storage.backends.disk import DiskCacheBackend
             >>> from alsek.storage.result import ResultStore
 
