@@ -92,7 +92,7 @@ class ResultStore:
 
     def _get_engine(self, names: Iterable[str], with_metadata: bool) -> List[Any]:
         def bundle_data(n: str) -> Dict[str, Any]:
-            data = self.backend.get(n)
+            data: Dict[str, Any] = self.backend.get(n)
             if with_metadata:
                 data["uuid"] = self._extract_uuid(n)
             return data
