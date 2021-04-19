@@ -29,9 +29,9 @@ class DiskCacheBackend(Backend):
     Args:
         conn (str, Path, DiskCache, LazyClient, optional): a directory, ``DiskCache()`` object
             or ``LazyClient``.
-        name_match_func (callable): a callable to determine if
+        name_match_func (callable, optional): a callable to determine if
             a name matches a specified pattern when scanning
-            the backend.
+            the backend. If ``None``, one will selected automatically.
         namespace (str): prefix to use when inserting
             names in the backend
         serializer (Serializer): tool for encoding and decoding
@@ -48,13 +48,13 @@ class DiskCacheBackend(Backend):
     def __init__(
         self,
         conn: Optional[Union[str, Path, DiskCache, LazyClient]] = None,
-        name_match_func: Callable[[Optional[str], str], bool] = name_matcher,
+        name_match_func: Optional[Callable[[Optional[str], str], bool]] = None,
         namespace: str = DEFAULT_NAMESPACE,
         serializer: Serializer = JsonSerializer(),
     ) -> None:
         super().__init__(namespace, serializer=serializer)
         self._conn = self._conn_parse(conn)
-        self.name_match_func = name_match_func
+        self.name_match_func = name_match_func or name_matcher
 
     @staticmethod
     def _conn_parse(
