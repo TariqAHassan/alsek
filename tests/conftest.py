@@ -73,7 +73,9 @@ def disk_cache_backend(tmp_path: Path) -> DiskCacheBackend:
 
 @pytest.fixture(params=["redis", "diskcache"])
 def rolling_backend(
-    request: SubRequest, tmp_path: Path, custom_redisdb: Redis
+    request: SubRequest,
+    tmp_path: Path,
+    custom_redisdb: Redis,
 ) -> Backend:
     if request.param == "redis":
         return RedisBackend(custom_redisdb)
