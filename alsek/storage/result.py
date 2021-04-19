@@ -9,6 +9,7 @@ from typing import Any, Iterable, List, Union
 from alsek._utils.waiting import waiter
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
+from alsek._utils.temporal import utcnow_timestamp_ms
 
 _GET_RESULT_WAIT_SLEEP_INTERVAL: int = 500
 
@@ -75,7 +76,7 @@ class ResultStore:
         """
         self.backend.set(
             self.get_storage_name(message),
-            value={"result": result, "timestamp": datetime.utcnow().timestamp()},
+            value={"result": result, "timestamp": utcnow_timestamp_ms()},
             nx=nx,
             ttl=message.result_ttl,
         )
