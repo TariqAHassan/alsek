@@ -69,7 +69,7 @@ Which will result in output similar to this:
 [2021-04-06 10:00:30.261] [PID 74897] [INFO] alsek.core.worker: Successfully processed Message(uuid='e49806be-96ad-11eb-9216-acde48001122', queue='math_ops', task='add').
 ```
 
-A longer introduction to Alsek can be found in [Getting Started]().
+Note that a longer introduction to Alsek can be found in [Getting Started]().
 
 ## Documentation
 
