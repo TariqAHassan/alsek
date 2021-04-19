@@ -9,7 +9,7 @@ from copy import deepcopy
 from typing import Any, Dict, List, Optional, Tuple, Union
 from uuid import uuid1
 
-from alsek._defaults import DEFAULT_MECHANISM, DEFAULT_TASK_TIMEOUT
+from alsek._defaults import DEFAULT_MECHANISM, DEFAULT_QUEUE, DEFAULT_TASK_TIMEOUT
 from alsek._utils.printing import auto_repr
 from alsek._utils.temporal import fromtimestamp_ms, utcnow_timestamp_ms
 from alsek.core.backoff import ExponentialBackoff, settings2backoff
@@ -90,7 +90,7 @@ class Message:
         mechanism: str = DEFAULT_MECHANISM,
     ) -> None:
         self.task_name = task_name
-        self.queue = queue
+        self.queue = queue or DEFAULT_QUEUE
         self.args = tuple(args) if args else tuple()
         self.kwargs = kwargs or dict()
         self.metadata = metadata
