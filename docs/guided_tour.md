@@ -280,8 +280,8 @@ Additionally, `Broker` also exposes:
 In this section we will take a closer look at the capabilities of Alsek tasks.
 
 !!! note
-    After a function has been decorated with `task` its previous behaviour
-    is conserved. This is illustrated in the example below.
+    The original behaviour of a function is conserved after it has been
+    decorated with `task`. This is illustrated in the example below.
 
     ```python
     from alsek import task
