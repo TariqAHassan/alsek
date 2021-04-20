@@ -553,7 +553,6 @@ To see this, let's add another task into the mix.
 @task(broker)
 def add_1_previous(message: Message) -> int:
     return message.previous_result + 1
-    
 ```
 
 ```python
