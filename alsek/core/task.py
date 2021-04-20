@@ -93,7 +93,8 @@ class Task:
         broker (Broker): an Alsek broker
         name (str, optional): the name of the task. If ``None``,
             the class name will be used.
-        queue (str): the name of the queue to generate the task on
+        queue (str, optional): the name of the queue to generate the task on.
+            If ``None``, the default queue will be used.
         priority (int): priority of the task. Tasks with lower values
             will be executed before tasks with higher values.
         timeout (int): the maximum amount of time (in milliseconds)
@@ -120,7 +121,7 @@ class Task:
         function: Callable[..., Any],
         broker: Broker,
         name: Optional[str] = None,
-        queue: str = DEFAULT_QUEUE,
+        queue: Optional[str] = None,
         priority: int = 0,
         timeout: int = DEFAULT_TASK_TIMEOUT,
         max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
@@ -130,7 +131,7 @@ class Task:
     ) -> None:
         self.function = function
         self.broker = broker
-        self.queue = queue
+        self.queue = queue or DEFAULT_QUEUE
         self.priority = priority
         self.timeout = timeout
         self._name = name
@@ -507,7 +508,7 @@ def _parse_base_task(
 def task(
     broker: Broker,
     name: Optional[str] = None,
-    queue: str = DEFAULT_QUEUE,
+    queue: Optional[str] = None,
     priority: int = 0,
     timeout: int = DEFAULT_TASK_TIMEOUT,
     max_retries: int = DEFAULT_MAX_RETRIES,
@@ -523,7 +524,8 @@ def task(
         broker (Broker): an Alsek broker
         name (str, optional): the name of the task. If ``None``,
             the class name will be used.
-        queue (str): the name of the queue to generate the task on
+        queue (str, optional): the name of the queue to generate the task on.
+            If ``None``, the default queue will be used.
         priority (int): priority of the task. Tasks with lower values
             will be executed before tasks with higher values.
         timeout (int): the maximum amount of time (in milliseconds)

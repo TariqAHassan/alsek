@@ -26,8 +26,8 @@ class Message:
     Args:
         task_name (str): the name of the task for which
             the message is intended
-        queue (str, optional): the queue for which the
-            message was intended
+        queue (str, optional): the queue for which the message was intended.
+            If ``None`` the default queue will be set.
         args (list, tuple, optional): positional arguments to pass to
             the task's function during the execution of ``op()``
         kwargs (dict, optional): keyword arguments to pass to
