@@ -21,7 +21,7 @@ def test_task_encode(
     rolling_broker: Broker,
 ) -> None:
     task = task_class(lambda: 1, broker=rolling_broker)._encode()
-    assert isinstance(task, bytes)
+    assert isinstance(task, dict)
 
 
 @pytest.mark.parametrize(
