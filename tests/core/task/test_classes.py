@@ -9,7 +9,7 @@ from alsek.core.message import Message
 from alsek.storage.result import ResultStore
 from alsek.core.task import Task, TriggerTask
 from typing import Optional, Type, Any
-from alsek.exceptions import ValidationError
+from alsek.exceptions import ValidationError, SchedulingError
 from apscheduler.schedulers.base import STATE_STOPPED, STATE_PAUSED, STATE_RUNNING
 
 
@@ -248,6 +248,13 @@ def test_do_callback(
     task = task_class(lambda: 1, broker=rolling_broker)
     assert task.do_callback(Message("task"), result=result)
 
+
+def test_trigger_task_params(rolling_broker: Broker) -> None:
+    def func_with_params(a: int) -> int:
+        return a
+
+    with pytest.raises(SchedulingError):
+        TriggerTask(func_with_params, broker=rolling_broker)
 
 def test_trigger_task_job(rolling_broker: Broker) -> None:
     task = TriggerTask(lambda: 1, broker=rolling_broker)
