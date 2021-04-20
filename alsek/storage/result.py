@@ -124,7 +124,7 @@ class ResultStore:
                 "result" is the result persisted to the backend, "uuid" if the uuid
                  of the message associated with the result and "timestamp" is the
                 time at which the result was written to the backend.
-            descendants (bool): if ``True`` fetch any decendant results.
+            descendants (bool): if ``True`` fetch any descendant results.
 
         Returns:
             result (Any, List[Any]): the stored result. If ``descendants``

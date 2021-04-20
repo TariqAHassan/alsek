@@ -155,8 +155,8 @@ def test_get_no_keep(keep: bool, rolling_result_store: ResultStore) -> None:
 
 def test_get_descendants(rolling_result_store: ResultStore) -> None:
     progenitor = Message("task")
-    decendant_messages = [Message("task", progenitor=progenitor.uuid) for _ in range(3)]
-    for msg in (progenitor, *decendant_messages):
+    descendant_messages = [Message("task", progenitor=progenitor.uuid) for _ in range(3)]
+    for msg in (progenitor, *descendant_messages):
         rolling_result_store.set(msg, result=1)
 
     assert rolling_result_store.get(progenitor, descendants=True) == [1] * 4
