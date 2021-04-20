@@ -3,8 +3,10 @@
     Test Checks
 
 """
+from typing import Any, Collection
+
 import pytest
-from typing import Collection, Any
+
 from alsek._utils.checks import has_duplicates
 
 
