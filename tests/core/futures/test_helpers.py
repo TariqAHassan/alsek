@@ -41,6 +41,7 @@ def test_furture_encoding(rolling_broker: Broker) -> None:
     # Check that the reconstructed task is similar in kind
     assert testing_task.name == decoded_testing_task.name
     assert testing_task.broker.__class__ == decoded_testing_task.broker.__class__
+    assert testing_task.broker.dlq_ttl == decoded_testing_task.broker.dlq_ttl
     assert (
         testing_task.broker.backend.__class__
         == decoded_testing_task.broker.backend.__class__
