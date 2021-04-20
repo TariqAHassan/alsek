@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import logging
-from inspect import signature
+import inspect
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 from apscheduler.job import Job
@@ -35,10 +35,10 @@ SUPPORTED_MECHANISMS: Tuple[str, ...] = ("process", "thread")
 
 
 def _expects_message(function: Callable[..., Any]) -> bool:
-    parameters = signature(function).parameters
+    parameters = inspect.signature(function).parameters
     if "message" in parameters:
-        if isinstance(parameters["message"].annotation, str):
-            return parameters["message"].annotation == Message.__name__
+        if parameters["message"].annotation != inspect._empty:  # type: ignore
+            return bool(parameters["message"].annotation == Message)
         else:
             return True
     else:
