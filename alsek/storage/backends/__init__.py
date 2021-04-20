@@ -73,7 +73,11 @@ class Backend(ABC):
                 current backend.
 
         """
-        return cast(bytes, dill.dumps(gather_init_params(self)))
+        data = dict(
+            backend=self.__class__,
+            settings=gather_init_params(self),
+        )
+        return cast(bytes, dill.dumps(data))
 
     @classmethod
     def decode(cls, encoded_backend: Any) -> Backend:
@@ -86,7 +90,7 @@ class Backend(ABC):
             backend (Backend): the current backend
 
         """
-        return cls(**dill.loads(encoded_backend))
+        return cls(**dill.loads(encoded_backend)["settings"])
 
     def in_namespace(self, name: str) -> bool:
         """Determine if ``name`` belong to the current namespace.

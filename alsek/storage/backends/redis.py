@@ -83,8 +83,11 @@ class RedisBackend(Backend):
                 current connection.
 
         """
-        data = gather_init_params(self, ignore=("conn",))
-        data["conn"] = dict(
+        data = dict(
+            backend=self.__class__,
+            settings=gather_init_params(self, ignore=("conn",)),
+        )
+        data["settings"]["conn"] = dict(
             connection_class=self.conn.connection_pool.connection_class,
             max_connections=self.conn.connection_pool.max_connections,
             connection_kwargs=self.conn.connection_pool.connection_kwargs,
@@ -102,15 +105,15 @@ class RedisBackend(Backend):
             backend (RedisBackend): a reconstructed backend
 
         """
-        data = dill.loads(encoded_backend)
-        data["conn"] = Redis(
+        settings = dill.loads(encoded_backend)["settings"]
+        settings["conn"] = Redis(
             connection_pool=ConnectionPool(
-                connection_class=data["conn"]["connection_class"],
-                max_connections=data["conn"]["max_connections"],
-                **data["conn"]["connection_kwargs"],
+                connection_class=settings["conn"]["connection_class"],
+                max_connections=settings["conn"]["max_connections"],
+                **settings["conn"]["connection_kwargs"],
             )
         )
-        return RedisBackend(**data)
+        return RedisBackend(**settings)
 
     def exists(self, name: str) -> bool:
         """Check if ``name`` exists in the Redis backend.
