@@ -38,9 +38,9 @@ class Lock:
         ...
         >>> with Lock("mutex", backend=backend) as lock:
         >>>     if lock.acquire():
-        >>>         print("Acquired lock")
+        >>>         print("Acquired lock.")
         >>>     else:
-        >>>         print("Did not acquire lock")
+        >>>         print("Did not acquire lock.")
 
     """
 
