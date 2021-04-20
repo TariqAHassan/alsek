@@ -108,10 +108,7 @@ def test_submit(
         assert not rolling_broker.exists(message)
 
 
-@pytest.mark.parametrize(
-    "do_submit",
-    [True, False],
-)
+@pytest.mark.parametrize("do_submit", [True, False])
 def test_retry(
     do_submit: bool,
     rolling_broker: Broker,
