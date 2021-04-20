@@ -438,8 +438,7 @@ class WorkerPool(Consumer):
 
             1.  Starting a background thread to monitor background tasks
             2a. Recovering messages fom the data backend
-            2b. Processing recovered messages as worker processes become
-                available.
+            2b. Processing recovered messages as places in the pool become available.
 
         Returns:
             None
