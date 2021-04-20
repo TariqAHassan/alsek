@@ -27,6 +27,20 @@ class Lock:
     Warning:
         * Locks are global and do not consider queues, unless
           included in ``name``.
+        * When used as a context manager, the lock is *not* automatically
+          acquired. Lock acquisition requires calling ``acquire()``.
+
+    Examples:
+        >>> from alsek import Lock
+        >>> from alsek.storage.backends.disk import DiskCacheBackend
+        ...
+        >>> backend = DiskCacheBackend()
+        ...
+        >>> with Lock("mutex", backend=backend) as lock:
+        >>>     if lock.acquire():
+        >>>         print("Acquired lock")
+        >>>     else:
+        >>>         print("Did not acquire lock")
 
     """
 
@@ -99,7 +113,7 @@ class Lock:
 
         """
         if self.held:
-            self.backend.delete(self.name, missing_ok=True)
+            self.backend.delete(self.long_name, missing_ok=True)
             return True
         else:
             return False
