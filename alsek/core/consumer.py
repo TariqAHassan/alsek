@@ -81,7 +81,7 @@ class Consumer:
             subnamespaces = [self.broker.get_subnamespace(q) for q in self.subset]
         else:
             subnamespaces = [
-                self.broker.get_subnamespace(q, t)
+                self.broker.get_subnamespace(q, task_name=t)
                 for (q, tasks) in self.subset.items()
                 for t in tasks
             ]
