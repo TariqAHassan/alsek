@@ -216,7 +216,7 @@ class Task:
         args: Optional[Union[List[Any], Tuple[Any, ...]]] = None,
         kwargs: Optional[Dict[Any, Any]] = None,
         metadata: Optional[Dict[Any, Any]] = None,
-        store_result: bool = False,
+        store_result: Optional[bool] = None,
         result_ttl: Optional[int] = None,
         uuid: Optional[str] = None,
         timeout_override: Optional[int] = None,
@@ -236,7 +236,9 @@ class Task:
             kwargs (dict, optional): keyword arguments to pass to ``function``
             metadata (dict, optional): a dictionary of user-defined message metadata.
                 This can store any data types supported by the backend's serializer.
-            store_result (bool): if ``True`` persist the result to a result store.
+            store_result (bool, optional): if ``True`` persist the result to a result store.
+                If ``None``, this will be set automatically based on whether a ``ResultStore``
+                has been set for the task.
             result_ttl (int, optional): time to live (in milliseconds) for the
                 result in the result store. If ``None``, the result will be
                 persisted indefinitely. Note that if ``store_result`` is ``False``
@@ -273,7 +275,9 @@ class Task:
             args=args,
             kwargs=kwargs,
             metadata=metadata,
-            store_result=store_result,
+            store_result=(
+                bool(self.result_store) if store_result is None else store_result
+            ),
             result_ttl=result_ttl,
             uuid=uuid,
             timeout=timeout_override or self.timeout,
