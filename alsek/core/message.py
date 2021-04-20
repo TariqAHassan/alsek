@@ -113,7 +113,7 @@ class Message:
         else:
             self.created_at, self.updated_at = created_at, updated_at
 
-        self.lock: Optional[str] = None
+        self._lock: Optional[str] = None
 
     @property
     def data(self) -> Dict[str, Any]:
@@ -141,7 +141,6 @@ class Message:
 
     def __repr__(self) -> str:
         params = self.data
-        params["lock"] = self.lock
         for k in ("created_at", "updated_at"):
             params[k] = fromtimestamp_ms(params[k])
         return auto_repr(self, **params)
@@ -185,7 +184,7 @@ class Message:
             return 0
         return max(self.ready_at - utcnow_timestamp_ms(), 0)
 
-    def link_lock(self, lock: Lock) -> Message:
+    def _link_lock(self, lock: Lock) -> Message:
         """Link a lock to the current message.
 
         Links are formed against the ``long_name`` of ``lock``.
@@ -201,13 +200,13 @@ class Message:
               never persisted to the data backend.
 
         """
-        if self.lock:
-            raise AttributeError(f"Already linked to '{self.lock}'")
+        if self._lock:
+            raise AttributeError(f"Already linked to '{self._lock}'")
         else:
-            self.lock = lock.long_name
+            self._lock = lock.long_name
         return self
 
-    def unlink_lock(self, missing_ok: bool = False) -> Optional[str]:
+    def _unlink_lock(self, missing_ok: bool = False) -> Optional[str]:
         """Clear the lock linked to the message.
 
         Args:
@@ -222,12 +221,14 @@ class Message:
                 and ``missing_ok`` is not ``True``.
 
         """
-        if self.lock:
-            lock = self.lock
-            self.lock = None
+        if self._lock:
+            lock = self._lock
+            self._lock = None
             return lock
         elif not missing_ok:
             raise AttributeError("No lock linked to message")
+        else:
+            return None
 
     def clone(self) -> Message:
         """Create an exact copy of the current message.

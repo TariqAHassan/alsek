@@ -137,8 +137,8 @@ def test_clear_lock(rolling_broker: Broker) -> None:
     assert lock.held
 
     # Link to a message
-    message = Message("task").link_lock(lock)
-    assert message.lock is not None
+    message = Message("task")._link_lock(lock)
+    assert message._lock is not None
 
     # Clear the lock
     rolling_broker._clear_lock(message)
@@ -147,7 +147,7 @@ def test_clear_lock(rolling_broker: Broker) -> None:
     assert not lock.held
 
     # Check that the lock is no longer linked to the message
-    assert message.lock is None
+    assert message._lock is None
 
 
 @pytest.mark.parametrize(
@@ -161,7 +161,7 @@ def test_clear_lock(rolling_broker: Broker) -> None:
 )
 def test_removal(method: str, rolling_broker: Broker) -> None:
     lock = Lock("lock", backend=rolling_broker.backend)
-    message = Message("task").link_lock(lock)
+    message = Message("task")._link_lock(lock)
 
     # Add the message via the broker
     rolling_broker.submit(message)
@@ -174,13 +174,13 @@ def test_removal(method: str, rolling_broker: Broker) -> None:
     assert not rolling_broker.exists(message)
 
     # Check that the lock has been fully released.
-    assert message.lock is None
+    assert message._lock is None
     assert not lock.held
 
 
 def test_nack(rolling_broker: Broker) -> None:
     lock = Lock("lock", backend=rolling_broker.backend)
-    message = Message("task").link_lock(lock)
+    message = Message("task")._link_lock(lock)
 
     # Add the message via the broker
     rolling_broker.submit(message)
@@ -193,7 +193,7 @@ def test_nack(rolling_broker: Broker) -> None:
     assert rolling_broker.exists(message)
 
     # Check that the lock has been fully released.
-    assert message.lock is None
+    assert message._lock is None
     assert not lock.held
 
 
@@ -201,7 +201,7 @@ def test_nack(rolling_broker: Broker) -> None:
 @pytest.mark.flaky(max_runs=3)
 def test_fail(dlq_ttl: Optional[int], rolling_broker: Broker) -> None:
     lock = Lock("lock", backend=rolling_broker.backend)
-    message = Message("task").link_lock(lock)
+    message = Message("task")._link_lock(lock)
 
     # Add the message via the broker
     rolling_broker.submit(message)
@@ -215,7 +215,7 @@ def test_fail(dlq_ttl: Optional[int], rolling_broker: Broker) -> None:
     assert not rolling_broker.exists(message)
 
     # Check that the lock has been fully released.
-    assert message.lock is None
+    assert message._lock is None
     assert not lock.held
 
     if dlq_ttl:

@@ -74,7 +74,7 @@ def test_poll(messages_to_add: int, rolling_broker: Broker) -> None:
 
     actual = set()
     for j in consumer._poll():
-        assert Lock(j.lock, backend=rolling_broker.backend).held
+        assert Lock(j._lock, backend=rolling_broker.backend).held
         actual.add(j.uuid)
 
     expected = {m.uuid for m in messages}

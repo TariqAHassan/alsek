@@ -46,7 +46,7 @@ def test_data(message: Message) -> None:
 def test_repr() -> None:
     msg = Message("task")
     repr_string = repr(msg)
-    assert all(k in repr_string for k in (*msg.data, "lock"))
+    assert all(k in repr_string for k in msg.data)
 
 
 def test_summary() -> None:
@@ -121,18 +121,18 @@ def test_ttr(message: Message, ready_now: bool) -> None:
 
 def test_link_lock(rolling_backend: Backend) -> None:
     lock = Lock("lock", rolling_backend)
-    msg = Message("task").link_lock(lock)
+    msg = Message("task")._link_lock(lock)
 
-    assert msg.lock == lock.long_name
+    assert msg._lock == lock.long_name
 
 
 def test_release_lock(rolling_backend: Backend) -> None:
     lock = Lock("lock", rolling_backend)
-    msg = Message("task").link_lock(lock)
+    msg = Message("task")._link_lock(lock)
 
-    assert msg.lock == lock.long_name
-    msg.unlink_lock(missing_ok=False)
-    assert msg.lock is None
+    assert msg._lock == lock.long_name
+    msg._unlink_lock(missing_ok=False)
+    assert msg._lock is None
 
 
 def test_clone() -> None:
