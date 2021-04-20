@@ -3,16 +3,42 @@
     Backend
 
 """
+from __future__ import annotations
 import logging
 import re
+import inspect
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Iterable, Optional
+from typing import Any, Callable, Iterable, Optional, Dict, Tuple
+
+import dill
 
 from alsek._defaults import DEFAULT_NAMESPACE
 from alsek._utils.printing import auto_repr
 from alsek.storage.serialization import JsonSerializer, Serializer
 
 log = logging.getLogger(__name__)
+
+
+def gather_init_params(
+    obj: Any,
+    ignore: Optional[Tuple[str, ...]] = None,
+) -> Dict[str, Any]:
+    """Extract the parameters passed to an object's ``__init__()``.
+
+    Args:
+        obj (object):
+        ignore (tuple, optional): parameters in ``__init__()`` to ignore
+
+    Returns:
+        params (dict): parameters from ``__init__()``.
+
+    """
+    params = dict()
+    for k in inspect.signature(obj.__init__).parameters:
+        if ignore and k in ignore:
+            continue
+        params[k] = getattr(obj, k)
+    return params
 
 
 class LazyClient:
@@ -60,6 +86,29 @@ class Backend(ABC):
 
     def __repr__(self) -> str:
         return auto_repr(self, namespace=self.namespace, serializer=self.serializer)
+
+    def encode(self) -> bytes:
+        """Serialize the current backend.
+
+        Returns:
+            backend (bytes): a byte representation of the
+                current backend.
+
+        """
+        return dill.dumps(gather_init_params(self))
+
+    @classmethod
+    def decode(cls, encoded_backend: Any) -> Backend:
+        """Reconstruct the backend.
+
+        Args:
+            encoded_backend (dict): the output of ``encode_conn``
+
+        Returns:
+            backend (Backend): the current backend
+
+        """
+        return cls(**dill.loads(encoded_backend))
 
     def in_namespace(self, name: str) -> bool:
         """Determine if ``name`` belong to the current namespace.

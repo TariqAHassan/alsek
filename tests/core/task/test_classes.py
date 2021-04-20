@@ -16,12 +16,12 @@ from alsek.storage.result import ResultStore
 
 
 @pytest.mark.parametrize("task_class", [Task, TriggerTask])
-def test_get_serializable_task(
+def test_task_encode(
     task_class: Type[Task],
     rolling_broker: Broker,
 ) -> None:
-    task = task_class(lambda: 1, broker=rolling_broker)
-    assert isinstance(task, Task)
+    task = task_class(lambda: 1, broker=rolling_broker)._encode()
+    assert isinstance(task, bytes)
 
 
 @pytest.mark.parametrize(

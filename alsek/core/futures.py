@@ -14,9 +14,11 @@ from typing import Any, Dict, Tuple, Type, cast
 import dill
 
 from alsek import Message
+from alsek.core.broker import Broker
 from alsek._utils.logging import get_logger, setup_logging
 from alsek._utils.system import thread_raise
 from alsek._utils.temporal import utcnow_timestamp_ms
+from alsek.storage.backends import Backend
 from alsek.core.task import Task
 
 log = logging.getLogger(__name__)
@@ -45,11 +47,28 @@ def _generate_callback_message(
 
 
 def _future_encoder(task: Task, message: Message) -> bytes:
-    return cast(bytes, dill.dumps((task._get_serializable_task(), message)))
+    return cast(bytes, dill.dumps((task._encode(), message)))
+
+
+def _reconstruct_backend(
+    backend_class: Backend,
+    encoded_backend: bytes,
+) -> Backend:
+    return backend_class.decode(encoded_backend)
 
 
 def _future_decoder(encoded_data: bytes) -> Tuple[Task, Message]:
-    task, message = dill.loads(encoded_data)
+    task_data, message = dill.loads(encoded_data)
+    broker_data = task_data["settings"].pop("broker")
+    backend_data = broker_data.pop("backend")
+
+    backend = _reconstruct_backend(
+        backend_class=backend_data["backend_class"],
+        encoded_backend=backend_data["encoded_backend"],
+    )
+    broker = Broker(backend=backend, **broker_data)
+    task = task_data["task"](**task_data["settings"], broker=broker)
+
     return cast(Task, task), cast(Message, message)
 
 

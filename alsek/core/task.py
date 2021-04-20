@@ -147,8 +147,30 @@ class Task:
 
         self._deferred: bool = False
 
-    def _get_serializable_task(self) -> Task:
-        return self
+    def _encode(self) -> Dict[str, Any]:
+        """Return a representation of this task
+        which can be 'pickled' by `dill`."""
+        return dict(
+            task=self.__class__,
+            settings=dict(
+                function=self.function,
+                broker=dict(
+                    backend=dict(
+                        backend_class=self.broker.backend.__class__,
+                        encoded_backend=self.broker.backend.encode(),
+                    ),
+                    # ToDo: use get_init_params() instead of hard-coding this.
+                    dlq_ttl=self.broker.dlq_ttl,
+                ),
+                name=self.name,
+                queue=self.queue,
+                priority=self.priority,
+                max_retries=self.max_retries,
+                backoff=self.backoff,
+                result_store=self.result_store,
+                mechanism=self.mechanism,
+            ),
+        )
 
     @property
     def name(self) -> str:
@@ -418,21 +440,10 @@ class TriggerTask(Task):
         self.scheduler = BackgroundScheduler()
         self.scheduler.start()
 
-    def _get_serializable_task(self) -> TriggerTask:
-        new = TriggerTask(
-            function=self.function,
-            trigger=self.trigger,
-            broker=self.broker,
-            name=self.name,
-            queue=self.queue,
-            priority=self.priority,
-            max_retries=self.max_retries,
-            backoff=self.backoff,
-            result_store=self.result_store,
-            mechanism=self.mechanism,
-        )
-        new.scheduler = None  # schedulers cannot be serialized
-        return new
+    def _encode(self) -> Dict[str, Any]:
+        serializable_task = super()._encode()
+        serializable_task["settings"]["trigger"] = self.trigger
+        return serializable_task
 
     @property
     def _job(self) -> Optional[Job]:

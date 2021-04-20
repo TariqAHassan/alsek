@@ -3,13 +3,15 @@
     Redis Backend
 
 """
-from typing import Any, Iterable, Optional, Union, cast
+from __future__ import annotations
+import dill
+from typing import Any, Iterable, Optional, Union, cast, Dict
 
-from redis import Redis
+from redis import Redis, ConnectionPool
 
 from alsek._defaults import DEFAULT_NAMESPACE
 from alsek._utils.printing import auto_repr
-from alsek.storage.backends import Backend, LazyClient
+from alsek.storage.backends import Backend, LazyClient, gather_init_params
 from alsek.storage.serialization import JsonSerializer, Serializer
 
 
@@ -71,6 +73,43 @@ class RedisBackend(Backend):
             namespace=self.namespace,
             serializer=self.serializer,
         )
+
+    def encode(self) -> bytes:
+        """Serialize the current backend.
+
+        Returns:
+            encoded_conn (bytes): a byte representation of the
+                current connection.
+
+        """
+        data = gather_init_params(self, ignore=("conn",))
+        data["conn"] = dict(
+            connection_class=self.conn.connection_pool.connection_class,
+            max_connections=self.conn.connection_pool.max_connections,
+            connection_kwargs=self.conn.connection_pool.connection_kwargs,
+        )
+        return dill.dumps(data)
+
+    @classmethod
+    def decode(cls, encoded_backend: bytes) -> RedisBackend:
+        """Reconstruct the backend.
+
+        Args:
+            encoded_backend (dict): the output of ``encode_conn``
+
+        Returns:
+            backend (RedisBackend): a reconstructed backend
+
+        """
+        data = dill.loads(encoded_backend)
+        data["conn"] = Redis(
+            connection_pool=ConnectionPool(
+                connection_class=data["conn"]["connection_class"],
+                max_connections=data["conn"]["max_connections"],
+                **data["conn"]["connection_kwargs"],
+            )
+        )
+        return RedisBackend(**data)
 
     def exists(self, name: str) -> bool:
         """Check if ``name`` exists in the Redis backend.

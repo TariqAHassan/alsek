@@ -28,6 +28,13 @@ def test_exists(name: str, do_set: bool, rolling_backend: Backend) -> None:
         assert not rolling_backend.exists(name)
 
 
+def test_encoding(rolling_backend: Backend) -> None:
+    encoded_backend = rolling_backend.encode()
+    decoded_backend = rolling_backend.__class__.decode(encoded_backend)
+    # Verify that the reconstruction yielded the same class type
+    assert decoded_backend.__class__ == rolling_backend.__class__
+
+
 @pytest.mark.parametrize(
     "name,value,nx,ttl",
     [

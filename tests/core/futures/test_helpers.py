@@ -28,9 +28,8 @@ def test_generate_callback_message() -> None:
     assert result.data == message.data
 
 
-def test_dill_encoding(rolling_broker) -> None:
+def test_furture_encoding(rolling_broker: Broker) -> None:
     testing_task = task(rolling_broker)(lambda: 1)
-    testing_task.defer()  # Note: submitting the data is not needed for this test
     testing_msg = testing_task.generate()
 
     encoded = _future_encoder(testing_task, message=testing_msg)
@@ -41,9 +40,10 @@ def test_dill_encoding(rolling_broker) -> None:
 
     # Check that the reconstructed task is similar in kind
     assert testing_task.name == decoded_testing_task.name
+    assert testing_task.broker.__class__ == decoded_testing_task.broker.__class__
     assert (
-        testing_task.broker.__class__.__name__
-        == decoded_testing_task.broker.__class__.__name__
+        testing_task.broker.backend.__class__
+        == decoded_testing_task.broker.backend.__class__
     )
 
 
