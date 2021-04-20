@@ -10,6 +10,7 @@ import logging
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 from apscheduler.job import Job
+from alsek._utils.aggregation import gather_init_params
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -159,8 +160,7 @@ class Task:
                         backend_class=self.broker.backend.__class__,
                         encoded_backend=self.broker.backend.encode(),
                     ),
-                    # ToDo: use get_init_params() instead of hard-coding this.
-                    dlq_ttl=self.broker.dlq_ttl,
+                    **gather_init_params(self.broker, ignore=("backend",)),
                 ),
                 name=self.name,
                 queue=self.queue,
