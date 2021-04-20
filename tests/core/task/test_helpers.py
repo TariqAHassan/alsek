@@ -3,17 +3,19 @@
     Test Task Helpers
 
 """
+from typing import Any, Callable
+
 import pytest
+
 from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.core.task import (
-    _expects_message,
     _collapse_callbacks,
-    _parse_callback,
+    _expects_message,
     _MultiSubmit,
+    _parse_callback,
     task,
 )
-from typing import Any, Callable
 
 
 def _func_with_message_1(message) -> None:  # type: ignore

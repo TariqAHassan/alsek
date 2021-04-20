@@ -3,13 +3,15 @@
     Test Task Decorator
 
 """
+from typing import Any, Optional, Type, Union
+
 import pytest
-from alsek.core.broker import Broker
-from alsek.core.task import Task, TriggerTask, _parse_base_task, task
-from typing import Any, Optional, Union, Type
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+
+from alsek.core.broker import Broker
+from alsek.core.task import Task, TriggerTask, _parse_base_task, task
 
 
 @pytest.mark.parametrize(

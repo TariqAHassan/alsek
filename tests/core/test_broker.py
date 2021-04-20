@@ -35,7 +35,7 @@ def test_repr(rolling_broker: Broker) -> None:
         # Queue only
         ("queue", None, "queues:queue"),
         # No queue & no task
-        (None, None, "queues")
+        (None, None, "queues"),
     ],
 )
 def test_get_subnamespace(

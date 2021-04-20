@@ -155,7 +155,9 @@ def test_get_no_keep(keep: bool, rolling_result_store: ResultStore) -> None:
 
 def test_get_descendants(rolling_result_store: ResultStore) -> None:
     progenitor = Message("task")
-    descendant_messages = [Message("task", progenitor=progenitor.uuid) for _ in range(3)]
+    descendant_messages = [
+        Message("task", progenitor=progenitor.uuid) for _ in range(3)
+    ]
     for msg in (progenitor, *descendant_messages):
         rolling_result_store.set(msg, result=1)
 
