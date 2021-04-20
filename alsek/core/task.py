@@ -149,7 +149,7 @@ class Task:
         self._deferred: bool = False
 
     def _encode(self) -> Dict[str, Any]:
-        """Return a representation of this task
+        """Return a representation of the task
         which can be 'pickled' by `dill`."""
         return dict(
             task=self.__class__,
