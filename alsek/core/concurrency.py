@@ -68,7 +68,10 @@ class Lock:
     @property
     def long_name(self) -> str:
         """Subnamespace for the lock."""
-        return f"locks:{self.name}"
+        if self.name.startswith("locks:"):
+            return self.name
+        else:
+            return f"locks:{self.name}"
 
     @property
     def holder(self) -> Optional[str]:
