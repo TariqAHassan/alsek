@@ -407,6 +407,7 @@ class TriggerTask(Task):
         self.trigger = trigger
 
         self.scheduler = BackgroundScheduler()
+        self.scheduler.start()
 
     def _get_serializable_task(self) -> TriggerTask:
         new = TriggerTask(

@@ -381,6 +381,7 @@ class WorkerPool(Consumer):
             self._manage_futures,
             trigger=IntervalTrigger(seconds=self.management_interval / 1000),
         )
+        self._pool_manager.start()
 
     def _stop_all_futures(self) -> None:
         for futures in self._futures.values():
