@@ -374,11 +374,11 @@ class WorkerPool(Consumer):
         self._futures: Dict[str, List[TaskFuture]] = dict(thread=list(), process=list())
 
         self._pool_manager = BackgroundScheduler()
+        self._pool_manager.start()
         self._pool_manager.add_job(
             self._manage_futures,
             trigger=IntervalTrigger(seconds=self.management_interval / 1000),
         )
-        self._pool_manager.start()
 
     def _stop_all_futures(self) -> None:
         for futures in self._futures.values():
