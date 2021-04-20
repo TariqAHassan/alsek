@@ -393,6 +393,10 @@ class TriggerTask(Task):
     Warnings:
         * The signature of ``function`` cannot contain parameters
 
+    Raises:
+        * ``SchedulingError``: if the signature of ``function`` includes
+            parameters.
+
     """
 
     def __init__(
