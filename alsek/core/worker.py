@@ -108,7 +108,6 @@ class WorkerPool(Consumer):
         self._futures: Dict[str, List[TaskFuture]] = dict(thread=list(), process=list())
 
         self._pool_manager = BackgroundScheduler()
-        self._pool_manager.start()
         self._pool_manager.add_job(
             self._manage_futures,
             trigger=IntervalTrigger(seconds=self.management_interval / 1000),
