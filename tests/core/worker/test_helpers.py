@@ -60,7 +60,7 @@ def test_derive_consumer_subset(
 ) -> None:
     if queues:
         tasks = [
-            _task_factory(n, queue=q, broker=rolling_broker)
+            _task_factory(n, broker=rolling_broker, queue=q)
             for q, n in zip(queues, task_names)
         ]
     else:
