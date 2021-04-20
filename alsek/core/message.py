@@ -33,7 +33,7 @@ class Message:
         kwargs (dict, optional): keyword arguments to pass to
             the task's function during the execution of ``op()``
         metadata (dict, optional): a dictionary of user-defined message metadata.
-            This can store any data types supported by the backend's seralizer.
+            This can store any data types supported by the backend's serializer.
         store_result (bool): if ``True`` persist the result to a result store.
         result_ttl (int, optional): time to live (in milliseconds) for the
             result in the result store. If ``None``, the result will be
@@ -42,7 +42,7 @@ class Message:
         uuid (str, optional): universal unique identifier for the message.
             If ``None``, one will be generated automatically.
         progenitor (str, optional): universal unique identifier for the message
-            from which this message decended. (Only set in trigger tasks and callbacks.)
+            from which this message descended. (Only set in trigger tasks and callbacks.)
         retries (int): number of retries
         timeout (int): the maximum amount of time (in milliseconds)
             a task is permitted to run against this message.
