@@ -496,7 +496,7 @@ def my_task(message: Message) -> None:  # note: type hints are optional
     The message will not be passed to the task if:
 
        * a "message" key is included in `kwargs`, e.g., `my_task.generate(kwargs={"message": "string"})`
-       * a type hint that does not resolve to `"Message"` is used for `message`.
+       * a type hint that does not resolve to `Message` is used for `message`.
 
 ### Callbacks
 
