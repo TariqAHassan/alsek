@@ -402,9 +402,7 @@ class TriggerTask(Task):
         **kwargs: Any,
     ) -> None:
         if signature(function).parameters:
-            raise SchedulingError(
-                "Unable to schedule trigger tasks which accept parameters"
-            )
+            raise SchedulingError("Function signature cannot includes parameters")
         super().__init__(function, **kwargs)
         self.trigger = trigger
 
