@@ -49,7 +49,7 @@ def test_acquire(rolling_backend: Backend) -> None:
 
 def test_multi_acquire(rolling_backend: Backend) -> None:
     lock = Lock("lock", backend=rolling_backend)
-    lock.acquire()
+    assert lock.acquire()
     assert not lock.acquire()
 
 
