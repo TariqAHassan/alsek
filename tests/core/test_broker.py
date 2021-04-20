@@ -197,10 +197,7 @@ def test_nack(rolling_broker: Broker) -> None:
     assert not lock.held
 
 
-@pytest.mark.parametrize(
-    "dlq_ttl",
-    [None, 500],
-)
+@pytest.mark.parametrize("dlq_ttl", [None, 500])
 @pytest.mark.flaky(max_runs=3)
 def test_fail(dlq_ttl: Optional[int], rolling_broker: Broker) -> None:
     lock = Lock("lock", backend=rolling_broker.backend)
