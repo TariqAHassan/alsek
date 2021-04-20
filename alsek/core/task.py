@@ -401,7 +401,7 @@ class TriggerTask(Task):
         trigger: Optional[Union[CronTrigger, DateTrigger, IntervalTrigger]] = None,
         **kwargs: Any,
     ) -> None:
-        if signature(function).parameters:
+        if inspect.signature(function).parameters:
             raise SchedulingError("Function signature cannot includes parameters")
         super().__init__(function, **kwargs)
         self.trigger = trigger
@@ -553,7 +553,9 @@ def task(
 
     """
     parsed_base_task = _parse_base_task(base_task, trigger=trigger)
-    if trigger and "trigger" not in signature(parsed_base_task.__init__).parameters:
+    base_task_signature = inspect.signature(parsed_base_task.__init__)
+
+    if trigger and "trigger" not in base_task_signature.parameters:
         raise ValueError(f"Trigger not supported by {parsed_base_task}")
 
     def wrapper(function: Callable[..., Any]) -> Task:
@@ -570,7 +572,7 @@ def task(
             result_store=result_store,
             **(  # noqa (handled above)
                 dict(trigger=trigger)
-                if trigger in signature(parsed_base_task.__init__).parameters
+                if trigger in base_task_signature.parameters
                 else dict()
             ),
         )
