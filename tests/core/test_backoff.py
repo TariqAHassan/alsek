@@ -3,18 +3,20 @@
     Test Backoff
 
 """
-import pytest
 from inspect import signature
-from typing import Optional, Type, Tuple
+from typing import Tuple, Type
+
+import pytest
+from schema import Schema
+
 from alsek.core.backoff import (
-    LinearBackoff,
+    Backoff,
     ConstantBackoff,
     ExponentialBackoff,
-    Backoff,
+    LinearBackoff,
     _get_algorithm,
     settings2backoff,
 )
-from schema import Schema
 from tests._helpers import expand_params_factory
 
 ALL_BACKOFF_ALGORITHMS = tuple(Backoff.__subclasses__())

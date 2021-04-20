@@ -3,12 +3,13 @@
     Test Consumer
 
 """
+from typing import Dict, List, Optional, Union
+
 import pytest
+
 from alsek.core.broker import Broker
+from alsek.core.consumer import Consumer, Message, _ConsumptionMutex
 from alsek.storage.backends import Backend
-from alsek.core.consumer import Message
-from alsek.core.consumer import Consumer, _ConsumptionMutex
-from typing import Optional, Dict, Union, List
 
 
 def test_consumption_mutex_acquisition(rolling_backend: Backend) -> None:

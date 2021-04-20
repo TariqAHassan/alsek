@@ -3,8 +3,10 @@
     Test Concurrency
 
 """
-import pytest
 from socket import gethostname
+
+import pytest
+
 from alsek.core.concurrency import Lock
 from alsek.storage.backends import Backend
 
