@@ -3,7 +3,7 @@
     Check Utils
 
 """
-from typing import Collection, Any
+from typing import Any, Collection
 
 
 def has_duplicates(itera: Collection[Any]) -> bool:
