@@ -10,6 +10,7 @@ from alsek._defaults import DEFAULT_TASK_TTL
 from alsek._utils.logging import magic_logger
 from alsek._utils.printing import auto_repr
 from alsek.core.message import Message
+from alsek.core.concurrency import Lock
 from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsError
 from alsek.storage.backends import Backend
 
@@ -143,6 +144,11 @@ class Broker:
             format(message.get_backoff_duration(), ","),
         )
 
+    def _clear_lock(self, message: Message) -> None:
+        lock_name = message.unlink_lock(missing_ok=True)
+        if lock_name:
+            Lock(lock_name, backend=self.backend).release()
+
     @magic_logger(
         before=lambda message: log.debug("Removing %s...", message.summary),
         after=lambda input_: log.debug("Removed %s.", input_["message"].summary),
@@ -158,7 +164,7 @@ class Broker:
 
         """
         self.backend.delete(self.get_message_name(message))
-        message.release_lock(missing_ok=True)
+        self._clear_lock(message)
 
     @magic_logger(
         before=lambda message: log.debug("Acking %s...", message.summary),
@@ -183,8 +189,7 @@ class Broker:
         before=lambda message: log.debug("Nacking %s...", message.summary),
         after=lambda input_: log.debug("Nacked %s.", input_["message"].summary),
     )
-    @staticmethod
-    def nack(message: Message) -> None:
+    def nack(self, message: Message) -> None:
         """Do not acknowledge a message and render it eligible
         for a redelivery.
 
@@ -195,7 +200,7 @@ class Broker:
             None
 
         """
-        message.release_lock(missing_ok=True)
+        self._clear_lock(message)
 
     @magic_logger(
         before=lambda message: log.debug("Failing %s...", message.summary),

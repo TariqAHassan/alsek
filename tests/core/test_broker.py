@@ -10,15 +10,9 @@ import pytest
 from alsek._defaults import DEFAULT_TASK_TTL
 from alsek.core.broker import Broker
 from alsek.core.message import Message
+from alsek.core.concurrency import Lock
 from alsek.exceptions import MessageDoesNotExistsError
 from tests._helpers import sleeper
-
-
-class TestingLock:
-    held: bool = True
-
-    def release(self):
-        self.held = False
 
 
 def test_repr(rolling_broker: Broker) -> None:
@@ -139,6 +133,26 @@ def test_retry(
             rolling_broker.retry(message)
 
 
+def test_clear_lock(rolling_broker: Broker) -> None:
+    # Acquire the lock
+    lock = Lock("lock", backend=rolling_broker.backend)
+    lock.acquire()
+    assert lock.held
+
+    # Link to a message
+    message = Message("task").link_lock(lock)
+    assert message.lock is not None
+
+    # Clear the lock
+    rolling_broker._clear_lock(message)
+
+    # Check that the lock is no longer held
+    assert not lock.held
+
+    # Check that the lock is no longer linked to the message
+    assert message.lock is None
+
+
 @pytest.mark.parametrize(
     "method",
     [
@@ -149,8 +163,8 @@ def test_retry(
     ],
 )
 def test_removal(method: str, rolling_broker: Broker) -> None:
-    testing_lock = TestingLock()
-    message = Message("task").link_lock(testing_lock)
+    lock = Lock("lock", backend=rolling_broker.backend)
+    message = Message("task").link_lock(lock)
 
     # Add the message via the broker
     rolling_broker.submit(message)
@@ -164,12 +178,12 @@ def test_removal(method: str, rolling_broker: Broker) -> None:
 
     # Check that the lock has been fully released.
     assert message.lock is None
-    assert not testing_lock.held
+    assert not lock.held
 
 
 def test_nack(rolling_broker: Broker) -> None:
-    testing_lock = TestingLock()
-    message = Message("task").link_lock(testing_lock)
+    lock = Lock("lock", backend=rolling_broker.backend)
+    message = Message("task").link_lock(lock)
 
     # Add the message via the broker
     rolling_broker.submit(message)
@@ -183,7 +197,7 @@ def test_nack(rolling_broker: Broker) -> None:
 
     # Check that the lock has been fully released.
     assert message.lock is None
-    assert not testing_lock.held
+    assert not lock.held
 
 
 @pytest.mark.parametrize(
@@ -192,8 +206,8 @@ def test_nack(rolling_broker: Broker) -> None:
 )
 @pytest.mark.flaky(max_runs=3)
 def test_fail(dlq_ttl: Optional[int], rolling_broker: Broker) -> None:
-    testing_lock = TestingLock()
-    message = Message("task").link_lock(testing_lock)
+    lock = Lock("lock", backend=rolling_broker.backend)
+    message = Message("task").link_lock(lock)
 
     # Add the message via the broker
     rolling_broker.submit(message)
@@ -208,7 +222,7 @@ def test_fail(dlq_ttl: Optional[int], rolling_broker: Broker) -> None:
 
     # Check that the lock has been fully released.
     assert message.lock is None
-    assert not testing_lock.held
+    assert not lock.held
 
     if dlq_ttl:
         # Check that the message has been moved to the dql

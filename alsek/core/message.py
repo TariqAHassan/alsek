@@ -113,7 +113,7 @@ class Message:
         else:
             self.created_at, self.updated_at = created_at, updated_at
 
-        self.lock: Optional[Lock] = None
+        self.lock: Optional[str] = None
 
     @property
     def data(self) -> Dict[str, Any]:
@@ -188,6 +188,8 @@ class Message:
     def link_lock(self, lock: Lock) -> Message:
         """Link a lock to the current message.
 
+        Links are formed against the ``long_name`` of ``lock``.
+
         Args:
             lock (Lock): a concurrency lock
 
@@ -200,20 +202,20 @@ class Message:
 
         """
         if self.lock:
-            raise AttributeError(f"{self.lock} already linked to message")
+            raise AttributeError(f"Already linked to '{self.lock}'")
         else:
-            self.lock = lock
+            self.lock = lock.long_name
         return self
 
-    def release_lock(self, missing_ok: bool = False) -> None:
-        """Release the lock associated with the message.
+    def unlink_lock(self, missing_ok: bool = False) -> Optional[str]:
+        """Clear the lock linked to the message.
 
         Args:
             missing_ok (bool): if ``True`` do not raise
                 if no lock is found
 
         Returns:
-            None
+            lock (str, optional): the name of the lock which was cleared
 
         Raises:
             AttributeError: if no lock is associated with the message
@@ -221,8 +223,9 @@ class Message:
 
         """
         if self.lock:
-            self.lock.release()
+            lock = self.lock
             self.lock = None
+            return lock
         elif not missing_ok:
             raise AttributeError("No lock linked to message")
 

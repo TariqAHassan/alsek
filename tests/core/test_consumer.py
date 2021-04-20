@@ -8,6 +8,7 @@ from typing import Dict, List, Optional, Union
 import pytest
 
 from alsek.core.broker import Broker
+from alsek.core.concurrency import Lock
 from alsek.core.consumer import Consumer, Message, _ConsumptionMutex
 from alsek.storage.backends import Backend
 
@@ -73,7 +74,7 @@ def test_poll(messages_to_add: int, rolling_broker: Broker) -> None:
 
     actual = set()
     for j in consumer._poll():
-        assert j.lock.held
+        assert Lock(j.lock, backend=rolling_broker.backend).held
         actual.add(j.uuid)
 
     expected = {m.uuid for m in messages}
