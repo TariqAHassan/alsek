@@ -54,7 +54,7 @@ def test_scan_subnamespaces(
     for i in messages:
         rolling_broker.submit(i)
 
-    # Scan the subname space(s)
+    # Scan the subnamespace(s)
     actual = set(consumer._scan_subnamespaces())
 
     # Validate that the expected messages were recovered
