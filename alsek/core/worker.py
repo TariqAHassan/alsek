@@ -17,6 +17,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
 from alsek import __version__
+from alsek._utils.checks import has_duplicates
 from alsek._utils.logging import get_logger, magic_logger, setup_logging
 from alsek._utils.sorting import dict_sort
 from alsek._utils.system import smart_cpu_count, thread_raise
@@ -53,14 +54,10 @@ def _extract_broker(tasks: Collection[Task]) -> Broker:
         return broker
 
 
-def _has_duplicates(itera: Collection[Any]) -> bool:
-    return len(itera) != len(set(itera))
-
-
 def _derive_consumer_subset(
     tasks: Collection[Task], queues: Optional[List[str]]
 ) -> Dict[str, List[str]]:
-    if queues and _has_duplicates(queues):
+    if queues and has_duplicates(queues):
         raise ValueError(f"Duplicates in provided queues: {queues}")
 
     subset: DefaultDict[str, List[str]] = defaultdict(list)
