@@ -89,7 +89,7 @@ class RedisBackend(Backend):
             max_connections=self.conn.connection_pool.max_connections,
             connection_kwargs=self.conn.connection_pool.connection_kwargs,
         )
-        return dill.dumps(data)
+        return cast(bytes, dill.dumps(data))
 
     @classmethod
     def decode(cls, encoded_backend: bytes) -> RedisBackend:

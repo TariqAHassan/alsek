@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Iterable, Optional
+from typing import Any, Callable, Iterable, Optional, cast
 
 import dill
 
@@ -73,7 +73,7 @@ class Backend(ABC):
                 current backend.
 
         """
-        return dill.dumps(gather_init_params(self))
+        return cast(bytes, dill.dumps(gather_init_params(self)))
 
     @classmethod
     def decode(cls, encoded_backend: Any) -> Backend:

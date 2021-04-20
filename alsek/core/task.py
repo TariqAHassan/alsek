@@ -229,7 +229,7 @@ class Task:
     def _submit(self, message: Message, **options: Any) -> None:
         self.broker.submit(message, **options)
 
-    def _validate(self, store_result: bool) -> None:
+    def _validate(self, store_result: Optional[bool]) -> None:
         if store_result and not self.result_store:
             raise ValidationError(f"Cannot store result, `result_store` not set")
 
