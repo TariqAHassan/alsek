@@ -53,11 +53,13 @@ class Broker:
             ValueError: if ``task_name`` is provided and ``queue`` is not.
 
         """
-        if task_name is not None and queue is None:
+        if queue is None and task_name is not None:
             raise ValueError("`queue` must be provided if `task_name` is not None")
 
-        if queue:
+        if queue and task_name:
             return f"queues:{queue}:tasks:{task_name}"
+        elif queue:
+            return f"queues:{queue}"
         else:
             return "queues"
 

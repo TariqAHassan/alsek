@@ -28,9 +28,14 @@ def test_repr(rolling_broker: Broker) -> None:
 @pytest.mark.parametrize(
     "queue,task_name,expected",
     [
-        (None, None, "queues"),
-        ("queue", "task", "queues:queue:tasks:task"),
+        # No Queue & Task
         (None, "task", ValueError),
+        # Queue & task
+        ("queue", "task", "queues:queue:tasks:task"),
+        # Queue only
+        ("queue", None, "queues:queue"),
+        # No queue & no task
+        (None, None, "queues")
     ],
 )
 def test_get_subnamespace(
