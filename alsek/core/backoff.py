@@ -79,6 +79,14 @@ class Backoff(ABC):
         """
         raise NotImplementedError()
 
+    def _clipper(self, amount: int) -> int:
+        if self.floor is not None and amount < self.floor:
+            return self.floor
+        elif self.ceiling is not None and amount > self.ceiling:
+            return self.ceiling
+        else:
+            return amount
+
     def get(self, incidents: int) -> int:
         """Get the backoff.
 
@@ -91,14 +99,7 @@ class Backoff(ABC):
         """
         if self.zero_override and incidents == 0:
             return 0
-
-        backoff = self.formula(incidents)
-        if self.floor is not None and backoff < self.floor:
-            return self.floor
-        elif self.ceiling is not None and backoff > self.ceiling:
-            return self.ceiling
-        else:
-            return backoff
+        return self._clipper(self.formula(incidents))
 
 
 class ConstantBackoff(Backoff):
