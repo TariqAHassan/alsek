@@ -70,7 +70,11 @@ def test_poll(messages_to_add: int, rolling_broker: Broker) -> None:
     for i in messages:
         rolling_broker.submit(i)
 
-    actual = {m.uuid for m in consumer._poll()}
+    actual = set()
+    for j in consumer._poll():
+        assert j.lock.held
+        actual.add(j.uuid)
+
     expected = {m.uuid for m in messages}
     assert actual == expected
 
