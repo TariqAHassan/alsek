@@ -65,7 +65,7 @@ def test_get_subnamespace(
         ),
     ],
 )
-def test_get_subnamespace(
+def test_get_message_name(
     message: Message,
     expected: Union[BaseException, str],
     rolling_broker: Broker,
