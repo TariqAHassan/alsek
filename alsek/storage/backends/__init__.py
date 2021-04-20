@@ -6,39 +6,17 @@
 from __future__ import annotations
 import logging
 import re
-import inspect
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Iterable, Optional, Dict, Tuple
+from typing import Any, Callable, Iterable, Optional
 
 import dill
 
 from alsek._defaults import DEFAULT_NAMESPACE
+from alsek._utils.aggregation import gather_init_params
 from alsek._utils.printing import auto_repr
 from alsek.storage.serialization import JsonSerializer, Serializer
 
 log = logging.getLogger(__name__)
-
-
-def gather_init_params(
-    obj: Any,
-    ignore: Optional[Tuple[str, ...]] = None,
-) -> Dict[str, Any]:
-    """Extract the parameters passed to an object's ``__init__()``.
-
-    Args:
-        obj (object):
-        ignore (tuple, optional): parameters in ``__init__()`` to ignore
-
-    Returns:
-        params (dict): parameters from ``__init__()``.
-
-    """
-    params = dict()
-    for k in inspect.signature(obj.__init__).parameters:
-        if ignore and k in ignore:
-            continue
-        params[k] = getattr(obj, k)
-    return params
 
 
 class LazyClient:

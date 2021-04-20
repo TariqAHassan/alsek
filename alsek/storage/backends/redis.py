@@ -11,7 +11,8 @@ from redis import Redis, ConnectionPool
 
 from alsek._defaults import DEFAULT_NAMESPACE
 from alsek._utils.printing import auto_repr
-from alsek.storage.backends import Backend, LazyClient, gather_init_params
+from alsek.storage.backends import Backend, LazyClient
+from alsek._utils.aggregation import gather_init_params
 from alsek.storage.serialization import JsonSerializer, Serializer
 
 
