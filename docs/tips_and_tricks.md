@@ -5,8 +5,9 @@
 It is possible to configure the multiprocessing library used by a worker pool.
 By default, [`multiprocessing`](https://docs.python.org/3/library/multiprocessing.html) from 
 the Python standard library will be used. However, this can be changed to the [`PyTorch`](https://pytorch.org)
-implementation of multiprocessing found [here](https://pytorch.org/docs/stable/multiprocessing.html).
-by setting the `ALSEK_MULTIPROCESS_BACKEND` environment variable prior to booting up the worker pool.
+[implementation](https://pytorch.org/docs/stable/multiprocessing.html) of multiprocessing
+by setting the `ALSEK_MULTIPROCESS_BACKEND` environment variable prior to booting up the worker 
+pool.
 
 ```shell
 export ALSEK_MULTIPROCESS_BACKEND=pytorch
