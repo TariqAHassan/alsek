@@ -27,19 +27,6 @@ def _get_redis_path() -> str:
     return value.decode().strip("\n")
 
 
-def _parse_backend_request(
-    request: SubRequest,
-    custom_redisdb: Redis,
-    tmp_path: Path,
-) -> Backend:
-    if request.param == "redis":
-        return RedisBackend(custom_redisdb)
-    elif request.param == "diskcache":
-        return DiskCacheBackend(tmp_path)
-    else:
-        raise ValueError(f"Unknown backend '{request.param}'")
-
-
 custom_redisdb_proc = redis_factories.redis_proc(
     executable=_get_redis_path(),
     port=None,
@@ -75,52 +62,25 @@ def base_backend() -> Backend:
     return MockBaseBackend()
 
 
-@pytest.fixture()
-def redis_backend(custom_redisdb: Redis) -> RedisBackend:
-    return RedisBackend(custom_redisdb)
-
-
-@pytest.fixture()
-def disk_cache_backend(tmp_path: Path) -> DiskCacheBackend:
-    return DiskCacheBackend(tmp_path)
-
-
 @pytest.fixture(params=["redis", "diskcache"])
 def rolling_backend(
     request: SubRequest,
     tmp_path: Path,
     custom_redisdb: Redis,
 ) -> Backend:
-    return _parse_backend_request(
-        request=request,
-        custom_redisdb=custom_redisdb,
-        tmp_path=tmp_path,
-    )
+    if request.param == "redis":
+        return RedisBackend(custom_redisdb)
+    elif request.param == "diskcache":
+        return DiskCacheBackend(tmp_path)
+    else:
+        raise ValueError(f"Unknown backend '{request.param}'")
 
 
-@pytest.fixture(params=["redis", "diskcache"])
-def rolling_result_store(
-    request: SubRequest,
-    custom_redisdb: Redis,
-    tmp_path: Path,
-) -> ResultStore:
-    backend = _parse_backend_request(
-        request=request,
-        custom_redisdb=custom_redisdb,
-        tmp_path=tmp_path,
-    )
-    return ResultStore(backend)
+@pytest.fixture()
+def rolling_broker(rolling_backend: Backend) -> Broker:
+    return Broker(rolling_backend)
 
 
-@pytest.fixture(params=["redis", "diskcache"])
-def rolling_broker(
-    request: SubRequest,
-    custom_redisdb: Redis,
-    tmp_path: Path,
-) -> Broker:
-    backend = _parse_backend_request(
-        request=request,
-        custom_redisdb=custom_redisdb,
-        tmp_path=tmp_path,
-    )
-    return Broker(backend)
+@pytest.fixture()
+def rolling_result_store(rolling_backend: Backend) -> ResultStore:
+    return ResultStore(rolling_backend)
