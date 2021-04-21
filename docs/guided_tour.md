@@ -751,7 +751,7 @@ my_project
 ```
 
 Starting a pool with this kind of structure can be accomplished by passing
-the dot-separated 'path' to the file: 
+the dot-separated "path" to the file: 
 
 ```shell
 alsek my_project.my_tasks
