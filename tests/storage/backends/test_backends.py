@@ -9,7 +9,68 @@ from typing import Any, Optional
 import dill
 import pytest
 
-from alsek.storage.backends import Backend
+from redis import Redis
+from pathlib import Path
+from tempfile import mkdtemp
+from diskcache import Cache as DiskCache
+from alsek.storage.backends import Backend, LazyClient
+from alsek.storage.backends.redis import RedisBackend
+from alsek.storage.backends.disk import DiskCacheBackend
+from typing import Optional, Union, Callable, Any
+
+
+class Delayed:
+    def __init__(self, to_run: Callable[..., Any]) -> None:
+        self.to_run = to_run
+
+    def __call__(self) -> Any:
+        return self.to_run()
+
+
+@pytest.mark.parametrize(
+    "conn",
+    [
+        None,
+        Delayed(lambda: mkdtemp()),
+        Delayed(lambda: Path(mkdtemp())),
+        Delayed(lambda: DiskCache()),
+        LazyClient(lambda: DiskCache()),
+    ],
+)
+def test_disk_cache_conn_parse(
+    conn: Optional[Union[Delayed, LazyClient]],
+    disk_cache_backend: RedisBackend,
+) -> None:
+    if isinstance(conn, Delayed):
+        conn = conn()
+    expected = LazyClient if isinstance(conn, LazyClient) else DiskCache
+    assert isinstance(DiskCacheBackend._conn_parse(conn), expected)
+
+
+@pytest.mark.parametrize("backend", [DiskCacheBackend, RedisBackend])
+def test_invalid_conn(backend: Backend) -> None:
+    with pytest.raises(ValueError):
+        backend._conn_parse(-1)
+
+
+@pytest.mark.parametrize(
+    "conn",
+    # ToDo: add test for strings
+    [
+        None,
+        Delayed(lambda: Redis()),
+        LazyClient(lambda: Redis()),
+    ],
+)
+def test_redis_conn_parse(
+    conn: Optional[Union[Delayed, LazyClient]],
+    redis_backend: RedisBackend,
+) -> None:
+    if isinstance(conn, Delayed):
+        conn = conn()
+
+    expected = LazyClient if isinstance(conn, LazyClient) else Redis
+    assert isinstance(RedisBackend._conn_parse(conn), expected)
 
 
 @pytest.mark.parametrize(

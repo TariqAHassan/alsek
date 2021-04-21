@@ -74,6 +74,16 @@ def base_backend() -> Backend:
     return MockBaseBackend()
 
 
+@pytest.fixture()
+def redis_backend(custom_redisdb: Redis) -> RedisBackend:
+    return RedisBackend(custom_redisdb)
+
+
+@pytest.fixture()
+def disk_cache_backend(tmp_path: Path) -> DiskCacheBackend:
+    return DiskCacheBackend(tmp_path)
+
+
 @pytest.fixture(params=["redis", "diskcache"])
 def rolling_backend(
     request: SubRequest,
