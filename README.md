@@ -43,9 +43,11 @@ from alsek.storage.backends.redis import RedisBackend
 backend = RedisBackend()  # uses localhost by default
 broker = Broker(backend)
 
+
 @task(broker, queue="math_ops")
 def add(a: int, b: int) -> int:
     return a + b
+
 
 if __name__ == "__main__":
     message = add.generate(args=(1, 1))
