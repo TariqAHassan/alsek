@@ -151,8 +151,8 @@ def test_make_future(rolling_worker_pool: WorkerPool) -> None:
 
 
 def test_add_future(rolling_worker_pool: WorkerPool) -> None:
-    for task in rolling_worker_pool.tasks:
-        rolling_worker_pool._add_future(task.generate())
+    for t in rolling_worker_pool.tasks:
+        rolling_worker_pool._add_future(t.generate())
 
     assert _futures_count(rolling_worker_pool) == len(rolling_worker_pool.tasks)
 
