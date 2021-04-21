@@ -16,9 +16,7 @@ from alsek.storage.serialization import JsonSerializer, Serializer
 try:
     from diskcache import Cache as DiskCache
 except ImportError:
-    raise ImportError(
-        "diskcache is not installed. Please install in order to use DiskCacheBackend."
-    )
+    raise ImportError("diskcache is not installed.")
 
 
 class DiskCacheBackend(Backend):
