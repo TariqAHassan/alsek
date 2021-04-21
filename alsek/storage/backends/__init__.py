@@ -80,17 +80,17 @@ class Backend(ABC):
         return cast(bytes, dill.dumps(data))
 
     @classmethod
-    def decode(cls, encoded_backend: Any) -> Backend:
-        """Reconstruct the backend.
+    def decode(cls, settings: Dict[str, Any]) -> Backend:
+        """Reconstruct the backend from settings.
 
         Args:
-            encoded_backend (dict): the output of ``encode_conn``
+            settings (dict): the output of ``encode_conn``
 
         Returns:
             backend (Backend): the current backend
 
         """
-        return cls(**dill.loads(encoded_backend)["settings"])
+        return cls(**settings)
 
     def in_namespace(self, name: str) -> bool:
         """Determine if ``name`` belong to the current namespace.

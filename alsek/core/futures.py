@@ -46,30 +46,13 @@ def _generate_callback_message(
     return Message(**data)
 
 
-def _future_encoder(task: Task, message: Message) -> bytes:
-    return cast(bytes, dill.dumps((task._encode(), message)))
+def _process_future_encoder(task: Task, message: Message) -> bytes:
+    return cast(bytes, dill.dumps((task._serialize(), message)))
 
 
-def _reconstruct_backend(
-    backend_class: Backend,
-    encoded_backend: bytes,
-) -> Backend:
-    return backend_class.decode(encoded_backend)
-
-
-def _future_decoder(encoded_data: bytes) -> Tuple[Task, Message]:
+def _process_future_decoder(encoded_data: bytes) -> Tuple[Task, Message]:
     task_data, message = dill.loads(encoded_data)
-    broker_data = task_data["settings"].pop("broker")
-    backend_data = broker_data.pop("backend")
-
-    backend = _reconstruct_backend(
-        backend_class=backend_data["backend_class"],
-        encoded_backend=backend_data["encoded_backend"],
-    )
-    broker = Broker(backend=backend, **broker_data)
-    task = task_data["task"](**task_data["settings"], broker=broker)
-
-    return cast(Task, task), cast(Message, message)
+    return Task._deserialize(task_data), cast(Message, message)
 
 
 def _retry_future_handler(
@@ -231,7 +214,7 @@ class ProcessTaskFuture(TaskFuture):
         self._process = Process(
             target=self._wrapper,
             args=(
-                _future_encoder(task, message=message),
+                _process_future_encoder(task, message=message),
                 get_logger().level,
                 self._wrapper_exit_queue,
             ),
@@ -251,7 +234,7 @@ class ProcessTaskFuture(TaskFuture):
         wrapper_exit_queue: Queue,
     ) -> None:
         setup_logging(log_level)
-        task, message = _future_decoder(encoded_data)
+        task, message = _process_future_decoder(encoded_data)
         log.info("Received %s...", message.summary)
 
         result, exception = None, None

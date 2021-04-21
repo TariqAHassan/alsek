@@ -95,8 +95,8 @@ class RedisBackend(Backend):
         return cast(bytes, dill.dumps(data))
 
     @classmethod
-    def decode(cls, encoded_backend: bytes) -> RedisBackend:
-        """Reconstruct the backend.
+    def decode(cls, settings: Dict[str, Any]) -> RedisBackend:
+        """Reconstruct the backend from settings.
 
         Args:
             encoded_backend (dict): the output of ``encode_conn``
@@ -105,7 +105,6 @@ class RedisBackend(Backend):
             backend (RedisBackend): a reconstructed backend
 
         """
-        settings = dill.loads(encoded_backend)["settings"]
         settings["conn"] = Redis(
             connection_pool=ConnectionPool(
                 connection_class=settings["conn"]["connection_class"],
@@ -113,7 +112,7 @@ class RedisBackend(Backend):
                 **settings["conn"]["connection_kwargs"],
             )
         )
-        return RedisBackend(**settings)
+        return cls(**settings)
 
     def exists(self, name: str) -> bool:
         """Check if ``name`` exists in the Redis backend.

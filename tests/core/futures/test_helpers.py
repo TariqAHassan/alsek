@@ -6,8 +6,8 @@
 import pytest
 from alsek.core.futures import (
     _generate_callback_message,
-    _future_encoder,
-    _future_decoder,
+    _process_future_encoder,
+    _process_future_decoder,
     _retry_future_handler,
     _complete_future_handler,
 )
@@ -28,12 +28,12 @@ def test_generate_callback_message() -> None:
     assert result.data == message.data
 
 
-def test_furture_encoding(rolling_broker: Broker) -> None:
+def test_process_furture_encoding(rolling_broker: Broker) -> None:
     testing_task = task(rolling_broker)(lambda: 1)
     testing_msg = testing_task.generate()
 
-    encoded = _future_encoder(testing_task, message=testing_msg)
-    decoded_testing_task, decoded_testing_msg = _future_decoder(encoded)
+    encoded = _process_future_encoder(testing_task, message=testing_msg)
+    decoded_testing_task, decoded_testing_msg = _process_future_decoder(encoded)
 
     # Check that the message was reconstructed
     assert testing_msg.data == decoded_testing_msg.data

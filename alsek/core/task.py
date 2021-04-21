@@ -10,6 +10,8 @@ import logging
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
 from apscheduler.job import Job
+import dill
+
 from alsek._utils.aggregation import gather_init_params
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -148,29 +150,23 @@ class Task:
 
         self._deferred: bool = False
 
-    def _encode(self) -> Dict[str, Any]:
-        """Return a representation of the task
-        which can be 'pickled' by `dill`."""
-        return dict(
-            task=self.__class__,
-            settings=dict(
-                function=self.function,
-                broker=dict(
-                    backend=dict(
-                        backend_class=self.broker.backend.__class__,
-                        encoded_backend=self.broker.backend.encode(),
-                    ),
-                    **gather_init_params(self.broker, ignore=("backend",)),
-                ),
-                name=self.name,
-                queue=self.queue,
-                priority=self.priority,
-                max_retries=self.max_retries,
-                backoff=self.backoff,
-                result_store=self.result_store,
-                mechanism=self.mechanism,
-            ),
-        )
+    def _serialize(self) -> Dict[str, Any]:
+        settings = gather_init_params(self, ignore=("broker",))
+        settings["broker"] = gather_init_params(self.broker, ignore=("backend",))
+        settings["broker"]["backend"] = self.broker.backend.encode()
+        return dict(task=self.__class__, settings=settings)
+
+    @staticmethod
+    def _deserialize(data: Dict[str, Any]) -> Task:
+        def unwind_settings(settings: Dict[str, Any]) -> Dict[str, Any]:
+            backend_data = dill.loads(settings["broker"]["backend"])
+            settings["broker"]["backend"] = backend_data["backend"].decode(
+                backend_data["settings"]
+            )
+            settings["broker"] = Broker(**settings["broker"])
+            return settings
+
+        return data["task"](**unwind_settings(data["settings"]))
 
     @property
     def name(self) -> str:
@@ -473,8 +469,8 @@ class TriggerTask(Task):
         self.scheduler = BackgroundScheduler()
         self.scheduler.start()
 
-    def _encode(self) -> Dict[str, Any]:
-        serializable_task = super()._encode()
+    def _serialize(self) -> Dict[str, Any]:
+        serializable_task = super()._serialize()
         serializable_task["settings"]["trigger"] = self.trigger
         return serializable_task
 

@@ -6,6 +6,7 @@
 import time
 from typing import Any, Optional
 
+import dill
 import pytest
 
 from alsek.storage.backends import Backend
@@ -30,7 +31,7 @@ def test_exists(name: str, do_set: bool, rolling_backend: Backend) -> None:
 
 def test_encoding(rolling_backend: Backend) -> None:
     encoded_backend = rolling_backend.encode()
-    decoded_backend = rolling_backend.__class__.decode(encoded_backend)
+    decoded_backend = rolling_backend.decode(dill.loads(encoded_backend)["settings"])
     # Verify that the reconstruction yielded the same class type
     assert decoded_backend.__class__ == rolling_backend.__class__
 

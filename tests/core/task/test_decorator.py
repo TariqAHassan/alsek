@@ -10,9 +10,12 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
+from functools import partial
+from apscheduler.triggers.interval import IntervalTrigger
 from alsek.core.broker import Broker
 from alsek.core.task import Task, TriggerTask, _parse_base_task, task
 
+TestTriggerTask = partial(TriggerTask, trigger=IntervalTrigger(days=1))
 
 @pytest.mark.parametrize(
     "base_task,trigger,expected",
@@ -42,10 +45,10 @@ def test_parse_base_task(
     trigger: Optional[Union[CronTrigger, DateTrigger, IntervalTrigger]],
     expected: Any,
 ) -> None:
-    assert _parse_base_task(base_task, trigger=trigger) == expected
+    assert _parse_base_task(base_task, trigger=trigger) is expected
 
 
-@pytest.mark.parametrize("base_task", [Task, TriggerTask])
+@pytest.mark.parametrize("base_task", [Task, TestTriggerTask])
 def test_task(base_task: Task, rolling_broker: Broker) -> None:
     @task(rolling_broker, base_task=base_task)
     def func() -> None:

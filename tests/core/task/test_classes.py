@@ -7,30 +7,37 @@ from typing import Any, Optional, Type
 
 import pytest
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
+from apscheduler.triggers.interval import IntervalTrigger
 
+from schema import Schema
+from functools import partial
 from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.core.task import Task, TriggerTask
 from alsek.exceptions import SchedulingError, ValidationError
 from alsek.storage.result import ResultStore
 
+TestTriggerTask = partial(TriggerTask, trigger=IntervalTrigger(days=1))
 
-@pytest.mark.parametrize("task_class", [Task, TriggerTask])
-def test_task_encode(
+
+@pytest.mark.parametrize("task_class", [Task, TestTriggerTask])
+def test_task_serialization(
     task_class: Type[Task],
     rolling_broker: Broker,
 ) -> None:
-    task = task_class(lambda: 1, broker=rolling_broker)._encode()
-    assert isinstance(task, dict)
+    task_data = task_class(lambda: 1, broker=rolling_broker)._serialize()
+    Schema({"task": type, "settings": dict}).validate(task_data)
+    reconstructed_task = Task._deserialize(task_data)
+    assert isinstance(reconstructed_task, Task)
 
 
 @pytest.mark.parametrize(
     "name,task_class",
     [
         (None, Task),
-        (None, TriggerTask),
+        (None, TestTriggerTask),
         ("name", Task),
-        ("name", TriggerTask),
+        ("name", TestTriggerTask),
     ],
 )
 def test_name(
@@ -45,7 +52,7 @@ def test_name(
     assert task.name == name if name else "func"
 
 
-@pytest.mark.parametrize("task_class", [Task, TriggerTask])
+@pytest.mark.parametrize("task_class", [Task, TestTriggerTask])
 def test_repr(
     task_class: Type[Task],
     rolling_broker: Broker,
@@ -54,7 +61,7 @@ def test_repr(
     assert isinstance(repr(task), str)
 
 
-@pytest.mark.parametrize("task_class", [Task, TriggerTask])
+@pytest.mark.parametrize("task_class", [Task, TestTriggerTask])
 def test_call(task_class: Type[Task], rolling_broker: Broker) -> None:
     def add() -> int:
         return 2
@@ -63,7 +70,7 @@ def test_call(task_class: Type[Task], rolling_broker: Broker) -> None:
     assert task() == 2
 
 
-@pytest.mark.parametrize("task_class", [Task, TriggerTask])
+@pytest.mark.parametrize("task_class", [Task, TestTriggerTask])
 def test_defered_task_mode(task_class: Type[Task], rolling_broker: Broker) -> None:
     task = Task(lambda: 1, broker=rolling_broker)
     assert not task.deferred
@@ -84,9 +91,9 @@ def test_task_submit(rolling_broker: Broker) -> None:
     "with_result_store,task_class",
     [
         (True, Task),
-        (True, TriggerTask),
+        (True, TestTriggerTask),
         (False, Task),
-        (False, TriggerTask),
+        (False, TestTriggerTask),
     ],
 )
 def test_validate(
@@ -108,7 +115,7 @@ def test_validate(
             task._validate(store_result=True)
 
 
-@pytest.mark.parametrize("task_class", [Task, TriggerTask])
+@pytest.mark.parametrize("task_class", [Task, TestTriggerTask])
 def test_generate(
     task_class: Type[Task],
     rolling_broker: Broker,
@@ -131,8 +138,8 @@ def test_generate(
     [
         (True, Task),
         (False, Task),
-        (True, TriggerTask),
-        (False, TriggerTask),
+        (True, TestTriggerTask),
+        (False, TestTriggerTask),
     ],
 )
 def test_generate_deffered(
@@ -160,7 +167,7 @@ def test_generate_deffered(
         assert task.broker.exists(message)
 
 
-@pytest.mark.parametrize("task_class", [Task, TriggerTask])
+@pytest.mark.parametrize("task_class", [Task, TestTriggerTask])
 def test_pre_op(
     task_class: Type[Task],
     rolling_broker: Broker,
@@ -169,7 +176,7 @@ def test_pre_op(
     assert task.pre_op(Message("task")) is None
 
 
-@pytest.mark.parametrize("task_class", [Task, TriggerTask])
+@pytest.mark.parametrize("task_class", [Task, TestTriggerTask])
 def test_op(
     task_class: Type[Task],
     rolling_broker: Broker,
@@ -178,7 +185,7 @@ def test_op(
     assert task.op(Message("task")) == 1
 
 
-@pytest.mark.parametrize("task_class", [Task, TriggerTask])
+@pytest.mark.parametrize("task_class", [Task, TestTriggerTask])
 def test_post_op(
     task_class: Type[Task],
     rolling_broker: Broker,
@@ -187,7 +194,7 @@ def test_post_op(
     assert task.post_op(Message("task"), result=1) is None
 
 
-@pytest.mark.parametrize("task_class", [Task, TriggerTask])
+@pytest.mark.parametrize("task_class", [Task, TestTriggerTask])
 def test_execute(
     task_class: Type[Task],
     rolling_broker: Broker,
@@ -201,18 +208,18 @@ def test_execute(
     [
         # Limited number of retries, within bounds
         (Message("task", retries=0), BaseException(), 3, Task),
-        (Message("task", retries=0), BaseException(), 3, TriggerTask),
+        (Message("task", retries=0), BaseException(), 3, TestTriggerTask),
         # Limited number of retries, at bounds
         (Message("task", retries=3), BaseException(), 3, Task),
-        (Message("task", retries=3), BaseException(), 3, TriggerTask),
+        (Message("task", retries=3), BaseException(), 3, TestTriggerTask),
         # Limited number of retries, beyond bounds
         (Message("task", retries=4), BaseException(), 3, Task),
-        (Message("task", retries=4), BaseException(), 3, TriggerTask),
+        (Message("task", retries=4), BaseException(), 3, TestTriggerTask),
         # Limitless retries
         (Message("task", retries=0), BaseException(), None, Task),
-        (Message("task", retries=0), BaseException(), None, TriggerTask),
+        (Message("task", retries=0), BaseException(), None, TestTriggerTask),
         (Message("task", retries=100), BaseException(), None, Task),
-        (Message("task", retries=100), BaseException(), None, TriggerTask),
+        (Message("task", retries=100), BaseException(), None, TestTriggerTask),
     ],
 )
 def test_do_retry(
@@ -237,9 +244,9 @@ def test_do_retry(
     "result,task_class",
     [
         (None, Task),
-        (None, TriggerTask),
+        (None, TestTriggerTask),
         (100, Task),
-        (100, TriggerTask),
+        (100, TestTriggerTask),
     ],
 )
 def test_do_callback(
@@ -256,11 +263,11 @@ def test_trigger_task_params(rolling_broker: Broker) -> None:
         return a
 
     with pytest.raises(SchedulingError):
-        TriggerTask(func_with_params, broker=rolling_broker)
+        TestTriggerTask(func_with_params, broker=rolling_broker)
 
 
 def test_trigger_task_job(rolling_broker: Broker) -> None:
-    task = TriggerTask(lambda: 1, broker=rolling_broker)
+    task = TestTriggerTask(lambda: 1, broker=rolling_broker)
     assert not task._job
     task.generate()
     assert task._job
@@ -268,14 +275,14 @@ def test_trigger_task_job(rolling_broker: Broker) -> None:
 
 def test_trigger_task_submit(rolling_broker: Broker) -> None:
     message = Message("task")
-    task = TriggerTask(lambda: 1, broker=rolling_broker, name="task")
+    task = TestTriggerTask(lambda: 1, broker=rolling_broker, name="task")
     task._submit(message)
     assert task.generated
 
 
 def test_trigger_task_clear(rolling_broker: Broker) -> None:
     message = Message("task")
-    task = TriggerTask(lambda: 1, broker=rolling_broker, name="task")
+    task = TestTriggerTask(lambda: 1, broker=rolling_broker, name="task")
     task._submit(message)
     assert task.generated
     task.clear()
@@ -284,7 +291,7 @@ def test_trigger_task_clear(rolling_broker: Broker) -> None:
 
 def test_trigger_task_pause(rolling_broker: Broker) -> None:
     message = Message("task")
-    task = TriggerTask(lambda: 1, broker=rolling_broker, name="task")
+    task = TestTriggerTask(lambda: 1, broker=rolling_broker, name="task")
     task._submit(message)
     assert task.scheduler.running
     task.pause()
@@ -293,7 +300,7 @@ def test_trigger_task_pause(rolling_broker: Broker) -> None:
 
 def test_trigger_task_resume(rolling_broker: Broker) -> None:
     message = Message("task")
-    task = TriggerTask(lambda: 1, broker=rolling_broker, name="task")
+    task = TestTriggerTask(lambda: 1, broker=rolling_broker, name="task")
     task._submit(message)
     assert task.scheduler.state == STATE_RUNNING
     task.pause()
@@ -304,7 +311,7 @@ def test_trigger_task_resume(rolling_broker: Broker) -> None:
 
 def test_trigger_task_shutdown(rolling_broker: Broker) -> None:
     message = Message("task")
-    task = TriggerTask(lambda: 1, broker=rolling_broker, name="task")
+    task = TestTriggerTask(lambda: 1, broker=rolling_broker, name="task")
     task._submit(message)
     assert task.scheduler.running
     task.shutdown()
