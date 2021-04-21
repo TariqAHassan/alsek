@@ -158,6 +158,9 @@ class WorkerPool(Consumer):
         else:
             raise ValueError(f"Unsupported mechanism '{message.mechanism}'")
 
+    def _add_future(self, message: Message) -> None:
+        self._futures[message.mechanism].append(self._make_future(message))
+
     @magic_logger(
         before=lambda: log.info("Alsek v%s worker pool booting up...", __version__),
         after=lambda: log.info("Graceful shutdown complete."),
@@ -182,7 +185,7 @@ class WorkerPool(Consumer):
         log.info("Worker pool online.")
         for message in self.stream():
             if self._ready(message, wait=True):
-                self._futures[message.mechanism].append(self._make_future(message))
+                self._add_future(message)
 
         log.info("Worker pool shutting down...")
         self._pool_manager.shutdown()
