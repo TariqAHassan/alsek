@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import inspect
 import logging
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union, cast
 
 import dill
 from apscheduler.job import Job
@@ -165,7 +165,8 @@ class Task:
             settings["broker"] = Broker(**settings["broker"])
             return settings
 
-        return data["task"](**unwind_settings(data["settings"]))
+        rebuild_task = data["task"](**unwind_settings(data["settings"]))
+        return cast(Task, rebuild_task)
 
     @property
     def name(self) -> str:

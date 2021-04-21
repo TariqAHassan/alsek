@@ -77,7 +77,7 @@ class RedisBackend(Backend):
         )
 
     def _encode(self) -> bytes:
-        data = dict(
+        data: Dict[str, Any] = dict(
             backend=self.__class__,
             settings=gather_init_params(self, ignore=("conn",)),
         )
