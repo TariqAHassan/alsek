@@ -3,12 +3,14 @@
     Test Task Classes
 
 """
+import logging
 from functools import partial
 from typing import Any, Optional, Type
 
 import pytest
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 from apscheduler.triggers.interval import IntervalTrigger
+from pytest_mock import MockFixture
 from schema import Schema
 
 from alsek.core.broker import Broker
@@ -16,6 +18,7 @@ from alsek.core.message import Message
 from alsek.core.task import Task, TriggerTask
 from alsek.exceptions import SchedulingError, ValidationError
 from alsek.storage.result import ResultStore
+from tests._helpers import sleeper
 
 TestTriggerTask = partial(TriggerTask, trigger=IntervalTrigger(days=1))
 
@@ -258,7 +261,35 @@ def test_do_callback(
     assert task.do_callback(Message("task"), result=result)
 
 
-def test_trigger_task_params(rolling_broker: Broker) -> None:
+def test_trigger_task(rolling_broker: Broker, mocker: MockFixture) -> None:
+    invocations = list()
+    # Suppress noise from apscheduler
+    logging.getLogger("apscheduler").setLevel(logging.CRITICAL)
+
+    class _TrackedMultiSubmit:
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            pass
+
+        def __call__(self) -> None:
+            if not invocations:
+                invocations.append(1)
+
+    mocker.patch("alsek.core.task._MultiSubmit", _TrackedMultiSubmit)
+
+    # Generate a triggered task
+    trigger_task = TriggerTask(
+        lambda: 1,
+        trigger=IntervalTrigger(seconds=0.05),
+        broker=rolling_broker,
+    )
+    message = trigger_task.generate()
+    # Wait for the scheduler to execute submit a task
+    sleeper(100)
+    # Check that _(Tracked)MultiSubmit was invoked
+    assert len(invocations) > 0
+
+
+def test_trigger_task_with_params(rolling_broker: Broker) -> None:
     def func_with_params(a: int) -> int:
         return a
 
