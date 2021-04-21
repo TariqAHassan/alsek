@@ -728,13 +728,12 @@ running on different machines) to acquire messages for processing.
 
 ### Basics
 
-Typically, one will want to start worker pools using Alsek's command line interface (CLI). 
-At a minimum, this requires us to specify where all task definitions can be found. 
+The CLI requires that we inform it where tasks can be found.
 
-#### Files
+To start with a simple case, let's imagine our one and only task
+is located in the current working directory in a file titled `my_task.py`. 
 
-Suppose we have a file `my_task.py`. 
-Then starting the pool requires us to run:
+Then, starting a worker pool against this task can be accomplished by running:
 
 ```shell
 alsek my_tasks
@@ -745,13 +744,14 @@ alsek my_tasks
 Alternatively, we might have a file of task definitions inside a directory, like this:
 
 ```
-├── __init__.py
-├── singletons.py
-└── my_tasks.py
+my_project
+    ├── __init__.py
+    ├── singletons.py
+    └── my_tasks.py
 ```
 
 Starting a pool with this kind of structure can be accomplished by passing
-the dot-separated path to the file: 
+the dot-separated 'path' to the file: 
 
 ```shell
 alsek my_project.my_tasks
@@ -768,7 +768,7 @@ alsek my_project
 
 ### Advanced options
 
-Alsek's CLI includes many options to provide fine-grain control over the worker pool.
+Alsek's CLI includes several dials to fine-grain control over the worker pool.
 We won't cover all of them here, but there are at least three worth highlighting.
 
 The first is the `-q`/`--queues` option. This allows one to limit the queues
