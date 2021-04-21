@@ -812,6 +812,5 @@ alsek my_project --max_processes 2
     ```
 
 !!! warning
-    If a worker pool encounters a message which refers to a task 
-    that it has not been provided the definition for an error will 
-    be logged prior and message will be failed.
+    If a worker pool encounters a message which refers to an unknown 
+    task, an error will be logged prior and message will be failed.
