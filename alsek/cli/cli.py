@@ -100,12 +100,14 @@ def main(
 
     Notes:
 
-        * Linear backoff is used following passes over the backend
-          by the consumer which do not yield any actionable messages.
+        * Linear backoff is used following passes over the
+          backend by the consumer which do not yield any
+          actionable messages.
 
-        * A single SIGTERM or SIGINT signal will trigger a graceful
-          shutdown of the system. A second such signal of this type
-          will precipitate an immediate and non-graceful shutdown.
+        * A single SIGTERM or SIGINT signal will trigger a
+          graceful shutdown of the system. A second such signal
+          of this type will precipitate an immediate and non-graceful
+          shutdown.
 
     Examples:
 
