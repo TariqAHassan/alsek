@@ -165,8 +165,8 @@ class Task:
             settings["broker"] = Broker(**settings["broker"])
             return settings
 
-        rebuild_task = data["task"](**unwind_settings(data["settings"]))
-        return cast(Task, rebuild_task)
+        rebuilt_task = data["task"](**unwind_settings(data["settings"]))
+        return cast(Task, rebuilt_task)
 
     @property
     def name(self) -> str:
