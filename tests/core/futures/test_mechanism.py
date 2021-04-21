@@ -25,13 +25,7 @@ def test_future(mechansim: Type[TaskFuture], rolling_broker: Broker) -> None:
     assert waiter(lambda: future.complete, timeout=5 * 1000)
 
 
-@pytest.mark.parametrize(
-    "mechansim",
-    [
-        # ThreadTaskFuture,
-        ProcessTaskFuture,
-    ],
-)
+@pytest.mark.parametrize("mechansim", [ThreadTaskFuture, ProcessTaskFuture])
 def test_future_stop(mechansim: Type[TaskFuture], rolling_broker: Broker) -> None:
     def no_stop():
         while True:
@@ -42,11 +36,11 @@ def test_future_stop(mechansim: Type[TaskFuture], rolling_broker: Broker) -> Non
 
     future = mechansim(testing_task, message=testing_msg)
 
-    # Wait for the future to spin up
-    sleeper(100)
     # Check that the future is active
+    sleeper(100)
     assert not future.complete
     # Stop the future
     future.stop(TerminationError)
+    sleeper(100)
     # Validate that the future has stopped ("completed")
     assert future.complete
