@@ -16,13 +16,7 @@ from alsek.exceptions import TerminationError
 from tests._helpers import sleeper
 
 
-@pytest.mark.parametrize(
-    "mechansim",
-    [
-        ThreadTaskFuture,
-        ProcessTaskFuture,
-    ],
-)
+@pytest.mark.parametrize("mechansim", [ThreadTaskFuture, ProcessTaskFuture])
 def test_future(mechansim: Type[TaskFuture], rolling_broker: Broker) -> None:
     testing_task = task(rolling_broker)(lambda: 1).defer()
     testing_msg = testing_task.generate()
