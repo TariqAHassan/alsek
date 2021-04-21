@@ -167,11 +167,11 @@ class WorkerPool(Consumer):
             raise ValueError(f"Unsupported mechanism '{message.mechanism}'")
 
     def _add_future(self, message: Message) -> None:
-        if message.task_name not in self._task_map:
+        if message.task_name in self._task_map:
+            self._futures[message.mechanism].append(self._make_future(message))
+        else:
             log.error("Unknown task %r in %r.", message.task_name, message.summary)
             self.broker.fail(message)
-        else:
-            self._futures[message.mechanism].append(self._make_future(message))
 
     @magic_logger(
         before=lambda: log.info("Alsek v%s worker pool booting up...", __version__),
