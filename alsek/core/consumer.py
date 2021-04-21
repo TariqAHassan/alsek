@@ -6,7 +6,7 @@
 from typing import Dict, Iterable, List, Optional, Union
 
 from alsek._utils.system import StopSignalListener
-from alsek.core.backoff import Backoff, LinearBackoff
+from alsek.core.backoff import Backoff, ConstantBackoff, LinearBackoff
 from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
@@ -41,7 +41,7 @@ class Consumer:
                 * ``dict``: a dictionary of queues and tasks of the form
                     ``{"queue_a": ["task_name_a", "task_name_b", "task_name_c", ...], ...}``
 
-        backoff (Backoff): backoff to use in response to passes over the backend
+        backoff (Backoff, optional): backoff to use in response to passes over the backend
             which did not yield any actionable messages.
 
     Notes:
@@ -60,7 +60,7 @@ class Consumer:
         self,
         broker: Broker,
         subset: Optional[Union[List[str], Dict[str, List[str]]]] = None,
-        backoff: Backoff = LinearBackoff(
+        backoff: Optional[Backoff] = LinearBackoff(
             5_000,
             floor=1000,
             ceiling=30_000,
@@ -69,7 +69,7 @@ class Consumer:
     ) -> None:
         self.subset = subset
         self.broker = broker
-        self.backoff = backoff
+        self.backoff = backoff or ConstantBackoff(0, floor=0, ceiling=0)
 
         self._empty_passes: int = 0
         self.stop_signal = StopSignalListener()
