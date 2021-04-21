@@ -13,6 +13,8 @@ from pytest_redis import factories as redis_factories
 from redis import Redis
 
 from alsek.core.broker import Broker
+from alsek.core.task import task
+from alsek.core.worker import WorkerPool
 from alsek.storage.backends import Backend
 from alsek.storage.backends.disk import DiskCacheBackend
 from alsek.storage.backends.redis import RedisBackend
@@ -84,3 +86,15 @@ def rolling_broker(rolling_backend: Backend) -> Broker:
 @pytest.fixture()
 def rolling_result_store(rolling_backend: Backend) -> ResultStore:
     return ResultStore(rolling_backend)
+
+
+@pytest.fixture()
+def rolling_worker_pool(rolling_broker: Broker) -> WorkerPool:
+    n: int = 3
+    tasks = [task(rolling_broker, name=f"task-{i}")(lambda: i) for i in range(n)]
+    pool = WorkerPool(tasks)
+
+    # Replace `stream()` with `_poll()`. This means that calls of
+    # `run()` wil now exit, rather than looping indefinitely.
+    pool.stream = pool._poll
+    return pool
