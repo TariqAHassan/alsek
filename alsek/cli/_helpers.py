@@ -3,9 +3,9 @@
     Helpers
 
 """
+import logging
 import os
 import sys
-import logging
 from importlib import import_module
 from inspect import getmembers
 from pkgutil import walk_packages

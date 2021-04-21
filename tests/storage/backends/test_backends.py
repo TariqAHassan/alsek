@@ -4,19 +4,18 @@
 
 """
 import time
-from typing import Any, Optional
+from pathlib import Path
+from tempfile import mkdtemp
+from typing import Any, Callable, Optional, Union
 
 import dill
 import pytest
-
-from redis import Redis
-from pathlib import Path
-from tempfile import mkdtemp
 from diskcache import Cache as DiskCache
+from redis import Redis
+
 from alsek.storage.backends import Backend, LazyClient
-from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.backends.disk import DiskCacheBackend
-from typing import Optional, Union, Callable, Any
+from alsek.storage.backends.redis import RedisBackend
 
 
 class Delayed:
