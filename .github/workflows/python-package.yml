@@ -31,4 +31,5 @@ jobs:
         pip install -r dev_requirements.txt
     - name: Test with pytest
       run: |
+        which redis-server
         bash tests/run.sh
