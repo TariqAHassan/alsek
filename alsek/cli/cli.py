@@ -3,7 +3,6 @@
     Command Line Interface
 
 """
-import logging
 from typing import Optional
 
 import click
@@ -13,15 +12,6 @@ from alsek._utils.logging import setup_logging
 from alsek.cli._helpers import collect_tasks
 from alsek.core.backoff import LinearBackoff
 from alsek.core.worker import WorkerPool
-
-
-def _get_logging_level(debug: bool, verbose: bool) -> int:
-    if debug:
-        return logging.DEBUG
-    elif verbose:
-        return logging.INFO
-    else:
-        return logging.ERROR
 
 
 @click.command()
