@@ -174,6 +174,9 @@ class WorkerPool(Consumer):
         Returns:
             None
 
+        Warning:
+            * This method is blocking.
+
         """
         self._pool_manager.start()
         log.info("Worker pool online.")
