@@ -29,8 +29,12 @@ MULTIPROCESS_BACKEND = (
 
 if MULTIPROCESS_BACKEND == "standard":
     from multiprocessing import Process, Queue
+
+    log.debug("Using standard multiprocessing library.")
 elif MULTIPROCESS_BACKEND == "torch":
     from torch.multiprocessing import Process, Queue  # type: ignore
+
+    log.debug("Using torch multiprocessing library.")
 else:
     raise ImportError(f"Unsupported multiprocessing backend '{MULTIPROCESS_BACKEND}'")
 
