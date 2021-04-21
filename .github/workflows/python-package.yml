@@ -25,7 +25,7 @@ jobs:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
-        apt update && apt install redis-server
+        apt update && apt install -y redis-server
         python -m pip install --upgrade pip
         python setup.py install
         pip install -r dev_requirements.txt
