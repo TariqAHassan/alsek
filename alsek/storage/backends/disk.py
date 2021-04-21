@@ -56,7 +56,7 @@ class DiskCacheBackend(Backend):
 
     @staticmethod
     def _conn_parse(
-        conn: Optional[Union[str, DiskCache, LazyClient]]
+        conn: Optional[Union[str, Path, DiskCache, LazyClient]]
     ) -> Union[DiskCache, Callable[[], DiskCache]]:
         if isinstance(conn, LazyClient):
             return conn
@@ -68,7 +68,7 @@ class DiskCacheBackend(Backend):
         elif isinstance(conn, (str, Path)):
             parsed = DiskCache(str(conn))
         else:
-            raise ValueError(f"Unsupported `cache` {conn}")
+            raise ValueError(f"Unsupported conn {conn}")
         return parsed
 
     @property
