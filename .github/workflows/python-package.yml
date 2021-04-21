@@ -13,7 +13,6 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
-    container: redis:latest
     strategy:
       matrix:
         python-version: [3.7, 3.8, 3.9]
@@ -24,6 +23,11 @@ jobs:
       uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
+    - name: Setup redis
+      uses: shogo82148/actions-setup-redis@v1
+      with:
+        redis-version: '6.x'
+    - run: redis-cli ping
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
