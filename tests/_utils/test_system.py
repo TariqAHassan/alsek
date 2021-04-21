@@ -79,6 +79,7 @@ def test_thread_raise() -> None:
 
 
 @pytest.mark.flaky(max_runs=3)
+@pytest.mark.timeout(30)
 def test_stop_signal_listener() -> None:
     start_time = time.time()
     process = Process(
