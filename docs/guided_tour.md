@@ -681,7 +681,7 @@ from alsek.storage.backends.disk import DiskCacheBackend
 backend = DiskCacheBackend()
 
 @task(...)
-def send_data() -> int:
+def send_data() -> None:
     with Lock("send_data", backend=backend) as lock:
         if lock.acquire():
             print("Sending data...")
