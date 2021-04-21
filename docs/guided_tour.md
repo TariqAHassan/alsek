@@ -716,15 +716,16 @@ for message in consumer.stream():
     Consumers backoff following one or more passes over the backend that 
     do not yield any ready messages. By default, `LinearBackoff()` is used.
 
-## CLI & Worker Pools
+## CLI
 
-Worker pools create a collection of workers for tasks to be executed on.
-Each pool relies on a `Consumer` to pull messages written to the backend
-by the `Broker`.
+Alsek's command line interface (CLI) allows a pool of workers to be
+brought online to process tasks. Each pool relies on a `Consumer` to 
+pull messages written to the backend by the `Broker`.
 
 When the worker pool reaches capacity, it will pause the stream of data
 from the consumer. This is done to both reduce load on the backend and 
-to allow other worker pools to acquire messages for processing.
+to allow other worker pools (perhaps running on different machines) to 
+acquire messages for processing.
 
 ### Basics
 
@@ -793,21 +794,6 @@ alsek my_project --max_threads 8
 
 ```shell
 alsek my_project --max_processes 2
-```
-
-#### Multiprocessing Backend
-
-Lastly, it is possible to configure the multiprocessing library used by a worker pool.
-By default, [`multiprocessing`](https://docs.python.org/3/library/multiprocessing.html) from 
-the Python standard library will be used. However, it is possible to switch to the [`PyTorch`](https://pytorch.org)
-implementation of multiprocessing found [here](https://pytorch.org/docs/stable/multiprocessing.html).
-This can be done by setting the `ALSEK_MULTIPROCESS_BACKEND` environment variable prior to booting
-up the worker pool.
-
-```shell
-export ALSEK_MULTIPROCESS_BACKEND=pytorch
-
-alsek my_project
 ```
 
 !!! note
