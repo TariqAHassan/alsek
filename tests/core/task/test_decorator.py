@@ -3,6 +3,7 @@
     Test Task Decorator
 
 """
+from functools import partial
 from typing import Any, Optional, Type, Union
 
 import pytest
@@ -10,12 +11,11 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from functools import partial
-from apscheduler.triggers.interval import IntervalTrigger
 from alsek.core.broker import Broker
 from alsek.core.task import Task, TriggerTask, _parse_base_task, task
 
 TestTriggerTask = partial(TriggerTask, trigger=IntervalTrigger(days=1))
+
 
 @pytest.mark.parametrize(
     "base_task,trigger,expected",

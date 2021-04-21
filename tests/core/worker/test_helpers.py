@@ -3,15 +3,16 @@
     Test Worker Helpers
 
 """
+from typing import Collection, Dict, List, Optional, Union
+
 import pytest
 
-from alsek.core.broker import Broker
-from alsek.core.task import task, Task
 from alsek._defaults import DEFAULT_QUEUE
+from alsek.core.broker import Broker
+from alsek.core.task import Task, task
 from alsek.core.worker import _derive_consumer_subset, _extract_broker
 from alsek.exceptions import MultipleBrokersError, NoTasksFoundError
 from alsek.storage.backends import Backend
-from typing import Collection, Optional, List, Dict, Union
 
 
 def _task_factory(name: str, broker: Broker, queue: Optional[str] = None) -> Task:

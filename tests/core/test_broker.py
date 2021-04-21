@@ -9,8 +9,8 @@ import pytest
 
 from alsek._defaults import DEFAULT_TASK_TTL
 from alsek.core.broker import Broker
-from alsek.core.message import Message
 from alsek.core.concurrency import Lock
+from alsek.core.message import Message
 from alsek.exceptions import MessageDoesNotExistsError
 from tests._helpers import sleeper
 

@@ -4,15 +4,16 @@
 
 """
 from __future__ import annotations
-import dill
-from typing import Any, Iterable, Optional, Union, cast, Dict
 
-from redis import Redis, ConnectionPool
+from typing import Any, Dict, Iterable, Optional, Union, cast
+
+import dill
+from redis import ConnectionPool, Redis
 
 from alsek._defaults import DEFAULT_NAMESPACE
+from alsek._utils.aggregation import gather_init_params
 from alsek._utils.printing import auto_repr
 from alsek.storage.backends import Backend, LazyClient
-from alsek._utils.aggregation import gather_init_params
 from alsek.storage.serialization import JsonSerializer, Serializer
 
 

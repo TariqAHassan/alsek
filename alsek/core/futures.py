@@ -3,8 +3,8 @@
     Futures
 
 """
-import os
 import logging
+import os
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from platform import python_implementation
@@ -14,12 +14,12 @@ from typing import Any, Dict, Tuple, Type, cast
 import dill
 
 from alsek import Message
-from alsek.core.broker import Broker
 from alsek._utils.logging import get_logger, setup_logging
 from alsek._utils.system import thread_raise
 from alsek._utils.temporal import utcnow_timestamp_ms
-from alsek.storage.backends import Backend
+from alsek.core.broker import Broker
 from alsek.core.task import Task
+from alsek.storage.backends import Backend
 
 log = logging.getLogger(__name__)
 

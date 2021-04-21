@@ -9,8 +9,8 @@ from typing import Optional
 from alsek._defaults import DEFAULT_TASK_TTL
 from alsek._utils.logging import magic_logger
 from alsek._utils.printing import auto_repr
-from alsek.core.message import Message
 from alsek.core.concurrency import Lock
+from alsek.core.message import Message
 from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsError
 from alsek.storage.backends import Backend
 

@@ -3,15 +3,17 @@
     Test Worker Futures
 
 """
-import pytest
-from alsek.core.task import task
-from alsek.core.broker import Broker
-from tests._helpers import sleeper
-from alsek._utils.waiting import waiter
-from alsek.exceptions import TerminationError
-from alsek.core.message import Message
-from alsek.core.futures import TaskFuture, ThreadTaskFuture, ProcessTaskFuture
 from typing import Type
+
+import pytest
+
+from alsek._utils.waiting import waiter
+from alsek.core.broker import Broker
+from alsek.core.futures import ProcessTaskFuture, TaskFuture, ThreadTaskFuture
+from alsek.core.message import Message
+from alsek.core.task import task
+from alsek.exceptions import TerminationError
+from tests._helpers import sleeper
 
 
 @pytest.mark.parametrize(

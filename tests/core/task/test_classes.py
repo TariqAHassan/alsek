@@ -3,14 +3,14 @@
     Test Task Classes
 
 """
+from functools import partial
 from typing import Any, Optional, Type
 
 import pytest
 from apscheduler.schedulers.base import STATE_PAUSED, STATE_RUNNING, STATE_STOPPED
 from apscheduler.triggers.interval import IntervalTrigger
-
 from schema import Schema
-from functools import partial
+
 from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.core.task import Task, TriggerTask

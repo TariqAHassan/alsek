@@ -4,17 +4,18 @@
 
 """
 import pytest
-from alsek.core.futures import (
-    _generate_callback_message,
-    _process_future_encoder,
-    _process_future_decoder,
-    _retry_future_handler,
-    _complete_future_handler,
-)
-from alsek.core.task import task
-from alsek.core.message import Message
-from alsek.core.broker import Broker
+
 from alsek._defaults import DEFAULT_MAX_RETRIES
+from alsek.core.broker import Broker
+from alsek.core.futures import (
+    _complete_future_handler,
+    _generate_callback_message,
+    _process_future_decoder,
+    _process_future_encoder,
+    _retry_future_handler,
+)
+from alsek.core.message import Message
+from alsek.core.task import task
 from alsek.storage.result import ResultStore
 
 

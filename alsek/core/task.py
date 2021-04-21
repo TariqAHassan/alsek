@@ -9,10 +9,8 @@ import inspect
 import logging
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union
 
-from apscheduler.job import Job
 import dill
-
-from alsek._utils.aggregation import gather_init_params
+from apscheduler.job import Job
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -25,6 +23,7 @@ from alsek._defaults import (
     DEFAULT_QUEUE,
     DEFAULT_TASK_TIMEOUT,
 )
+from alsek._utils.aggregation import gather_init_params
 from alsek._utils.printing import auto_repr
 from alsek.core.backoff import Backoff, ExponentialBackoff
 from alsek.core.broker import Broker
