@@ -24,6 +24,7 @@ theme:
 nav:
   - 'index.md'
   - 'guided_tour.md'
+  - 'tips_and_tricks.md'
   - 'reference.md'
 
 copyright: Copyright &copy; 2021 - 2021 Tariq Hassan
