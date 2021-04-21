@@ -2,6 +2,11 @@
   <img src="https://github.com/TariqAHassan/alsek/raw/master/docs/assets/logos/logo.png"><br>
 </div>
 
+<p align="center">
+    <a href="https://github.com/TariqAHassan/alsek/actions/workflows/tests.yml" alt="Tests">
+        <img src="https://github.com/TariqAHassan/alsek/actions/workflows/tests.yml/badge.svg" /></a>
+</p>
+
 ----
 
 Alsek is a distributed task queue library for Python. It has been built to be highly 
