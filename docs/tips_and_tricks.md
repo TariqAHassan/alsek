@@ -34,7 +34,7 @@ from my_application.tasks import task_1, task_2
 
 
 def _run_pool() -> None:
-    WorkerPool([task_1, task_2]).run()
+    WorkerPool([task_1, task_2], backoff=None).run()
 
 
 @pytest.fixture()
