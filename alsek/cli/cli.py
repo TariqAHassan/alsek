@@ -9,7 +9,7 @@ import click
 
 from alsek import __version__
 from alsek._utils.logging import setup_logging
-from alsek.cli._helpers import collect_tasks
+from alsek.cli._helpers import collect_tasks, parse_logging_level
 from alsek.core.backoff import LinearBackoff
 from alsek.core.worker import WorkerPool
 
@@ -115,7 +115,7 @@ def main(
         * alsek my_package.tasks --q queue_a,queue_b
 
     """
-    setup_logging(_get_logging_level(debug, verbose=verbose))
+    setup_logging(parse_logging_level(debug, verbose=verbose))
 
     WorkerPool(
         tasks=collect_tasks(module),
