@@ -23,9 +23,7 @@ from alsek.storage.backends import Backend
 
 log = logging.getLogger(__name__)
 
-MULTIPROCESSING_BACKEND = (
-    os.getenv("ALSEK_MULTIPROCESSING_BACKEND", "standard").strip().lower()
-)
+MULTIPROCESSING_BACKEND = os.getenv("ALSEK_MULTIPROCESSING_BACKEND", "standard").strip()
 
 if MULTIPROCESSING_BACKEND == "standard":
     from multiprocessing import Process, Queue
