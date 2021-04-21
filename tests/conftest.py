@@ -3,15 +3,18 @@
     Conftest
 
 """
+from functools import partial
 from pathlib import Path
 from subprocess import PIPE, Popen
 from typing import Any, Iterable, Optional
 
 import pytest
 from _pytest.fixtures import SubRequest
+from click.testing import CliRunner
 from pytest_redis import factories as redis_factories
 from redis import Redis
 
+from alsek.cli.cli import main as alsek_cli
 from alsek.core.broker import Broker
 from alsek.core.task import task
 from alsek.core.worker import WorkerPool
@@ -35,6 +38,13 @@ custom_redisdb_proc = redis_factories.redis_proc(
     logsdir="/tmp",
 )
 custom_redisdb = redis_factories.redisdb("custom_redisdb_proc", decode=True)
+
+
+@pytest.fixture()
+def cli_runner() -> CliRunner:
+    runner = CliRunner()
+    runner.invoke = partial(runner.invoke, cli=alsek_cli)
+    return runner
 
 
 @pytest.fixture()
