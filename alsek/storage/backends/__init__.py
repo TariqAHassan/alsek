@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Iterable, Dict, Optional, cast
+from typing import Any, Callable, Dict, Iterable, Optional, cast
 
 import dill
 
