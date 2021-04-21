@@ -33,11 +33,11 @@ def expand_params_factory(
     return engine
 
 
-def sleeper(seconds: int, buffer: int = 100) -> None:
+def sleeper(milliseconds: int, buffer: int = 100) -> None:
     """Delay execution.
 
     Args:
-        seconds (int): amount of time to delay for
+        milliseconds (int): amount of time to delay for
              in milliseconds.
         buffer (int): buffer ontop of ``seconds``
             in milliseconds
@@ -46,4 +46,4 @@ def sleeper(seconds: int, buffer: int = 100) -> None:
         None
 
     """
-    time.sleep((seconds + buffer) / 1000)
+    time.sleep((milliseconds + buffer) / 1000)
