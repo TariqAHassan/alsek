@@ -719,7 +719,7 @@ for message in consumer.stream():
 ## CLI
 
 Alsek's command line interface (CLI) provides an easy way to bring a pool of
-workers to be online to process tasks. 
+workers online to process tasks for which we can provide the definition. 
 
 Each worker pool relies on a `Consumer` to pull messages written to the backend by the `Broker`. 
 When the worker pool reaches capacity, it will pause the stream of data from the consumer. 
