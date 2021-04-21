@@ -470,9 +470,9 @@ class TriggerTask(Task):
         self.scheduler.start()
 
     def _serialize(self) -> Dict[str, Any]:
-        serializable_task = super()._serialize()
-        serializable_task["settings"]["trigger"] = self.trigger
-        return serializable_task
+        serialized_task = super()._serialize()
+        serialized_task["settings"]["trigger"] = self.trigger
+        return serialized_task
 
     @property
     def _job(self) -> Optional[Job]:
