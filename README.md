@@ -9,7 +9,6 @@ capable while remaining very lightweight. Currently, the following functionality
 is available:
 
   * Multi-process and multi-thread task execution mechanisms
-  * Support for multiple backends, with an easy-to-use extension API
   * Automatic retries, with customizable backoff procedures
   * Prioritization of queues and tasks
   * Result storage

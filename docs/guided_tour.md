@@ -56,60 +56,6 @@ lazy_backend = RedisBackend(LazyClient(lambda: Redis()))
 lazy_backend.count("queues:math_ops")
 ```
 
-### Custom Backends
-
-Support for data backends that Alsek does not support natively can be achieved
-by inheriting from the base `Backend` class. This requires overriding five core
-methods: `exists()`, `set()`, `get()`, `delete()` and `scan()`.
-
-```python
-from typing import Any, Iterable, Optional, Union, Callable
-from alsek.storage.backends import Backend, LazyClient
-
-
-class CustomBackend(Backend):
-    def __init__(self, conn: Union[Client, LazyClient], **kwargs) -> None:
-        super().__init__(**kwargs)
-        self._conn = conn
-
-    @property
-    def conn(self) -> Client:
-        if isinstance(self._conn, LazyClient):
-            self._conn = self._conn.get()
-        return self._conn
-
-    def exists(self, name: str) -> bool:
-        self.conn
-        ...
-
-    def set(
-        self,
-        name: str,
-        value: Any,
-        nx: bool = False,
-        ttl: Optional[int] = None,
-    ) -> None:
-        pass
-
-    def get(self, name: str) -> Any:
-        pass
-
-    def delete(self, name: str, missing_ok: bool = False) -> None:
-        pass
-
-    def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
-        pass
-
-```
-
-The resulting `CustomBackend()` class can be used to power a broker
-and, perhaps more importantly, a `ResultsStore`.
-
-
-!!! note
-    The `_conn`/`conn` pattern shown above can be skipped 
-    if lazy client support is not needed.
-
 ### Namespaces
 
 Backends store all of their data in a predefined _namespace_.
