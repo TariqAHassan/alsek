@@ -23,20 +23,16 @@ from alsek.storage.backends import Backend
 
 log = logging.getLogger(__name__)
 
-MULTIPROCESS_BACKEND = (
+MULTIPROCESSING_BACKEND = (
     os.getenv("ALSEK_MULTIPROCESSING_BACKEND", "standard").strip().lower()
 )
 
-if MULTIPROCESS_BACKEND == "standard":
+if MULTIPROCESSING_BACKEND == "standard":
     from multiprocessing import Process, Queue
-
-    log.debug("Using standard multiprocessing library.")
-elif MULTIPROCESS_BACKEND == "torch":
+elif MULTIPROCESSING_BACKEND == "torch":
     from torch.multiprocessing import Process, Queue  # type: ignore
-
-    log.debug("Using torch multiprocessing library.")
 else:
-    raise ImportError(f"Unsupported multiprocessing backend '{MULTIPROCESS_BACKEND}'")
+    raise ImportError(f"Invalid multiprocessing backend '{MULTIPROCESSING_BACKEND}'")
 
 
 def _generate_callback_message(

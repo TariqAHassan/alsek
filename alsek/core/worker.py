@@ -17,7 +17,12 @@ from alsek._utils.sorting import dict_sort
 from alsek._utils.system import smart_cpu_count
 from alsek.core.broker import Broker
 from alsek.core.consumer import Consumer
-from alsek.core.futures import ProcessTaskFuture, TaskFuture, ThreadTaskFuture
+from alsek.core.futures import (
+    MULTIPROCESSING_BACKEND,
+    ProcessTaskFuture,
+    TaskFuture,
+    ThreadTaskFuture,
+)
 from alsek.core.message import Message
 from alsek.core.task import Task
 from alsek.exceptions import MultipleBrokersError, NoTasksFoundError, TerminationError
@@ -112,6 +117,9 @@ class WorkerPool(Consumer):
             self._manage_futures,
             trigger=IntervalTrigger(seconds=self.management_interval / 1000),
         )
+
+        if self.max_processes:
+            log.debug("Using %s multiprocessing backend.", MULTIPROCESSING_BACKEND)
 
     def _stop_all_futures(self) -> None:
         for futures in self._futures.values():
