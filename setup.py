@@ -6,7 +6,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    packages=find_packages(exclude=["tests"]),
+    packages=find_packages(exclude=["tests", "examples"]),
     install_requires=[
         "APScheduler==3.7.0",
         "click==7.1.2",
