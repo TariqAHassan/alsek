@@ -3,6 +3,8 @@
     Helpers
 
 """
+import os
+import sys
 import logging
 from importlib import import_module
 from inspect import getmembers
@@ -71,6 +73,8 @@ def collect_tasks(name: str) -> Tuple[Task, ...]:
         NoTasksFoundError: if no tasks can be found
 
     """
+    sys.path.append(os.getcwd())
+
     all_tasks: Dict[str, Task] = dict()
     for module in _enumerate_modules(import_module(name)):
         for name, task in getmembers(module, predicate=_is_task):
