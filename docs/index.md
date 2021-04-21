@@ -6,7 +6,7 @@ Alsek is a distributed task queue library for Python. It has been built to be hi
 capable while remaining very lightweight. Currently, the following functionality
 is available:
 
-  * Multi-process and multi-thread task execution mechanisms
+  * Multiprocess and multi-thread task execution
   * Automatic retries, with customizable backoff procedures
   * Prioritization of queues and tasks
   * Result storage
