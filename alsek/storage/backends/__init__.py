@@ -65,14 +65,7 @@ class Backend(ABC):
     def __repr__(self) -> str:
         return auto_repr(self, namespace=self.namespace, serializer=self.serializer)
 
-    def encode(self) -> bytes:
-        """Serialize the current backend.
-
-        Returns:
-            backend (bytes): a byte representation of the
-                current backend.
-
-        """
+    def _encode(self) -> bytes:
         data = dict(
             backend=self.__class__,
             settings=gather_init_params(self),
@@ -80,16 +73,7 @@ class Backend(ABC):
         return cast(bytes, dill.dumps(data))
 
     @classmethod
-    def decode(cls, settings: Dict[str, Any]) -> Backend:
-        """Reconstruct the backend from settings.
-
-        Args:
-            settings (dict): the output of ``encode_conn``
-
-        Returns:
-            backend (Backend): the current backend
-
-        """
+    def _from_settings(cls, settings: Dict[str, Any]) -> Backend:
         return cls(**settings)
 
     def in_namespace(self, name: str) -> bool:

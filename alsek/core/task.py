@@ -153,14 +153,14 @@ class Task:
     def _serialize(self) -> Dict[str, Any]:
         settings = gather_init_params(self, ignore=("broker",))
         settings["broker"] = gather_init_params(self.broker, ignore=("backend",))
-        settings["broker"]["backend"] = self.broker.backend.encode()
+        settings["broker"]["backend"] = self.broker.backend._encode()
         return dict(task=self.__class__, settings=settings)
 
     @staticmethod
     def _deserialize(data: Dict[str, Any]) -> Task:
         def unwind_settings(settings: Dict[str, Any]) -> Dict[str, Any]:
             backend_data = dill.loads(settings["broker"]["backend"])
-            settings["broker"]["backend"] = backend_data["backend"].decode(
+            settings["broker"]["backend"] = backend_data["backend"]._from_settings(
                 backend_data["settings"]
             )
             settings["broker"] = Broker(**settings["broker"])

@@ -30,8 +30,8 @@ def test_exists(name: str, do_set: bool, rolling_backend: Backend) -> None:
 
 
 def test_encoding(rolling_backend: Backend) -> None:
-    encoded_backend = rolling_backend.encode()
-    decoded_backend = rolling_backend.decode(dill.loads(encoded_backend)["settings"])
+    encoded_backend = rolling_backend._encode()
+    decoded_backend = rolling_backend._from_settings(dill.loads(encoded_backend)["settings"])
     # Verify that the reconstruction yielded the same class type
     assert decoded_backend.__class__ == rolling_backend.__class__
 

@@ -75,14 +75,7 @@ class RedisBackend(Backend):
             serializer=self.serializer,
         )
 
-    def encode(self) -> bytes:
-        """Serialize the current backend.
-
-        Returns:
-            encoded_conn (bytes): a byte representation of the
-                current connection.
-
-        """
+    def _encode(self) -> bytes:
         data = dict(
             backend=self.__class__,
             settings=gather_init_params(self, ignore=("conn",)),
@@ -95,16 +88,7 @@ class RedisBackend(Backend):
         return cast(bytes, dill.dumps(data))
 
     @classmethod
-    def decode(cls, settings: Dict[str, Any]) -> RedisBackend:
-        """Reconstruct the backend from settings.
-
-        Args:
-            encoded_backend (dict): the output of ``encode_conn``
-
-        Returns:
-            backend (RedisBackend): a reconstructed backend
-
-        """
+    def _from_settings(cls, settings: Dict[str, Any]) -> RedisBackend:
         settings["conn"] = Redis(
             connection_pool=ConnectionPool(
                 connection_class=settings["conn"]["connection_class"],
