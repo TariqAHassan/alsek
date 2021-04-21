@@ -684,7 +684,7 @@ backend = DiskCacheBackend()
 def send_data() -> int:
     with Lock("send_data", backend=backend) as lock:
         if lock.acquire():
-            """SEND DATA HERE"""
+            print("Sending data...")
         else:
             print("Failed to acquire lock")
 ```
