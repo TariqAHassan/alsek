@@ -162,8 +162,8 @@ class WorkerPool(Consumer):
         before=lambda: log.info("Alsek v%s worker pool booting up...", __version__),
         after=lambda: log.info("Graceful shutdown complete."),
     )
-    def start(self) -> None:
-        """Start the worker pool.
+    def run(self) -> None:
+        """Run the worker pool.
 
         This method coordinates the following:
 

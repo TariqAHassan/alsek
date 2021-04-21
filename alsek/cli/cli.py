@@ -140,7 +140,7 @@ def main(
             ceiling=consumer_backoff_ceiling,
             zero_override=False,
         ),
-    ).start()
+    ).run()
 
 
 if __name__ == "__main__":
