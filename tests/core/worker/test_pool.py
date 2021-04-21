@@ -157,6 +157,13 @@ def test_add_future(rolling_worker_pool: WorkerPool) -> None:
     assert _futures_count(rolling_worker_pool) == len(rolling_worker_pool.tasks)
 
 
+def test_add_future_unknown_task(rolling_worker_pool: WorkerPool) -> None:
+    unknown_task = task(rolling_worker_pool.broker, name="unknown")(lambda: 1)
+
+    rolling_worker_pool._add_future(unknown_task.generate())
+    assert _futures_count(rolling_worker_pool) == 0
+
+
 def test_run(rolling_worker_pool: WorkerPool) -> None:
     assert not rolling_worker_pool._pool_manager.running
     rolling_worker_pool.run()
