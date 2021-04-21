@@ -413,9 +413,23 @@ class TriggerTask(Task):
 
     Args:
         function (callable): function to use for the main operation
-        trigger (CronTrigger, DateTrigger, IntervalTrigger, optional): trigger
+        trigger (CronTrigger, DateTrigger, IntervalTrigger): trigger
             for task execution.
-        **kwargs (Keyword Args): Keyword arguments to pass ``Task()``.
+        broker (Broker): an Alsek broker
+        name (str, optional): the name of the task. If ``None``,
+            the class name will be used.
+        queue (str, optional): the name of the queue to generate the task on.
+            If ``None``, the default queue will be used.
+        priority (int): priority of the task. Tasks with lower values
+            will be executed before tasks with higher values.
+        timeout (int): the maximum amount of time (in milliseconds)
+            this task is permitted to run.
+        max_retries (int, optional): maximum number of allowed retries
+        backoff (Backoff): backoff algorithm and parameters to use when computing
+            delay between retries
+        result_store (ResultStore): store for persisting task results
+        mechanism (str): mechanism for executing the task. Must
+            be either "process" or "thread".
 
     Warnings:
         * The signature of ``function`` cannot contain parameters
@@ -429,12 +443,31 @@ class TriggerTask(Task):
     def __init__(
         self,
         function: Callable[..., Any],
-        trigger: Optional[Union[CronTrigger, DateTrigger, IntervalTrigger]] = None,
-        **kwargs: Any,
+        trigger: Union[CronTrigger, DateTrigger, IntervalTrigger],
+        broker: Broker,
+        name: Optional[str] = None,
+        queue: Optional[str] = None,
+        priority: int = 0,
+        timeout: int = DEFAULT_TASK_TIMEOUT,
+        max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
+        backoff: Backoff = ExponentialBackoff(),
+        result_store: Optional[ResultStore] = None,
+        mechanism: str = DEFAULT_MECHANISM,
     ) -> None:
         if inspect.signature(function).parameters:
             raise SchedulingError("Function signature cannot includes parameters")
-        super().__init__(function, **kwargs)
+        super().__init__(
+            function=function,
+            broker=broker,
+            name=name,
+            queue=queue,
+            priority=priority,
+            timeout=timeout,
+            max_retries=max_retries,
+            backoff=backoff,
+            result_store=result_store,
+            mechanism=mechanism,
+        )
         self.trigger = trigger
 
         self.scheduler = BackgroundScheduler()
