@@ -17,17 +17,11 @@ is available:
 
 ## Installing
 
-Alsek can be installed with `pip` as follows:
-
 ```shell
-pip install alsek
+pip install git+git://github.com/TariqAHassan/alsek@master
 ```
 
-The optional `diskcache` dependency can be included by running:
-
-```shell
-pip install 'alsek[diskcache]'
-```
+Note: Alsek will be added to PyPI in the near future.
 
 Requires Python 3.7+
 
