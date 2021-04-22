@@ -255,7 +255,7 @@ class Task:
             metadata (dict, optional): a dictionary of user-defined message metadata.
                 This can store any data types supported by the backend's serializer.
             store_result (bool, optional): if ``True`` persist the result to a result store.
-                If ``None``, this method will default to ``True`` if ``ResultStore`` has been
+                If ``None``, this method will default to ``True`` if a ``ResultStore`` has been
                 set for the task, and ``False`` otherwise.
             result_ttl (int, optional): time to live (in milliseconds) for the
                 result in the result store. If ``None``, the result will be
