@@ -256,10 +256,10 @@ class Message:
 
         """
         for k, v in data.items():
-            if k not in self.data:
-                raise KeyError(f"Updating '{k}' is not supported")
-            else:
+            if k in self.data:
                 setattr(self, k, v)
+            else:
+                raise KeyError(f"Updating '{k}' is not supported")
         return self
 
     def duplicate(self, uuid: Optional[str] = None) -> Message:
