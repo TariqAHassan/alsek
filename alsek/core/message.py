@@ -42,7 +42,8 @@ class Message:
         uuid (str, optional): universal unique identifier for the message.
             If ``None``, one will be generated automatically.
         progenitor (str, optional): universal unique identifier for the message
-            from which this message descended. (Only set in trigger tasks and callbacks.)
+            from which this message descended. (This field is only set in for tasks
+            with trigger and/or callbacks.)
         retries (int): number of retries
         timeout (int): the maximum amount of time (in milliseconds)
             a task is permitted to run against this message.
