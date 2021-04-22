@@ -39,7 +39,7 @@ from alsek.storage.backends import Backend
     ],
 )
 def test_data(message: Message) -> None:
-    # Validate the core message can be reconstructed the data property
+    # Validate the core message can be reconstructed from the data property
     assert Message(**message.data).data == message.data
 
 
