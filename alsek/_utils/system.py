@@ -72,7 +72,7 @@ class StopSignalListener:
         for s in self.stop_signals:
             signal.signal(s, self._signal_handler)
 
-    def _signal_handler(self, signum: int, *args: Any) -> None:
+    def _signal_handler(self, signum: int, *args: Any) -> None:  # noqa
         log.debug("Received stop signal %s...", Signals(signum).name)
         if self.received:
             sys.exit(1)
