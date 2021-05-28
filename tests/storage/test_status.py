@@ -6,8 +6,8 @@
 import pytest
 
 from alsek.core.message import Message
-from alsek.storage.status import StatusStore, TaskStatus, TERMINAL_TASK_STAUSES
 from alsek.exceptions import ValidationError
+from alsek.storage.status import TERMINAL_TASK_STAUSES, StatusStore, TaskStatus
 
 
 @pytest.mark.parametrize(
