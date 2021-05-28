@@ -690,6 +690,9 @@ message = harvest_data.generate()
 # Get all of the results as a list. By setting `descendants=True` we
 # will also data for any descendant messages which have completed.
 results = result_storage.get(message, timeout=30 * 1000, descendants=True)
+
+results
+# [3, 5, 88, ...]
 ```
 
 !!! note
