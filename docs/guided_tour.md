@@ -463,7 +463,7 @@ _identical_.
 
 !!! danger
     While it is valid for a task with a trigger to have callbacks,
-    such tasks should not be used as callbacks themselves.
+    callbacks should not include tasks with triggers.
 
 #### Control
 
