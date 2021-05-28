@@ -379,7 +379,7 @@ check_resource_usage.shutdown()
 !!! warning
     Function parameters are not permitted for tasks which use a trigger.
 
-#### Result Storage
+### Result Storage
 
 We can request storage of tasks with triggers, just as we did with a standard task above. 
 However, fetching the results of a task requires us to know its `uuid`. While it is possible
