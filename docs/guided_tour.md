@@ -731,7 +731,7 @@ at any given time.
 
 Standard use of Alsek does not require direct interaction with consumers,
 as they are managed by _Worker Pools_ (see below). However, in the interest 
-of completeness, an illustrative example of how to do so is provided below.
+of completeness, an illustrative example of working with consumers is provided below.
 
 ```python
 from alsek import Broker
