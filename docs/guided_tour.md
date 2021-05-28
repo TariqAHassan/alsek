@@ -103,8 +103,7 @@ message = sum_n.generate(kwargs={"n": 100})
 The status can be checked using `.get()`:
 
 ```python
-status = status_store.get(message)
-print(status) 
+status_store.get(message)
 # <TaskStatus.SUBMITTED: 1>
 ```
 
