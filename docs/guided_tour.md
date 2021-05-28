@@ -581,8 +581,6 @@ def task_c() -> int:
 The status of tasks can be tracked in a `backend` using `StatusStore()`.
 
 ```python
-from typing import Dict
-
 from alsek import Broker, task
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.status import StatusStore
