@@ -77,8 +77,8 @@ def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
                 progenitor=message.uuid,
             )
         )
-    task._update_status(message, status=TaskStatus.SUCCEEDED)
     task.broker.ack(message)
+    task._update_status(message, status=TaskStatus.SUCCEEDED)
 
 
 class TaskFuture(ABC):
