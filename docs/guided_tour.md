@@ -660,7 +660,7 @@ def valuable_output() -> Dict[str, int]:
 
 ### Triggers & Result Storage
 
-We can request storage of tasks with triggers, just as we did with a standard task above. 
+We can request result storage for tasks with triggers, just as we did with a standard task above. 
 However, fetching the results of a task requires us to know its `uuid`. While it is possible
 to collect this information (e.g., via `pre_op()` or `post_op()`), it is often far easier to 
 simply store the _progenitor_ message or, at the least, its `uuid`. With this information, 
