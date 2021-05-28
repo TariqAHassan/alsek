@@ -79,7 +79,7 @@ def test_status_get(
         (Message("task", uuid="5"), TaskStatus.SUCCEEDED),
     ],
 )
-def test_status_delete(
+def test_status_delete_check(
     message: Message,
     status: TaskStatus,
     rolling_status_store: StatusStore,
@@ -91,3 +91,23 @@ def test_status_delete(
     else:
         with pytest.raises(ValidationError):
             rolling_status_store.delete(message)
+
+
+@pytest.mark.parametrize(
+    "message,status",
+    [
+        (Message("task", uuid="1"), TaskStatus.SUBMITTED),
+        (Message("task", uuid="2"), TaskStatus.RUNNING),
+        (Message("task", uuid="3"), TaskStatus.RETRYING),
+        (Message("task", uuid="4"), TaskStatus.FAILED),
+        (Message("task", uuid="5"), TaskStatus.SUCCEEDED),
+    ],
+)
+def test_status_delete_no_check(
+    message: Message,
+    status: TaskStatus,
+    rolling_status_store: StatusStore,
+) -> None:
+    rolling_status_store.set(message, status=status)
+    value = rolling_status_store.delete(message, check=False)
+    assert not rolling_status_store.exists(message)
