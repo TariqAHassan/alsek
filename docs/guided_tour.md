@@ -77,6 +77,45 @@ To use a different serialization procedure, one must:
 
   * pass the new serializer to the relevant backend at initialization time.
 
+## Status Storage
+
+The status of tasks can be tracked in a `backend` using `StatusStore()`.
+
+```python
+from typing import Dict
+
+from alsek import Broker, task
+from alsek.storage.backends.redis import RedisBackend
+from alsek.storage.status import StatusStore
+
+backend = RedisBackend("<connection_url>")
+
+broker = Broker(backend)
+status_store = StatusStore(backend)
+
+@task(broker, status_store=status_store)
+def sum_n(n: int) -> int:
+    return int(n * (n + 1) / 2)
+
+message = sum_n.generate(kwargs={"n": 100})
+```
+
+The status can be checked using `.get()`:
+
+```python
+status = status_store.get(message)
+print(status) 
+# <TaskStatus.SUBMITTED: 1>
+```
+
+The `status` variable can be any of the following:
+
+  * `<TaskStatus.SUBMITTED: 1>`
+  * `<TaskStatus.RETRYING: 2>`
+  * `<TaskStatus.RETRYING: 3>`
+  * `<TaskStatus.FAILED: 4>`
+  * `<TaskStatus.SUCCEEDED: 5>`
+
 ## Result Storage
 
 Task results can be persisted to a `backend` using `ResultStore()`. 
