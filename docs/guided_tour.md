@@ -732,7 +732,7 @@ onto workers. A concurrency lock (similar to what is shown above) is
 used to ensure than one, and only one, consumer can hold a message
 at any given time.
 
-Standard use of Alsek does not require direct interaction with consumers,
+Standard use of Alsek does not typically entail direct interaction with consumers,
 as they are managed by _Worker Pools_ (see below). However, in the interest 
 of completeness, an illustrative example of working with consumers is provided below.
 
