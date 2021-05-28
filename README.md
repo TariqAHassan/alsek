@@ -55,6 +55,13 @@ if __name__ == "__main__":
     print(f"Task submitted. UUID: {message.uuid}.")
 ```
 
+Running the script will generate an instance of the task.
+
+```shell
+python quick_start.py
+# Task submitted. UUID: e49806be-96ad-11eb-9216-acde48001122.
+```
+
 Now, we can start up a pool of workers on the command line:
 
 ```shell
