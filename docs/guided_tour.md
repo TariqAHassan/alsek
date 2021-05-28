@@ -544,7 +544,7 @@ def simple_task() -> int:
 
 Rather than reprocessing a task immediately after it fails,
 Alsek uses a backoff procedure. By default, `ExponentialBackoff()` 
-is used with "sensible" default. However, the type of backoff algorithm 
+is used with "sensible" defaults. However, the type of backoff algorithm 
 as well as its parameters are extremely customizable. 
 
 ```python
