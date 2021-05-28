@@ -41,6 +41,9 @@ class StatusStore:
     def get_storage_name(message: Message) -> str:
         return f"status:{message.queue}:{message.task_name}:{message.uuid}"
 
+    def exists(self, message: Message) -> bool:
+        return self.backend.exists(self.get_storage_name(message))
+
     def set(self, message: Message, status: TaskStatus) -> None:
         self.backend.set(
             self.get_storage_name(message),
