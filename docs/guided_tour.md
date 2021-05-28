@@ -491,7 +491,7 @@ def simple_task() -> int:
 ```
 
 !!! warning
-    The `do_callback()` is only evaluated for messages which contain callbacks.
+    The `do_callback()` method is only evaluated for messages which contain callbacks.
 
 ### Pre/Post Ops
 
