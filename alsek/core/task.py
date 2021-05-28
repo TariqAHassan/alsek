@@ -115,8 +115,8 @@ class Task:
         max_retries (int, optional): maximum number of allowed retries
         backoff (Backoff): backoff algorithm and parameters to use when computing
             delay between retries
-        result_store (ResultStore): store for persisting task results
-        status_store (StatusStore): store for persisting task statuses
+        result_store (ResultStore, optional): store for persisting task results
+        status_store (StatusStore, optional): store for persisting task statuses
         mechanism (str): mechanism for executing the task. Must
             be either "process" or "thread".
 
@@ -442,7 +442,8 @@ class TriggerTask(Task):
         max_retries (int, optional): maximum number of allowed retries
         backoff (Backoff): backoff algorithm and parameters to use when computing
             delay between retries
-        result_store (ResultStore): store for persisting task results
+        result_store (ResultStore, optional): store for persisting task results
+        status_store (StatusStore, optional): store for persisting task statuses
         mechanism (str): mechanism for executing the task. Must
             be either "process" or "thread".
 
@@ -606,7 +607,8 @@ def task(
             delay between retries
         trigger (CronTrigger, DateTrigger, IntervalTrigger, optional): trigger
             for task execution.
-        result_store (ResultStore): store for persisting task results
+        result_store (ResultStore, optional): store for persisting task results
+        status_store (StatusStore, optional): store for persisting task statuses
         mechanism (str): mechanism for executing the task. Must
             be either "process" or "thread".
         base_task (Type[Task]): base to use for task constuction.
