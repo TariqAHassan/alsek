@@ -94,8 +94,7 @@ class StatusStore:
             message (Message): an Alsek message
             check (bool): check that it is safe to delete the status.
                 This is done by ensuring that the current status of ``message``
-                is a terminal state (i.e., ``TaskStatus.FAILED`` or
-                ``TaskStatus.SUCCEEDED``).
+                is terminal (i.e., ``TaskStatus.FAILED`` or ``TaskStatus.SUCCEEDED``).
 
         Returns:
             None
