@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import inspect
 import logging
+from functools import partial
 from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union, cast
 
 import dill
@@ -30,6 +31,7 @@ from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.exceptions import SchedulingError, ValidationError
 from alsek.storage.result import ResultStore
+from alsek.storage.status import StatusStore, TaskStatus
 
 log = logging.getLogger(__name__)
 
@@ -67,24 +69,33 @@ def _parse_callback(callback: Union[Message, Tuple[Message, ...]]) -> Message:
 
 
 class _MultiSubmit:
-    def __init__(self, message: Message, broker: Broker, **options: Any) -> None:
-        self._message = message
+    def __init__(
+        self,
+        message: Message,
+        broker: Broker,
+        callback: Optional[Callable[[Message], None]] = None,
+        **options: Any,
+    ) -> None:
+        self.message = message
         self.broker = broker
+        self.callback = callback
         self.options = options
 
         self.first: bool = True
 
-    @property
-    def message(self) -> Message:
+    def _get_message(self) -> Message:
         return (
-            self._message
+            self.message
             if self.first
-            else self._message.duplicate().update(progenitor=self._message.uuid)
+            else self.message.duplicate().update(progenitor=self.message.uuid)
         )
 
     def __call__(self) -> None:
-        self.broker.submit(self.message, **self.options)
+        message = self._get_message()
+        self.broker.submit(message, **self.options)
         self.first = False
+        if self.callback:
+            self.callback(message)
 
 
 class Task:
@@ -105,6 +116,7 @@ class Task:
         backoff (Backoff): backoff algorithm and parameters to use when computing
             delay between retries
         result_store (ResultStore): store for persisting task results
+        status_store (StatusStore): store for persisting task statuses
         mechanism (str): mechanism for executing the task. Must
             be either "process" or "thread".
 
@@ -129,6 +141,7 @@ class Task:
         max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
         backoff: Backoff = ExponentialBackoff(),
         result_store: Optional[ResultStore] = None,
+        status_store: Optional[StatusStore] = None,
         mechanism: str = DEFAULT_MECHANISM,
     ) -> None:
         self.function = function
@@ -140,6 +153,7 @@ class Task:
         self.max_retries = max_retries
         self.backoff = backoff
         self.result_store = result_store
+        self.status_store = status_store
         self.mechanism = mechanism
 
         if priority < 0:
@@ -189,6 +203,10 @@ class Task:
 
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self.function(*args, **kwargs)
+
+    def _update_status(self, message: Message, status: TaskStatus) -> None:
+        if self.status_store:
+            self.status_store.set(message, status=status)
 
     @property
     def deferred(self) -> bool:
@@ -309,6 +327,7 @@ class Task:
             self.cancel_defer()
         elif submit:
             self._submit(message, **options)
+            self._update_status(message, status=TaskStatus.SUBMITTED)
         return message
 
     def pre_op(self, message: Message) -> None:
@@ -483,7 +502,12 @@ class TriggerTask(Task):
             raise SchedulingError("Task already scheduled")
 
         self.scheduler.add_job(
-            _MultiSubmit(message, broker=self.broker, options=options),
+            _MultiSubmit(
+                message=message,
+                broker=self.broker,
+                callback=partial(self._update_status, status=TaskStatus.SUBMITTED),
+                options=options,
+            ),
             trigger=self.trigger,
             id=self.name,
         )
