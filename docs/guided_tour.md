@@ -77,91 +77,6 @@ To use a different serialization procedure, one must:
 
   * pass the new serializer to the relevant backend at initialization time.
 
-## Status Storage
-
-The status of tasks can be tracked in a `backend` using `StatusStore()`.
-
-```python
-from typing import Dict
-
-from alsek import Broker, task
-from alsek.storage.backends.redis import RedisBackend
-from alsek.storage.status import StatusStore
-
-backend = RedisBackend("<connection_url>")
-
-broker = Broker(backend)
-status_store = StatusStore(backend)
-
-@task(broker, status_store=status_store)
-def sum_n(n: int) -> int:
-    return int(n * (n + 1) / 2)
-
-message = sum_n.generate(kwargs={"n": 100})
-```
-
-The status can be checked using `.get()`:
-
-```python
-status_store.get(message)
-# <TaskStatus.SUBMITTED: 1>
-```
-
-The `status` variable can be any of the following:
-
-  * `<TaskStatus.SUBMITTED: 1>`
-  * `<TaskStatus.RETRYING: 2>`
-  * `<TaskStatus.RETRYING: 3>`
-  * `<TaskStatus.FAILED: 4>`
-  * `<TaskStatus.SUCCEEDED: 5>`
-
-## Result Storage
-
-Task results can be persisted to a `backend` using `ResultStore()`. 
-
-```python
-from typing import Dict
-
-from alsek import Broker, task
-from alsek.storage.backends.redis import RedisBackend
-from alsek.storage.result import ResultStore
-
-backend = RedisBackend("<connection_url>")
-
-broker = Broker(backend)
-result_store = ResultStore(backend)
-
-@task(broker, result_store=result_store)
-def valuable_output() -> Dict[str, int]:
-    return {"a": 1, "b": 2, "c": 3}
-```
-
-We are also free to use different backends for `Broker` and `ResultStore`.
-This is illustrated in the example below.
-
-```python
-from typing import Dict
-
-from alsek import Broker, task
-from alsek.storage.backends.redis import RedisBackend
-from alsek.storage.backends.disk import DiskCacheBackend
-from alsek.storage.result import ResultStore
-
-redis_backend = RedisBackend()
-disk_cache_backend = DiskCacheBackend()
-
-broker = Broker(redis_backend)
-result_store = ResultStore(disk_cache_backend)
-
-@task(broker, result_store=result_store)
-def valuable_output() -> Dict[str, int]:
-    return {"a": 1, "b": 2, "c": 3}
-```
-
-!!! warning
-    In order for data to be persisted via `result_store`, it must be
-    of a type supported by the `backend`'s `serializer`.
-
 ## Messages
 
 Messages are the "lingua franca" of Alsek. This is because the data they 
@@ -417,50 +332,6 @@ check_resource_usage.shutdown()
 !!! warning
     Function parameters are not permitted for tasks which use a trigger.
 
-#### Triggers & Result Storage
-
-We can request storage of tasks with triggers, just as we did with a standard task above. 
-However, fetching the results of a task requires us to know its `uuid`. While it is possible
-to collect this information (e.g., via `pre_op()` or `post_op()`), it is often far easier to 
-simply store the _progenitor_ message or, at the least, its `uuid`. With this information, 
-we can obtain all _descendant_ messages.
-
-```python
-from random import randint
-from apscheduler.triggers.interval import IntervalTrigger
-
-from alsek import Broker, task
-from alsek.storage.backends.disk import DiskCacheBackend
-from alsek.storage.result import ResultStore
-
-backend = DiskCacheBackend
-broker = Broker(backend)
-result_storage = ResultStore(backend)
-
-
-@task(broker, result_store=result_storage, trigger=IntervalTrigger(seconds=10))
-def harvest_data() -> int:
-    data = randint(0, 100)
-    return data
-
-# Start 
-message = harvest_data.generate()
-
-# Get all of the results as a list. By setting `descendants=True` we
-# will also data for any descendant messages which have completed.
-results = result_storage.get(message, timeout=30 * 1000, descendants=True)
-```
-
-!!! note
-    Metadata for each result can be included by specifying ``with_metadata=True``.
-
-!!! warning
-    The order of results when ``descendants=True`` is determined by the 
-    time at which the data was written to the backend, not when the corresponding task 
-    completed. While this difference is usually very small, if this is
-    not appropriate for your application, you must include timestamp information 
-    in the output of the task function and re-sort the results accordingly.
-
 ### Message Passing
 
 The message itself will be passed to `task`s which include a `message` parameter. 
@@ -706,6 +577,136 @@ def task_c() -> int:
 
 !!! note
     Backoff can be disabled by using ``ConstantBackoff(constant=0, floor=0, ceiling=0, zero_override=True)``.
+
+
+## Status Storage
+
+The status of tasks can be tracked in a `backend` using `StatusStore()`.
+
+```python
+from typing import Dict
+
+from alsek import Broker, task
+from alsek.storage.backends.redis import RedisBackend
+from alsek.storage.status import StatusStore
+
+backend = RedisBackend("<connection_url>")
+
+broker = Broker(backend)
+status_store = StatusStore(backend)
+
+@task(broker, status_store=status_store)
+def sum_n(n: int) -> int:
+    return int(n * (n + 1) / 2)
+
+message = sum_n.generate(kwargs={"n": 100})
+```
+
+The status can be checked using `.get()`:
+
+```python
+status_store.get(message)
+# <TaskStatus.SUBMITTED: 1>
+```
+
+The `status` variable can be any of the following:
+
+  * `<TaskStatus.SUBMITTED: 1>`
+  * `<TaskStatus.RETRYING: 2>`
+  * `<TaskStatus.RETRYING: 3>`
+  * `<TaskStatus.FAILED: 4>`
+  * `<TaskStatus.SUCCEEDED: 5>`
+
+## Result Storage
+
+Task results can be persisted to a `backend` using `ResultStore()`. 
+
+```python
+from typing import Dict
+
+from alsek import Broker, task
+from alsek.storage.backends.redis import RedisBackend
+from alsek.storage.result import ResultStore
+
+backend = RedisBackend("<connection_url>")
+
+broker = Broker(backend)
+result_store = ResultStore(backend)
+
+@task(broker, result_store=result_store)
+def valuable_output() -> Dict[str, int]:
+    return {"a": 1, "b": 2, "c": 3}
+```
+
+We are also free to use different backends for `Broker` and `ResultStore`.
+This is illustrated in the example below.
+
+```python
+from typing import Dict
+
+from alsek import Broker, task
+from alsek.storage.backends.redis import RedisBackend
+from alsek.storage.backends.disk import DiskCacheBackend
+from alsek.storage.result import ResultStore
+
+redis_backend = RedisBackend()
+disk_cache_backend = DiskCacheBackend()
+
+broker = Broker(redis_backend)
+result_store = ResultStore(disk_cache_backend)
+
+@task(broker, result_store=result_store)
+def valuable_output() -> Dict[str, int]:
+    return {"a": 1, "b": 2, "c": 3}
+```
+
+!!! warning
+    In order for data to be persisted via `result_store`, it must be
+    of a type supported by the `backend`'s `serializer`.
+
+### Triggers & Result Storage
+
+We can request storage of tasks with triggers, just as we did with a standard task above. 
+However, fetching the results of a task requires us to know its `uuid`. While it is possible
+to collect this information (e.g., via `pre_op()` or `post_op()`), it is often far easier to 
+simply store the _progenitor_ message or, at the least, its `uuid`. With this information, 
+we can obtain all _descendant_ messages.
+
+```python
+from random import randint
+from apscheduler.triggers.interval import IntervalTrigger
+
+from alsek import Broker, task
+from alsek.storage.backends.disk import DiskCacheBackend
+from alsek.storage.result import ResultStore
+
+backend = DiskCacheBackend
+broker = Broker(backend)
+result_storage = ResultStore(backend)
+
+
+@task(broker, result_store=result_storage, trigger=IntervalTrigger(seconds=10))
+def harvest_data() -> int:
+    data = randint(0, 100)
+    return data
+
+# Start 
+message = harvest_data.generate()
+
+# Get all of the results as a list. By setting `descendants=True` we
+# will also data for any descendant messages which have completed.
+results = result_storage.get(message, timeout=30 * 1000, descendants=True)
+```
+
+!!! note
+    Metadata for each result can be included by specifying ``with_metadata=True``.
+
+!!! warning
+    The order of results when ``descendants=True`` is determined by the 
+    time at which the data was written to the backend, not when the corresponding task 
+    completed. While this difference is usually very small, if this is
+    not appropriate for your application, you must include timestamp information 
+    in the output of the task function and re-sort the results accordingly.
 
 ## Concurrency
 
