@@ -206,7 +206,7 @@ class Task:
 
     def _update_status(self, message: Message, status: TaskStatus) -> None:
         if self.status_store:
-            log.debug(f"Setting status of {message.uuid} to {status}...")
+            log.debug(f"Setting status of '{message.uuid}' to {status}...")
             self.status_store.set(message, status=status)
 
     @property
