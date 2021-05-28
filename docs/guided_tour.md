@@ -606,7 +606,7 @@ status_store.get(message)
 and can be any one of the following:
 
   * `<TaskStatus.SUBMITTED: 1>`
-  * `<TaskStatus.RETRYING: 2>`
+  * `<TaskStatus.RUNNING: 2>`
   * `<TaskStatus.RETRYING: 3>`
   * `<TaskStatus.FAILED: 4>`
   * `<TaskStatus.SUCCEEDED: 5>`
