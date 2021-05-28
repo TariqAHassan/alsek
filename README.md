@@ -16,6 +16,7 @@ is available:
   * Multiprocess and multi-thread task execution
   * Automatic retries, with customizable backoff procedures
   * Prioritization of queues and tasks
+  * Task Status
   * Result storage
   * Cron, date and interval task triggers with result storage support
   * Robust task timeouts
