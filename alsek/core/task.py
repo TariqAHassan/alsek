@@ -467,6 +467,7 @@ class TriggerTask(Task):
         max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
         backoff: Backoff = ExponentialBackoff(),
         result_store: Optional[ResultStore] = None,
+        status_store: Optional[StatusStore] = None,
         mechanism: str = DEFAULT_MECHANISM,
     ) -> None:
         if inspect.signature(function).parameters:
@@ -481,6 +482,7 @@ class TriggerTask(Task):
             max_retries=max_retries,
             backoff=backoff,
             result_store=result_store,
+            status_store=status_store,
             mechanism=mechanism,
         )
         self.trigger = trigger
@@ -583,6 +585,7 @@ def task(
     backoff: Backoff = ExponentialBackoff(),
     trigger: Optional[Union[CronTrigger, DateTrigger, IntervalTrigger]] = None,
     result_store: Optional[ResultStore] = None,
+    status_store: Optional[StatusStore] = None,
     mechanism: str = DEFAULT_MECHANISM,
     base_task: Optional[Type[Task]] = None,
 ) -> Callable[..., Task]:
@@ -645,6 +648,7 @@ def task(
             backoff=backoff,
             mechanism=mechanism,
             result_store=result_store,
+            status_store=status_store,
             **(  # noqa (handled above)
                 dict(trigger=trigger)
                 if trigger in base_task_signature.parameters
