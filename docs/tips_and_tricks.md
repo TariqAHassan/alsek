@@ -14,6 +14,51 @@ export ALSEK_MULTIPROCESSING_BACKEND=torch
 alsek my_project
 ```
 
+## Capturing Status Updates
+
+In some applications it may be desirable to persists status updates 
+to multiple locations. For instance, Redis as well as a PostgreSQL database.
+A short example of how to do this is provided below.
+
+```python
+from alsek.core.message import Message
+from alsek.storage.status import StatusStore, TaskStatus
+
+from sqlalchemy import Column, String, create_engine
+from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy.orm import declarative_base, sessionmaker
+
+Base = declarative_base()
+
+engine = create_engine("...")
+Session = sessionmaker(bind=engine)
+session = Session()
+
+
+class Status(Base):
+    __tablename__ = "status"
+    
+    id = Column(UUID, primary_key=True)
+    status = Column(String)
+
+    def __repr__(self) -> str:
+        return f"<Status(id='{self.id}', status='{self.status}')>"
+
+    
+class CustomStatusStore(StatusStore):
+    def set(self, message: Message, status: TaskStatus) -> None:
+        super().set(message, status=status)
+        
+        if status == TaskStatus.SUBMITTED:
+            session.add(Status(id=message.uuid, status=status.name))
+        else:
+            record = session.query(Status).get(message.uuid)
+            record.status = status.name
+        session.commit()
+```
+
+This new `CustomStatusStore()` class is a drop-in replacement for `StatusStore()`.
+
 ## Testing
 
 Testing an application may require a worker pool to be brought online.
@@ -25,9 +70,7 @@ First, create a `conftest.py` file with a `background_worker_pool` figure.
 ```python
 import pytest
 from multiprocessing import Process
-from typing import List
 
-from alsek import task
 from alsek.core.worker import WorkerPool
 
 from my_application.tasks import task_1, task_2
