@@ -22,7 +22,7 @@ class Broker:
 
     Args:
         backend (Backend): backend for data storage
-        dlq_ttl (int, optional): time to live (in seconds) for
+        dlq_ttl (int, optional): time to live (in milliseconds) for
             Dead Letter Queue (DLQ). If ``None``, failed messages
             will not be moved to the DLQ.
 
