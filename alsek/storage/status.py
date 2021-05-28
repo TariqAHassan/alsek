@@ -21,7 +21,7 @@ class TaskStatus(Enum):
     SUCCEEDED = 5
 
 
-TERMINAL_TASK_STAUSES = (TaskStatus.FAILED, TaskStatus.SUCCEEDED)
+TERMINAL_TASK_STATUSES = (TaskStatus.FAILED, TaskStatus.SUCCEEDED)
 
 
 class StatusStore:
@@ -101,6 +101,6 @@ class StatusStore:
             None
 
         """
-        if check and self.get(message) not in TERMINAL_TASK_STAUSES:
+        if check and self.get(message) not in TERMINAL_TASK_STATUSES:
             raise ValidationError(f"Message '{message.uuid}' in a non-terminal state")
         self.backend.delete(self.get_storage_name(message), missing_ok=False)
