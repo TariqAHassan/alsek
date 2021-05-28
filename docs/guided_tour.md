@@ -601,7 +601,6 @@ The status can be checked using `.get()`:
 
 ```python
 status_store.get(message)
-# <TaskStatus.SUBMITTED: 1>
 ```
 
 and can be any one of the following:
