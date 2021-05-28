@@ -102,5 +102,5 @@ class StatusStore:
 
         """
         if check and self.get(message) not in TERMINAL_TASK_STAUSES:
-            raise ValidationError(f"Message '{message.uuid}' in a non-terminal state.")
+            raise ValidationError(f"Message '{message.uuid}' in a non-terminal state")
         self.backend.delete(self.get_storage_name(message), missing_ok=False)
