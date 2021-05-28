@@ -6,7 +6,8 @@
 import pytest
 
 from alsek.core.message import Message
-from alsek.storage.status import StatusStore, TaskStatus
+from alsek.storage.status import StatusStore, TaskStatus, TERMINAL_TASK_STAUSES
+from alsek.exceptions import ValidationError
 
 
 @pytest.mark.parametrize(
@@ -84,5 +85,9 @@ def test_status_delete(
     rolling_status_store: StatusStore,
 ) -> None:
     rolling_status_store.set(message, status=status)
-    value = rolling_status_store.delete(message)
-    assert not rolling_status_store.exists(message)
+    if status in TERMINAL_TASK_STAUSES:
+        value = rolling_status_store.delete(message)
+        assert not rolling_status_store.exists(message)
+    else:
+        with pytest.raises(ValidationError):
+            rolling_status_store.delete(message)
