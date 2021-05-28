@@ -17,7 +17,7 @@ alsek my_project
 ## Capturing Status Updates
 
 In some applications it may be desirable to persists status updates 
-to multiple locations. For instance, Redis as well as a PostgreSQL database.
+to multiple locations. For example, a Redis database and a PostgreSQL database.
 A short example of how to do this is provided below.
 
 ```python
