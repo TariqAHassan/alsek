@@ -609,7 +609,7 @@ status_store.get(message)
 # <TaskStatus.SUBMITTED: 1>
 ```
 
-The `status` variable can be any of the following:
+The status can be any one of the following:
 
   * `<TaskStatus.SUBMITTED: 1>`
   * `<TaskStatus.RETRYING: 2>`
