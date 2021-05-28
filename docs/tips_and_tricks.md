@@ -45,7 +45,7 @@ def background_worker_pool() -> None:
     process.terminate()
 ```
 
-Now, we can bring a worker pool online simply by including
+Now, a worker pool can be brought online simply by including
 `background_worker_pool` in the signature of a test.
 
 ```python
