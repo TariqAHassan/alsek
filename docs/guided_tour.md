@@ -212,10 +212,10 @@ lower overhead is desirable, or the task in question is largely I/O bound.
 !!! danger
     Many implementations of Python use a [Global Interpreter Lock](https://en.wikipedia.org/wiki/Global_interpreter_lock)
     (GIL), including the most common one: [CPython](https://en.wikipedia.org/wiki/CPython). In such implementations, 
-    only one thread can do work at any one time within any given Python process. As a consequence, using `mechanism="thread"` 
-    carries the risk of interfering with the threads used by the _Worker Pool_ itself (see below). In the worst 
-    case, a task specified with `mechanism="thread"` may never relinquish the GIL and, as a result, the underlying 
-    worker pool  will cease to function. For this reason, Alsek uses `mechansim='process'` by default.
+    only one thread can do work at any one time within any given Python process. As a consequence, using 
+    `mechanism="thread"` carries the risk of interfering with the threads used by the _Worker Pool_ itself (see below). 
+    In the worst case, a task specified with `mechanism="thread"` may never relinquish the GIL and, as a result, the 
+    underlying worker pool  will cease to function. For this reason, Alsek uses `mechansim="process"` by default.
 
     While this problem is relatively uncommon in practice, it is an important risk 
     to keep in mind when building your application.
