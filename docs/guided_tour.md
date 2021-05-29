@@ -227,7 +227,7 @@ safeguard against hanging tasks. The default timeout is 3,600,000 milliseconds (
 
 Tasks which exceed their timeout will be shutdown by the worker
 pool. If a task is eligible to be retried (see below) against a `TimeoutError`,
-it will be. Otherwise, the corresponding message will be deleted.
+it will be. Otherwise, the corresponding message will be failed and deleted.
 
 ```python
 from alsek import task
