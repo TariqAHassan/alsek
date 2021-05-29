@@ -708,10 +708,8 @@ print(results)
 ### Result Iteration
 
 The `ResultPool()` class provides an intuitive means of iterating over 
-stored results.
-
-To see how, we can define a task, just as we have done several times before,
-and create an instance of the `ResultPool()` class.
+stored results. To see how, we can define a task, just as we have done 
+several times before, and create an instance of the `ResultPool()` class.
 
 ```python
 from alsek import Broker, task
