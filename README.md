@@ -71,10 +71,10 @@ $ alsek quick_start --verbose
 Which will result in output similar to this:
 
 ```shell
-[2021-04-06 10:00:30.250] [PID 74896] [INFO] alsek.core.worker: Alsek v0.0.1 worker pool booting up...
-[2021-04-06 10:00:30.251] [PID 74896] [INFO] alsek.core.worker: Worker pool online.
-[2021-04-06 10:00:30.260] [PID 74897] [INFO] alsek.core.worker: Received Message(uuid='e49806be-96ad-11eb-9216-acde48001122', queue='math_ops', task='add')...
-[2021-04-06 10:00:30.261] [PID 74897] [INFO] alsek.core.worker: Successfully processed Message(uuid='e49806be-96ad-11eb-9216-acde48001122', queue='math_ops', task='add').
+[2021-04-06 10:00:30.250] [PID 74896] [TID 4522458624] [INFO] alsek.core.worker: Alsek v0.0.1 worker pool booting up...
+[2021-04-06 10:00:30.251] [PID 74896] [TID 4522458624] [INFO] alsek.core.worker: Worker pool online.
+[2021-04-06 10:00:30.260] [PID 74897] [TID 4668833280] [INFO] alsek.core.worker: Received Message(uuid='e49806be-96ad-11eb-9216-acde48001122', queue='math_ops', task='add')...
+[2021-04-06 10:00:30.261] [PID 74897] [TID 4668833280] [INFO] alsek.core.worker: Successfully processed Message(uuid='e49806be-96ad-11eb-9216-acde48001122', queue='math_ops', task='add').
 ```
 
 As we can see above, the message was quickly processed by the worker pool.
