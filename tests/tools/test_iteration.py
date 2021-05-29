@@ -153,6 +153,6 @@ def test_stream(
 
     # Check that:
     #   * all results for all messages have been returned
-    #   * the output order the the results matches the input order
+    #   * the output order of the results matches the input order
     assert expected_msgs == actual_uuids
     assert expected_results == actual_results
