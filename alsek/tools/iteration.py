@@ -11,10 +11,10 @@ from alsek.exceptions import ValidationError
 from alsek.storage.result import ResultStore
 
 
-def _multi_pop(messages: List[Message], to_pop: List[int]) -> List[Message]:
+def _multi_pop(items: List[Any], to_pop: List[int]) -> List[Any]:
     for i in to_pop:
-        messages.pop(i)
-    return messages
+        items.pop(i)
+    return items
 
 
 def _duplicates(items: Iterable[Any]) -> bool:
