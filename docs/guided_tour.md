@@ -716,9 +716,9 @@ In this step, we can also go ahead and create an instance of the `ResultPool()` 
 
 ```python
 from alsek import Broker, task
-from alsek.tools import ResultPool
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.result import ResultStore
+from alsek.tools import ResultPool
 
 backend = RedisBackend("<connection_url>")
 
