@@ -3,7 +3,7 @@
     Result Iteration
 
 """
-from typing import Any, Iterable, List, Tuple
+from typing import Any, Iterable, List, Set, Tuple
 
 from alsek._utils.checks import has_duplicates
 from alsek._utils.system import StopSignalListener
@@ -12,10 +12,8 @@ from alsek.exceptions import ValidationError
 from alsek.storage.result import ResultStore
 
 
-def _multi_pop(items: List[Any], to_pop: List[int]) -> List[Any]:
-    for i in to_pop:
-        items.pop(i)
-    return items
+def _idx_drop(items: List[Any], indexes: Set[int]) -> List[Any]:
+    return [i for e, i in enumerate(items) if e not in indexes]
 
 
 class ResultPool:
@@ -79,15 +77,15 @@ class ResultPool:
         self._validate(messages)
         messages = list(messages)
         while messages and not self.stop_signal.received:
-            to_pop = list()
+            to_drop = set()
             for e, m in enumerate(messages):
                 try:
                     yield m.uuid, self.result_store.get(m, **kwargs)
-                    to_pop.append(e)
+                    to_drop.add(e)
                 except KeyError:
                     pass
 
-            messages = _multi_pop(messages, to_pop=to_pop)
+            messages = _idx_drop(messages, indexes=to_drop)
             self.stop_signal.wait(wait if messages else 0)
 
     def stream(
