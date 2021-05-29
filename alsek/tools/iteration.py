@@ -73,11 +73,10 @@ class ResultPool:
 
         Warning:
             * By default, ``result_store`` does not keep messages once
-              they have been collected. As a result, iterating over
-              messages for which the corresponding results have already
-              been collected (and deleted) will cause this method to
-              loop indefinitely. In order to loop over messages multiple
-              times, set ``keep=True``.
+              they have been collected. As a result, providing messages
+              for which the corresponding results have already been collected
+              (and deleted) will cause this method to loop indefinitely.
+              In order to loop over messages multiple times set ``keep=True``.
 
         """
         self._validate(messages)
@@ -116,11 +115,10 @@ class ResultPool:
 
         Warning:
             * By default, ``result_store`` does not keep messages once
-              they have been collected. As a result, iterating over
-              messages for which the corresponding results have already
-              been collected (and deleted) will cause this method to
-              loop indefinitely. In order to loop over messages multiple
-              times, set ``keep=True``.
+              they have been collected. As a result, providing messages
+              for which the corresponding results have already been collected
+              (and deleted) will cause this method to loop indefinitely.
+              In order to loop over messages multiple times set ``keep=True``.
 
         """
         order = {m.uuid: e for e, m in enumerate(messages)}
