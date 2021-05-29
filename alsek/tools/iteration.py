@@ -40,7 +40,7 @@ class ResultPool:
         self.stop_signal = StopSignalListener()
 
     @staticmethod
-    def _validate(messages: List[Message]) -> None:
+    def _validate(messages: Tuple[Message, ...]) -> None:
         if has_duplicates([m.uuid for m in messages]):
             raise ValidationError("Duplicate messages detected")
         elif not all(m.store_result for m in messages):
@@ -75,18 +75,18 @@ class ResultPool:
 
         """
         self._validate(messages)
-        messages = list(messages)
-        while messages and not self.stop_signal.received:
+        outstanding = list(range(len(messages)))
+        while outstanding and not self.stop_signal.received:
             to_drop = set()
-            for e, m in enumerate(messages):
+            for i in outstanding:
                 try:
-                    yield m, self.result_store.get(m, **kwargs)
-                    to_drop.add(e)
+                    yield messages[i], self.result_store.get(messages[i], **kwargs)
+                    to_drop.add(i)
                 except KeyError:
                     pass
 
-            messages = _idx_drop(messages, indexes=to_drop)
-            self.stop_signal.wait(wait if messages else 0)
+            outstanding = _idx_drop(outstanding, indexes=to_drop)
+            self.stop_signal.wait(wait if outstanding else 0)
 
     def stream(
         self,
@@ -118,4 +118,4 @@ class ResultPool:
         """
         order = {m.uuid: e for e, m in enumerate(messages)}
         results = self.istream(*messages, wait=wait, **kwargs)
-        yield from sorted(results, key=lambda x: order.get(x[0]))
+        yield from sorted(results, key=lambda x: order.get(x[0]))  # type: ignore
