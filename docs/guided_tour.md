@@ -731,8 +731,8 @@ def sum_n(n: int) -> int:
     return int(n * (n + 1) / 2)
 ```
 
-Finally, we can `result_pool` to iterate over message
-results as they become available.
+Finally, we can use the `istream()` method of `result_pool` to 
+iterate over message results as they become available.
 
 ```python
 for message, result in result_pool.istream(
