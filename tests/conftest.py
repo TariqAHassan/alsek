@@ -23,6 +23,7 @@ from alsek.storage.backends.disk import DiskCacheBackend
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.result import ResultStore
 from alsek.storage.status import StatusStore
+from alsek.tools.iteration import ResultPool
 
 
 def _get_redis_path() -> str:
@@ -107,6 +108,11 @@ def rolling_broker(rolling_backend: Backend) -> Broker:
 @pytest.fixture()
 def rolling_result_store(rolling_backend: Backend) -> ResultStore:
     return ResultStore(rolling_backend)
+
+
+@pytest.fixture()
+def rolling_result_pool(rolling_result_store: ResultStore):
+    return ResultPool(rolling_result_store)
 
 
 @pytest.fixture()
