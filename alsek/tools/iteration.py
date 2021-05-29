@@ -116,6 +116,6 @@ class ResultPool:
               In order to loop over messages multiple times set ``keep=True``.
 
         """
-        order = {m.uuid: e for e, m in enumerate(messages)}
+        order = {m: e for e, m in enumerate(messages)}
         results = self.istream(*messages, wait=wait, **kwargs)
-        yield from sorted(results, key=lambda x: order.get(x[0].uuid))  # type: ignore
+        yield from sorted(results, key=lambda x: order.get(x[0]))  # type: ignore
