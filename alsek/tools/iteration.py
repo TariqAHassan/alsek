@@ -5,6 +5,7 @@
 """
 from typing import Any, Iterable, List, Tuple
 
+from alsek._utils.checks import has_duplicates
 from alsek._utils.system import StopSignalListener
 from alsek.core.message import Message
 from alsek.exceptions import ValidationError
@@ -15,10 +16,6 @@ def _multi_pop(items: List[Any], to_pop: List[int]) -> List[Any]:
     for i in to_pop:
         items.pop(i)
     return items
-
-
-def _duplicates(items: Iterable[Any]) -> bool:
-    return len(set(items)) != len(items)
 
 
 class ResultPool:
@@ -46,7 +43,7 @@ class ResultPool:
 
     @staticmethod
     def _validate(messages: List[Message]) -> None:
-        if _duplicates([m.uuid for m in messages]):
+        if has_duplicates([m.uuid for m in messages]):
             raise ValidationError("Duplicate messages detected")
         elif not all(m.store_result for m in messages):
             raise ValidationError("Messages without result storage detected")
