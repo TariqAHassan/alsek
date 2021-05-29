@@ -99,6 +99,10 @@ class StatusStore:
         Returns:
             None
 
+        Raises:
+            ValidationError: if ``check`` is ``True`` and the status of
+                ``message`` is not ``TaskStatus.FAILED`` or ``TaskStatus.SUCCEEDED``.
+
         """
         if check and self.get(message) not in TERMINAL_TASK_STATUSES:
             raise ValidationError(f"Message '{message.uuid}' in a non-terminal state")

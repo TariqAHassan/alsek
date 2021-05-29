@@ -55,7 +55,7 @@ from alsek.core.worker import WorkerPool
 @click.option(
     "--consumer_backoff_factor",
     type=int,
-    default=5_000,
+    default=1 * 1000,
     help="Backoff factor in response to passes over the backend "
     "which yield no messages (milliseconds)",
 )

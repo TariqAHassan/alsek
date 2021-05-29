@@ -130,6 +130,9 @@ class ResultStore:
             result (Any, List[Any]): the stored result. If ``descendants``
                 is ``True`` a list of results will be returned.
 
+        Raises:
+            KeyError: if results are not available for ``message``
+
         Notes:
             * The order of results when ``descendants=True`` is determined
               by the time at which the data was written to the backend.
