@@ -112,7 +112,7 @@ def test_istream(
         actual_uuids.add(uuid)
         actual_results.add(result)
 
-    # Check that the all results for all messages have been returned
+    # Check that the all results for all messages have been returned.
     assert expected_msgs == actual_uuids
     assert expected_results == actual_results
 
@@ -151,7 +151,8 @@ def test_stream(
         actual_uuids.append(uuid)
         actual_results.append(result)
 
-    # Check that the all results for all messages have been returned
-    # and that the output order the the results matches the input order
+    # Check that:
+    #   * all results for all messages have been returned
+    #   * the output order the the results matches the input order
     assert expected_msgs == actual_uuids
     assert expected_results == actual_results
