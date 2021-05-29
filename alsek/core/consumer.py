@@ -61,7 +61,7 @@ class Consumer:
         broker: Broker,
         subset: Optional[Union[List[str], Dict[str, List[str]]]] = None,
         backoff: Optional[Backoff] = LinearBackoff(
-            5_000,
+            1 * 1000,
             floor=1000,
             ceiling=30_000,
             zero_override=False,
