@@ -707,12 +707,11 @@ print(results)
 
 ### Result Iteration
 
-The `ResultPool()` class can be used to iterate over results as
-they become available. This provides a straighforward way to perform
-iteractive, distributed computing.
+The `ResultPool()` class provides an intuitive means of iterating over 
+stored results.
 
-First we will define a task, just as we have done several times above,
-In this step, we can also go ahead and create an instance of the `ResultPool()` class.
+To see how, we can define a task, just as we have done several times before,
+and create an instance of the `ResultPool()` class.
 
 ```python
 from alsek import Broker, task
