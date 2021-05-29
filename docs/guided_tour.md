@@ -705,6 +705,49 @@ print(results)
     not appropriate for your application, you must include timestamp information 
     in the output of the task function and re-sort the results accordingly.
 
+### Result Iteration
+
+The `ResultPool()` class can be used to iterate over results as
+they become available. This provides a straighforward way to perform
+iteractive, distributed computing.
+
+First we will define a task, just as we have done several times above,
+In this step, we can also go ahead and create an instance of the `ResultPool()` class.
+
+```python
+from alsek import Broker, task
+from alsek.tools import ResultPool
+from alsek.storage.backends.redis import RedisBackend
+from alsek.storage.result import ResultStore
+
+backend = RedisBackend("<connection_url>")
+
+broker = Broker(backend)
+result_store = ResultStore(backend)
+result_pool = ResultPool(result_store)
+
+@task(broker, result_store=result_store)
+def sum_n(n: int) -> int:
+    return int(n * (n + 1) / 2)
+```
+
+Finally, we can use the result pool to iterate over
+message results as they become available.
+
+```python
+for message, result in result_pool.istream(
+    sum_n.generate(kwargs=dict(n=10)),
+    sum_n.generate(kwargs=dict(n=100)),
+    sum_n.generate(kwargs=dict(n=1000)),
+):
+    print(f"The result of message '{message.uuid}' is {result}.")
+```
+
+!!! note
+    The `.istream()` method yields results as they become available.
+    If your use case requires a guarantee that results will be yielded 
+    in the same order as the messages, use `.stream()` instead.
+
 ## Concurrency
 
 Alsek's concurrency `Lock()` provides a straightforward way limit 
