@@ -51,7 +51,7 @@ class ResultPool:
         *messages: Message,
         wait: int = 5 * 1000,
         **kwargs: Any,
-    ) -> Iterable[Tuple[str, Any]]:
+    ) -> Iterable[Tuple[Message, Any]]:
         """Stream the results of one or more messages. Results are yielded
         in the order in which they become available. (This may differ from
         the order in which messages are provided.)
@@ -64,7 +64,7 @@ class ResultPool:
                 ``result_store.get()``.
 
         results (iterable): an iterable of results of the form
-            ``("uuid", result)``.
+            ``(Message, result)``.
 
         Warning:
             * By default, ``result_store`` does not keep messages once
@@ -80,7 +80,7 @@ class ResultPool:
             to_drop = set()
             for e, m in enumerate(messages):
                 try:
-                    yield m.uuid, self.result_store.get(m, **kwargs)
+                    yield m, self.result_store.get(m, **kwargs)
                     to_drop.add(e)
                 except KeyError:
                     pass
@@ -93,7 +93,7 @@ class ResultPool:
         *messages: Message,
         wait: int = 5 * 1000,
         **kwargs: Any,
-    ) -> Iterable[Tuple[str, Any]]:
+    ) -> Iterable[Tuple[Message, Any]]:
         """Stream the results of one or more messages. The order of the
         results are guaranteed to match the order of ``messages``.
 
@@ -106,7 +106,7 @@ class ResultPool:
 
         Returns:
             results (iterable): an iterable of results of the form
-                ``("uuid", result)``.
+                ``(Message, result)``.
 
         Warning:
             * By default, ``result_store`` does not keep messages once

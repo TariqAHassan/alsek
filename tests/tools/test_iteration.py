@@ -101,7 +101,7 @@ def test_istream(
     messages: List[Message],
     rolling_result_pool: ResultPool,
 ) -> None:
-    expected_uuids = {m.uuid for m in messages}
+    expected_msgs = set(messages)
     expected_results = {1}
 
     for m in _shuffle(messages):
@@ -113,7 +113,7 @@ def test_istream(
         actual_results.add(result)
 
     # Check that the all results for all messages have been returned
-    assert expected_uuids == actual_uuids
+    assert expected_msgs == actual_uuids
     assert expected_results == actual_results
 
 
@@ -140,7 +140,7 @@ def test_stream(
     messages: List[Message],
     rolling_result_pool: ResultPool,
 ) -> None:
-    expected_uuids = [m.uuid for m in messages]
+    expected_msgs = messages
     expected_results = [1] * len(messages)
 
     for m in _shuffle(messages):
@@ -153,5 +153,5 @@ def test_stream(
 
     # Check that the all results for all messages have been returned
     # and that the output order the the results matches the input order
-    assert expected_uuids == actual_uuids
+    assert expected_msgs == actual_uuids
     assert expected_results == actual_results
