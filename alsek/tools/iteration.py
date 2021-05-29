@@ -3,8 +3,7 @@
     Result Iteration
 
 """
-from collections import Counter
-from typing import Any, Iterable, List, Optional, Tuple
+from typing import Any, Iterable, List, Tuple
 
 from alsek._utils.system import StopSignalListener
 from alsek.core.message import Message
@@ -32,7 +31,7 @@ class ResultPool:
         >>> from alsek.storage.result import ResultStore
         >>> from alsek.tools.iteration import ResultPool
         ...
-        >>> pool = ResultsPool()
+        >>> pool = ResultPool()
         ...
         >>> messages = [...]
         >>> for uuid, result in pool.istream(*messages):
