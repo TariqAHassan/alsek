@@ -744,7 +744,6 @@ for message, result in result_pool.istream(
 ```
 
 !!! note
-    The `.istream()` method yields results as they become available.
     If your use case requires a guarantee that results will be yielded 
     in the same order as the messages, use `.stream()` instead.
 
