@@ -745,8 +745,8 @@ for message, result in result_pool.istream(
 
 !!! note
     If your use case requires a guarantee that results will be yielded 
-    in the same order in which the messages were provided messages, 
-    use `.stream()` instead.
+    in the same order in which the messages were provided, use `.stream()` 
+    instead.
 
 ## Concurrency
 
