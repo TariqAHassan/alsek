@@ -162,7 +162,7 @@ class LinearBackoff(Backoff):
 
     """
 
-    def __init__(self, factor: int = 60 * 1000, **kwargs: Any) -> None:
+    def __init__(self, factor: int = 30 * 1000, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.factor = factor
 
