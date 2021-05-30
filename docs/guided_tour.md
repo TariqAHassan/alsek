@@ -581,8 +581,7 @@ def task_c() -> int:
 The status of tasks can be tracked using `StatusTracker()`.
 
 ```python
-from alsek import Broker, task
-from alsek.core.status import StatusTracker
+from alsek import Broker, StatusTracker, task
 from alsek.storage.backends.redis import RedisBackend
 
 backend = RedisBackend("<connection_url>")
