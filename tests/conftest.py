@@ -16,9 +16,9 @@ from redis import Redis
 
 from alsek.cli.cli import main as alsek_cli
 from alsek.core.broker import Broker
+from alsek.core.status import StatusTracker
 from alsek.core.task import task
 from alsek.core.worker import WorkerPool
-from alsek.core.status import StatusStore
 from alsek.storage.backends import Backend
 from alsek.storage.backends.disk import DiskCacheBackend
 from alsek.storage.backends.redis import RedisBackend
@@ -116,8 +116,8 @@ def rolling_result_pool(rolling_result_store: ResultStore):
 
 
 @pytest.fixture()
-def rolling_status_store(rolling_broker: Broker) -> StatusStore:
-    return StatusStore(rolling_broker)
+def rolling_status_tracker(rolling_broker: Broker) -> StatusTracker:
+    return StatusTracker(rolling_broker)
 
 
 @pytest.fixture()

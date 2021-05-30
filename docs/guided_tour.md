@@ -582,15 +582,15 @@ The status of tasks can be tracked in a `backend` using `StatusStore()`.
 
 ```python
 from alsek import Broker, task
-from alsek.core.status import StatusStore
+from alsek.core.status import StatusTracker
 from alsek.storage.backends.redis import RedisBackend
 
 backend = RedisBackend("<connection_url>")
 
 broker = Broker(backend)
-status_store = StatusStore(broker)
+status_tracker = StatusTracker(broker)
 
-@task(broker, status_store=status_store)
+@task(broker, status_tracker=status_tracker)
 def sum_n(n: int) -> int:
     return int(n * (n + 1) / 2)
 
@@ -600,7 +600,7 @@ message = sum_n.generate(kwargs={"n": 100})
 The status can be checked using `.get()`:
 
 ```python
-status_store.get(message)
+status_tracker.get(message)
 ```
 
 and can be any one of the following:
@@ -613,7 +613,7 @@ and can be any one of the following:
   * `<TaskStatus.SUCCEEDED: 5>`
 
 !!! note
-    By default, `StatusStore()` will peridoically scan for message statuses
+    By default, `StatusTracker()` will peridoically scan for message statuses
     which have become invalid. Specifically, a scan will be performed to
     check for messages with statuses which are non-terminal (i.e., not 
     ``TaskStatus.FAILED`` or ``TaskStatus.SUCCEEDED``) and no longer exist
@@ -622,7 +622,7 @@ and can be any one of the following:
     (i.e., in the event of an ungraceful shutdown).
 
     The frequency of status integrity scans can be changed by altering the
-    ``integrity_scan_trigger`` parameter of `StatusStore()`. Alternatively,
+    ``integrity_scan_trigger`` parameter of `StatusTracker()`. Alternatively,
     these scan can be disabled by setting ``integrity_scan_trigger=None``.
 
 ## Result Storage

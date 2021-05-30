@@ -1,6 +1,6 @@
 """
 
-    Status Storage
+    Status Tracking
 
 """
 from enum import Enum
@@ -36,8 +36,8 @@ def _name2message(name: str) -> Message:
     return Message(task_name, queue=queue, uuid=queue)
 
 
-class StatusStore:
-    """Alsek Status Store.
+class StatusTracker:
+    """Alsek Status Tracker.
 
     Args:
         broker (Broker): broker used by tasks.
