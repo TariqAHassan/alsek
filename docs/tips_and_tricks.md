@@ -22,7 +22,7 @@ A short example of how to do this is provided below.
 
 ```python
 from alsek.core.message import Message
-from alsek.storage.status import StatusStore, TaskStatus
+from alsek.core.status import StatusTracker, TaskStatus
 
 from sqlalchemy import Column, String, create_engine
 from sqlalchemy.dialects.postgresql import UUID
@@ -45,7 +45,7 @@ class Status(Base):
         return f"<Status(id='{self.id}', status='{self.status}')>"
 
     
-class CustomStatusStore(StatusStore):
+class CustomStatusTracker(StatusTracker):
     def set(self, message: Message, status: TaskStatus) -> None:
         super().set(message, status=status)
         
@@ -57,7 +57,7 @@ class CustomStatusStore(StatusStore):
         session.commit()
 ```
 
-This new `CustomStatusStore()` class is a drop-in replacement for `StatusStore()`.
+This new `CustomStatusTracker()` class is a drop-in replacement for `StatusTracker()`.
 
 ## Testing
 
