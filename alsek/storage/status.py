@@ -39,40 +39,41 @@ class StatusStore:
     """Alsek Status Store.
 
     Args:
-        broker (Broker): broker used by tasks
+        backend (Backend): backend for data storage
         ttl (int, optional): time to live (in milliseconds) for the status
+        broker (Broker, optional): broker used by tasks. Required by ``integrity_scan_trigger``.
         integrity_scan_trigger (CronTrigger, DateTrigger, IntervalTrigger, optional):
             trigger which determines how often to scan for messages with non-terminal
             statuses (i.e., ``TaskStatus.FAILED`` or ``TaskStatus.SUCCEEDED``) that
             no longer exist in the broker. Entries which meet this criteria will have
-            their status set to ``TaskStatus.UNKNOWN``.
+            their status set to ``TaskStatus.UNKNOWN``. Requires ``broker``.
 
     """
 
     def __init__(
         self,
-        broker: Broker,
+        backend: Backend,
         ttl: Optional[int] = 60 * 60 * 24 * 7 * 1000,
+        broker: Optional[Broker] = None,
         integrity_scan_trigger: Optional[
             Union[CronTrigger, DateTrigger, IntervalTrigger]
-        ] = IntervalTrigger(hours=1),
+        ] = None,
     ) -> None:
-        self.broker = broker
+        self.backend = backend
         self.ttl = ttl
+        self.broker = broker
         self.integrity_scan_trigger = integrity_scan_trigger
 
         self.scheduler = BackgroundScheduler()
-        if integrity_scan_trigger:
+        if integrity_scan_trigger and broker:
             self.scheduler.start()
             self.scheduler.add_job(
                 self._integrity_scan,
                 trigger=integrity_scan_trigger,
                 id="integrity_scan",
             )
-
-    @property
-    def _backend(self) -> Backend:
-        return self.broker.backend
+        elif integrity_scan_trigger:
+            raise ValueError("`broker` required for integrity scans")
 
     @staticmethod
     def get_storage_name(message: Message) -> str:
@@ -88,7 +89,7 @@ class StatusStore:
             bool
 
         """
-        return self._backend.exists(self.get_storage_name(message))
+        return self.backend.exists(self.get_storage_name(message))
 
     def set(self, message: Message, status: TaskStatus) -> None:
         """Set a ``status`` for ``message``.
@@ -101,7 +102,7 @@ class StatusStore:
             None
 
         """
-        self._backend.set(
+        self.backend.set(
             self.get_storage_name(message),
             value=status.name,
             ttl=self.ttl if status == TaskStatus.SUBMITTED else None,
@@ -117,7 +118,7 @@ class StatusStore:
             status (TaskStatus): the status of ``message``
 
         """
-        status_name = self._backend.get(self.get_storage_name(message))
+        status_name = self.backend.get(self.get_storage_name(message))
         return TaskStatus[status_name]
 
     def delete(self, message: Message, check: bool = True) -> None:
@@ -139,15 +140,15 @@ class StatusStore:
         """
         if check and self.get(message) not in TERMINAL_TASK_STATUSES:
             raise ValidationError(f"Message '{message.uuid}' in a non-terminal state")
-        self._backend.delete(self.get_storage_name(message), missing_ok=False)
+        self.backend.delete(self.get_storage_name(message), missing_ok=False)
 
     def _integrity_scan(self) -> None:
-        for name in self._backend.scan("status*"):
+        for name in self.backend.scan("status*"):
             message = _name2message(name)
             status = self.get(message)
             if (
                 status is not None
                 and status not in TERMINAL_TASK_STATUSES
-                and not self.broker.exists(message)
+                and not self.broker.exists(message)  # type: ignore
             ):
                 self.set(message, status=TaskStatus.UNKNOWN)
