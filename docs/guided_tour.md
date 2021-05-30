@@ -576,9 +576,9 @@ def task_c() -> int:
     Backoff can be disabled by using ``ConstantBackoff(constant=0, floor=0, ceiling=0, zero_override=True)``.
 
 
-## Status Storage
+## Status Tracking
 
-The status of tasks can be tracked in a `backend` using `StatusStore()`.
+The status of tasks can be tracked using `StatusTracker()`.
 
 ```python
 from alsek import Broker, task
