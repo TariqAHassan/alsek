@@ -42,7 +42,7 @@ class StatusStore:
     Args:
         backend (Backend): backend for data storage
         ttl (int, optional): time to live (in milliseconds) for the status
-        broker (Broker, optional): broker used by tasks. Required by ``integrity_scan_trigger``.
+        broker (Broker, optional): broker used by tasks.
         integrity_scan_trigger (CronTrigger, DateTrigger, IntervalTrigger, optional):
             trigger which determines how often to scan for messages with non-terminal
             statuses (i.e., ``TaskStatus.FAILED`` or ``TaskStatus.SUCCEEDED``) that
