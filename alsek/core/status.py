@@ -33,7 +33,7 @@ TERMINAL_TASK_STATUSES = (TaskStatus.FAILED, TaskStatus.SUCCEEDED)
 
 def _name2message(name: str) -> Message:
     *_, queue, task_name, uuid = name.split(":")
-    return Message(task_name, queue=queue, uuid=queue)
+    return Message(task_name, queue=queue, uuid=uuid)
 
 
 class StatusTracker:
