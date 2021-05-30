@@ -26,7 +26,8 @@ class ResultPool:
         >>> from alsek.storage.result import ResultStore
         >>> from alsek.tools.iteration import ResultPool
         ...
-        >>> pool = ResultPool()
+        >>> result_store = ResultStore(...)
+        >>> pool = ResultPool(result_store)
         ...
         >>> messages = [...]
         >>> for uuid, result in pool.istream(*messages):
