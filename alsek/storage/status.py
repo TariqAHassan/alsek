@@ -5,13 +5,14 @@
 """
 from enum import Enum
 from typing import Optional, Union
+
+from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
-from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
-from alsek.core.message import Message
 from alsek.core.broker import Broker
+from alsek.core.message import Message
 from alsek.exceptions import ValidationError
 from alsek.storage.backends import Backend
 
