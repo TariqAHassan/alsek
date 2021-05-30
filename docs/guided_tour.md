@@ -617,9 +617,10 @@ and can be any one of the following:
     which have become invalid. Specifically, a scan will be performed to
     check for messages with statuses which are non-terminal (i.e., not 
     ``TaskStatus.FAILED`` or ``TaskStatus.SUCCEEDED``) and no longer exist
-    in the broker. Status information can become corrupt in this way in cases 
-    where a worker pool is unable to update the message status before exiting 
-    (i.e., in the event of an ungraceful shutdown).
+    in the broker. Any messages meeting these criteria will have their status
+    updated to ``TaskStatus.UNKNOWN``.  Status information can become corrupt in 
+    this way in cases where a worker pool is unable to update the message status 
+    before exiting (i.e., in the event of an ungraceful shutdown).
 
     The frequency of status integrity scans can be changed by altering the
     ``integrity_scan_trigger`` parameter of `StatusTracker()`. Alternatively,
