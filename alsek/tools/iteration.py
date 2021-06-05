@@ -26,7 +26,8 @@ class ResultPool:
         >>> from alsek.storage.result import ResultStore
         >>> from alsek.tools.iteration import ResultPool
         ...
-        >>> pool = ResultPool()
+        >>> result_store = ResultStore(...)
+        >>> pool = ResultPool(result_store)
         ...
         >>> messages = [...]
         >>> for uuid, result in pool.istream(*messages):
@@ -116,6 +117,5 @@ class ResultPool:
               In order to loop over messages multiple times set ``keep=True``.
 
         """
-        order = {m: e for e, m in enumerate(messages)}
         results = self.istream(*messages, wait=wait, **kwargs)
-        yield from sorted(results, key=lambda x: order.get(x[0]))  # type: ignore
+        yield from sorted(results, key=lambda x: messages.index(x[0]))  # type: ignore
