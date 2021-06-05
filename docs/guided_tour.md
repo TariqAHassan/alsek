@@ -624,7 +624,7 @@ and can be any one of the following:
 
     The frequency of status integrity scans can be changed by altering the
     ``integrity_scan_trigger`` parameter of `StatusTracker()`. Alternatively,
-    these scan can be disabled by setting ``integrity_scan_trigger=None``.
+    these scans can be disabled by setting ``integrity_scan_trigger=None``.
 
 ## Result Storage
 
