@@ -215,11 +215,15 @@ class Backend(ABC):
         """
         return sum(1 for _ in self.scan(pattern))
 
-    def clear_namespace(self) -> int:
+    def clear_namespace(self, raise_on_error: bool = True) -> int:
         """Clear all items in backend under the current namespace.
 
         Returns:
             count (int): number of items cleared
+            raise_on_error (bool): raise if a delete operation fails
+
+        Raises:
+            KeyError: if ``raise_on_error`` and a delete operation fails
 
         """
         count: int = 0
@@ -227,6 +231,9 @@ class Backend(ABC):
             try:
                 self.delete(name, missing_ok=False)
                 count += 1
-            except KeyError:
-                log.warning("Unable to delete %r", name)
+            except KeyError as error:
+                if raise_on_error:
+                    raise error
+                else:
+                    log.warning("Unable to delete %r", name)
         return count
