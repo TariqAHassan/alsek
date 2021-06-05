@@ -44,8 +44,6 @@ class ResultPool:
     def _validate(messages: Tuple[Message, ...]) -> None:
         if has_duplicates([m.uuid for m in messages]):
             raise ValidationError("Duplicate messages detected")
-        elif not all(m.store_result for m in messages):
-            raise ValidationError("Messages without result storage detected")
 
     def istream(
         self,

@@ -99,7 +99,7 @@ def test_task_submit(rolling_broker: Broker) -> None:
         (False, TestTriggerTask),
     ],
 )
-def test_validate(
+def test_generate_validation(
     with_result_store: bool,
     task_class: Type[Task],
     rolling_backend: Broker,
@@ -110,12 +110,11 @@ def test_validate(
         result_store=ResultStore(rolling_backend) if with_result_store else None,
     )
     if with_result_store:
-        assert task._validate(store_result=False) is None
-        assert task._validate(store_result=True) is None
+        actual = task.generate(result_ttl=1)
+        assert isinstance(actual, Message)
     else:
-        assert task._validate(store_result=False) is None
         with pytest.raises(ValidationError):
-            task._validate(store_result=True)
+            task.generate(result_ttl=1)
 
 
 @pytest.mark.parametrize("task_class", [Task, TestTriggerTask])

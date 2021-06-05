@@ -34,11 +34,9 @@ class Message:
             the task's function during the execution of ``op()``
         metadata (dict, optional): a dictionary of user-defined message metadata.
             This can store any data types supported by the backend's serializer.
-        store_result (bool): if ``True`` persist the result to a result store.
         result_ttl (int, optional): time to live (in milliseconds) for the
-            result in the result store. If ``None``, the result will be
-            persisted indefinitely. Note that if ``store_result`` is ``False``
-            this parameter will be ignored.
+            result in the result store. If a result store is provided and
+            this parameter is ``None``, the result will be persisted indefinitely.
         uuid (str, optional): universal unique identifier for the message.
             If ``None``, one will be generated automatically.
         progenitor (str, optional): universal unique identifier for the message
@@ -76,7 +74,6 @@ class Message:
         args: Optional[Union[List[Any], Tuple[Any, ...]]] = None,
         kwargs: Optional[Dict[Any, Any]] = None,
         metadata: Optional[Dict[Any, Any]] = None,
-        store_result: bool = False,
         result_ttl: Optional[int] = None,
         uuid: Optional[str] = None,
         progenitor: Optional[str] = None,
@@ -95,7 +92,6 @@ class Message:
         self.args = tuple(args) if args else tuple()
         self.kwargs = kwargs or dict()
         self.metadata = metadata
-        self.store_result = store_result
         self.result_ttl = result_ttl
         self.retries = retries
         self.timeout = timeout
@@ -125,7 +121,6 @@ class Message:
             args=self.args,
             kwargs=self.kwargs,
             metadata=self.metadata,
-            store_result=self.store_result,
             result_ttl=self.result_ttl,
             uuid=self.uuid,
             progenitor=self.progenitor,

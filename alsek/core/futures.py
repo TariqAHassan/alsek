@@ -67,8 +67,8 @@ def _retry_future_handler(
 
 
 def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
-    if message.store_result:
-        task.result_store.set(message, result=result)  # type: ignore
+    if task.result_store:
+        task.result_store.set(message, result=result)
     if message.callback_message_data and task.do_callback(message, result=result):
         task.broker.submit(
             _generate_callback_message(

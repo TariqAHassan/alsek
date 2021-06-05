@@ -244,16 +244,11 @@ class Task:
     def _submit(self, message: Message, **options: Any) -> None:
         self.broker.submit(message, **options)
 
-    def _validate(self, store_result: Optional[bool]) -> None:
-        if store_result and not self.result_store:
-            raise ValidationError(f"Cannot store result, `result_store` not set")
-
     def generate(
         self,
         args: Optional[Union[List[Any], Tuple[Any, ...]]] = None,
         kwargs: Optional[Dict[Any, Any]] = None,
         metadata: Optional[Dict[Any, Any]] = None,
-        store_result: Optional[bool] = None,
         result_ttl: Optional[int] = None,
         uuid: Optional[str] = None,
         timeout_override: Optional[int] = None,
@@ -273,13 +268,9 @@ class Task:
             kwargs (dict, optional): keyword arguments to pass to ``function``
             metadata (dict, optional): a dictionary of user-defined message metadata.
                 This can store any data types supported by the backend's serializer.
-            store_result (bool, optional): if ``True`` persist the result to a result store.
-                If ``None``, this method will default to ``True`` if a ``ResultStore`` has been
-                set for the task, and ``False`` otherwise.
             result_ttl (int, optional): time to live (in milliseconds) for the
-                result in the result store. If ``None``, the result will be
-                persisted indefinitely. Note that if ``store_result`` is ``False``
-                this parameter will be ignored.
+                result in the result store. If a result store is provided and
+            this parameter is ``None``, the result will be persisted indefinitely.
             uuid (str, optional): universal unique identifier for the message.
                 If ``None``, one will be generated automatically.
             timeout_override (int, optional): override the default maximum runtime
@@ -304,7 +295,8 @@ class Task:
             * ``uuid`` is refreshed after the first event when using a trigger.
 
         """
-        self._validate(store_result)
+        if result_ttl and not self.result_store:
+            raise ValidationError(f"`result_ttl` invalid. No result store set.")
 
         message = Message(
             task_name=self.name,
@@ -312,9 +304,6 @@ class Task:
             args=args,
             kwargs=kwargs,
             metadata=metadata,
-            store_result=(
-                bool(self.result_store) if store_result is None else store_result
-            ),
             result_ttl=result_ttl,
             uuid=uuid,
             timeout=timeout_override or self.timeout,

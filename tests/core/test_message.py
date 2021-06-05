@@ -24,7 +24,6 @@ from alsek.storage.backends import Backend
         Message("task", args=(1, 2, 3)),
         Message("task", kwargs={"a": 1}),
         Message("task", metadata={"meta": "data"}),
-        Message("task", store_result=True),
         Message("task", result_ttl=1000),
         Message("task", uuid="uuid"),
         Message("task", progenitor="uuid-0"),

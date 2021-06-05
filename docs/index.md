@@ -72,7 +72,6 @@ Message(
     args=(1, 1),
     kwargs={},
     metadata=None,
-    store_result=False,
     result_ttl=None,
     uuid='e49806be-96ad-11eb-9216-acde48001122',
     progenitor=None,

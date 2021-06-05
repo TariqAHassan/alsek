@@ -110,7 +110,6 @@ Message(
     args=(1, 1),
     kwargs={},
     metadata=None,
-    store_result=False,
     result_ttl=None,
     uuid='67de0e4c-9816-11eb-8cb0-acde48001122',
     progenitor=None,

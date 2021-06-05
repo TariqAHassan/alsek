@@ -6,13 +6,12 @@
 """
 import copy
 import random
-from typing import Any, Generator, List, Optional, Set
+from typing import Any, List, Optional, Set
 
 import pytest
 
 from alsek.core.message import Message
 from alsek.exceptions import ValidationError
-from alsek.storage.result import ResultStore
 from alsek.tools.iteration import ResultPool, _idx_drop
 
 
@@ -43,24 +42,16 @@ def test_idx_drop(items: List[Any], indexes: Set[int], expected: List[Any]) -> N
         # Problem: none
         (
             [
-                Message("task", uuid="a", store_result=True),
-                Message("task", uuid="b", store_result=True),
+                Message("task", uuid="a"),
+                Message("task", uuid="b"),
             ],
             None,
         ),
         # Problem: Duplicate UUIDs
         (
             [
-                Message("task", uuid="a", store_result=True),
-                Message("task", uuid="a", store_result=True),
-            ],
-            ValidationError,
-        ),
-        # Problem: Result storage disabled
-        (
-            [
-                Message("task", uuid="a", store_result=False),
-                Message("task", uuid="b", store_result=False),
+                Message("task", uuid="a"),
+                Message("task", uuid="a"),
             ],
             ValidationError,
         ),
@@ -83,16 +74,16 @@ def test_validation(
     [
         (
             [
-                Message("task", uuid="a", store_result=True),
-                Message("task", uuid="b", store_result=True),
+                Message("task", uuid="a"),
+                Message("task", uuid="b"),
             ]
         ),
         (
             [
-                Message("task", uuid="a", store_result=True),
-                Message("task", uuid="b", store_result=True),
-                Message("task", uuid="c", store_result=True),
-                Message("task", uuid="d", store_result=True),
+                Message("task", uuid="a"),
+                Message("task", uuid="b"),
+                Message("task", uuid="c"),
+                Message("task", uuid="d"),
             ]
         ),
     ],
@@ -122,16 +113,16 @@ def test_istream(
     [
         (
             [
-                Message("task", uuid="a", store_result=True),
-                Message("task", uuid="b", store_result=True),
+                Message("task", uuid="a"),
+                Message("task", uuid="b"),
             ]
         ),
         (
             [
-                Message("task", uuid="a", store_result=True),
-                Message("task", uuid="b", store_result=True),
-                Message("task", uuid="c", store_result=True),
-                Message("task", uuid="d", store_result=True),
+                Message("task", uuid="a"),
+                Message("task", uuid="b"),
+                Message("task", uuid="c"),
+                Message("task", uuid="d"),
             ]
         ),
     ],
