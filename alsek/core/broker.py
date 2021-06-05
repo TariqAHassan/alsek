@@ -191,7 +191,7 @@ class Broker:
     )
     def nack(self, message: Message) -> None:
         """Do not acknowledge a message and render it eligible
-        for a redelivery.
+        for redelivery.
 
         Args:
             message (Message): a message to not acknowledge

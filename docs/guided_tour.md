@@ -172,7 +172,7 @@ Additionally, `Broker` also exposes:
  * `ack()`: acknowledge the message. (This is a convenience method and is 
     functionally the same as `remove()`.)
  * `nack()`: do not acknowledge the message and render it eligible
-    for a redelivery.
+    for redelivery.
 
 ## Tasks
 
