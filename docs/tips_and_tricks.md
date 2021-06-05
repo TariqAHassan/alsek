@@ -65,7 +65,7 @@ Testing an application may require a worker pool to be brought online.
 A small example of how to do this with [pytest](https://docs.pytest.org/en/stable) 
 and multiprocessing is provided below.
 
-First, create a `conftest.py` file with a `background_worker_pool` figure. 
+First, create a `conftest.py` file with a `background_worker_pool` fixture. 
 
 ```python
 import pytest
