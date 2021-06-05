@@ -47,7 +47,7 @@ class ResultPool:
 
     def _engine(
         self,
-        messages: Message,
+        messages: Tuple[Message, ...],
         wait: int,
         break_on_key_error: bool,
         **kwargs: Any,
