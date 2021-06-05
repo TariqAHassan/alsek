@@ -17,8 +17,8 @@ from alsek import Message
 from alsek._utils.logging import get_logger, setup_logging
 from alsek._utils.system import thread_raise
 from alsek._utils.temporal import utcnow_timestamp_ms
+from alsek.core.status import TaskStatus
 from alsek.core.task import Task
-from alsek.storage.status import TaskStatus
 
 log = logging.getLogger(__name__)
 
@@ -58,12 +58,12 @@ def _retry_future_handler(
     exception: BaseException,
 ) -> None:
     if task.do_retry(message, exception=exception):
-        task.broker.retry(message)
         task._update_status(message, status=TaskStatus.RETRYING)
+        task.broker.retry(message)
     else:
         log.error("Retries exhausted for %s.", message.summary)
-        task.broker.fail(message)
         task._update_status(message, status=TaskStatus.FAILED)
+        task.broker.fail(message)
 
 
 def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
@@ -77,8 +77,8 @@ def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
                 progenitor=message.uuid,
             )
         )
-    task.broker.ack(message)
     task._update_status(message, status=TaskStatus.SUCCEEDED)
+    task.broker.ack(message)
 
 
 class TaskFuture(ABC):

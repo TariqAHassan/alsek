@@ -29,9 +29,9 @@ from alsek._utils.printing import auto_repr
 from alsek.core.backoff import Backoff, ExponentialBackoff
 from alsek.core.broker import Broker
 from alsek.core.message import Message
+from alsek.core.status import StatusTracker, TaskStatus
 from alsek.exceptions import SchedulingError, ValidationError
 from alsek.storage.result import ResultStore
-from alsek.storage.status import StatusStore, TaskStatus
 
 log = logging.getLogger(__name__)
 
@@ -116,7 +116,7 @@ class Task:
         backoff (Backoff): backoff algorithm and parameters to use when computing
             delay between retries
         result_store (ResultStore, optional): store for persisting task results
-        status_store (StatusStore, optional): store for persisting task statuses
+        status_tracker (StatusTracker, optional): store for persisting task statuses
         mechanism (str): mechanism for executing the task. Must
             be either "process" or "thread".
 
@@ -141,7 +141,7 @@ class Task:
         max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
         backoff: Backoff = ExponentialBackoff(),
         result_store: Optional[ResultStore] = None,
-        status_store: Optional[StatusStore] = None,
+        status_tracker: Optional[StatusTracker] = None,
         mechanism: str = DEFAULT_MECHANISM,
     ) -> None:
         self.function = function
@@ -153,7 +153,7 @@ class Task:
         self.max_retries = max_retries
         self.backoff = backoff
         self.result_store = result_store
-        self.status_store = status_store
+        self.status_tracker = status_tracker
         self.mechanism = mechanism
 
         if priority < 0:
@@ -205,9 +205,9 @@ class Task:
         return self.function(*args, **kwargs)
 
     def _update_status(self, message: Message, status: TaskStatus) -> None:
-        if self.status_store:
+        if self.status_tracker:
             log.debug(f"Setting status of '{message.uuid}' to {status}...")
-            self.status_store.set(message, status=status)
+            self.status_tracker.set(message, status=status)
 
     @property
     def deferred(self) -> bool:
@@ -444,7 +444,7 @@ class TriggerTask(Task):
         backoff (Backoff): backoff algorithm and parameters to use when computing
             delay between retries
         result_store (ResultStore, optional): store for persisting task results
-        status_store (StatusStore, optional): store for persisting task statuses
+        status_tracker (StatusTracker, optional): store for persisting task statuses
         mechanism (str): mechanism for executing the task. Must
             be either "process" or "thread".
 
@@ -469,7 +469,7 @@ class TriggerTask(Task):
         max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
         backoff: Backoff = ExponentialBackoff(),
         result_store: Optional[ResultStore] = None,
-        status_store: Optional[StatusStore] = None,
+        status_tracker: Optional[StatusTracker] = None,
         mechanism: str = DEFAULT_MECHANISM,
     ) -> None:
         if inspect.signature(function).parameters:
@@ -484,7 +484,7 @@ class TriggerTask(Task):
             max_retries=max_retries,
             backoff=backoff,
             result_store=result_store,
-            status_store=status_store,
+            status_tracker=status_tracker,
             mechanism=mechanism,
         )
         self.trigger = trigger
@@ -587,7 +587,7 @@ def task(
     backoff: Backoff = ExponentialBackoff(),
     trigger: Optional[Union[CronTrigger, DateTrigger, IntervalTrigger]] = None,
     result_store: Optional[ResultStore] = None,
-    status_store: Optional[StatusStore] = None,
+    status_tracker: Optional[StatusTracker] = None,
     mechanism: str = DEFAULT_MECHANISM,
     base_task: Optional[Type[Task]] = None,
 ) -> Callable[..., Task]:
@@ -609,7 +609,7 @@ def task(
         trigger (CronTrigger, DateTrigger, IntervalTrigger, optional): trigger
             for task execution.
         result_store (ResultStore, optional): store for persisting task results
-        status_store (StatusStore, optional): store for persisting task statuses
+        status_tracker (StatusTracker, optional): store for persisting task statuses
         mechanism (str): mechanism for executing the task. Must
             be either "process" or "thread".
         base_task (Type[Task]): base to use for task constuction.
@@ -651,7 +651,7 @@ def task(
             backoff=backoff,
             mechanism=mechanism,
             result_store=result_store,
-            status_store=status_store,
+            status_tracker=status_tracker,
             **(  # noqa (handled above)
                 dict(trigger=trigger)
                 if trigger in base_task_signature.parameters
