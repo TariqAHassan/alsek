@@ -3,9 +3,10 @@
     Test Status
 
 """
+from typing import Tuple
+
 import pytest
 
-from typing import Tuple
 from alsek.core.message import Message
 from alsek.core.status import (
     TERMINAL_TASK_STATUSES,
