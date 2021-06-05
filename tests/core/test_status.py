@@ -132,8 +132,13 @@ def test_name2message(name, expected: Tuple[str, str, str]) -> None:
 
 
 def test_integrity_scan(rolling_status_tracker: StatusTracker) -> None:
+    # Simulate a message expiring from the broker by setting the
+    # status for a message that has never actually been added to the broker.
     message = Message("task1")
-    rolling_status_tracker.set(message, status=TaskStatus.SUBMITTED)
+    rolling_status_tracker.set(message, status=TaskStatus.RUNNING)
 
+    # Run a scan
     rolling_status_tracker._integrity_scan()
+
+    # Check that the status of this message is now 'UNKNOWN'.
     assert rolling_status_tracker.get(message) == TaskStatus.UNKNOWN
