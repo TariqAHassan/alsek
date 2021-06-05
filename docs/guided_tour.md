@@ -667,6 +667,12 @@ result_store = ResultStore(disk_cache_backend)
 @task(broker, result_store=result_store)
 def valuable_output() -> Dict[str, int]:
     return {"a": 1, "b": 2, "c": 3}
+
+message = valuable_output.generate()
+result = result_store.get(message)
+
+print(result)
+# {"a": 1, "b": 2, "c": 3}
 ```
 
 !!! warning
