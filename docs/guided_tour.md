@@ -679,6 +679,10 @@ print(result)
     In order for data to be persisted via `result_store`, it must be
     of a type supported by the `backend`'s `serializer`.
 
+!!! warning
+    By default, results are automatically deleted once they are fetched. 
+    To disable this behavior, set `keep=True` when invoking ``get()``.
+
 ### Triggers & Result Storage
 
 We can request result storage for tasks with triggers, just as we did with a standard task above. 
