@@ -576,21 +576,20 @@ def task_c() -> int:
     Backoff can be disabled by using ``ConstantBackoff(constant=0, floor=0, ceiling=0, zero_override=True)``.
 
 
-## Status Storage
+## Status Tracking
 
-The status of tasks can be tracked in a `backend` using `StatusStore()`.
+The status of tasks can be tracked using `StatusTracker()`.
 
 ```python
-from alsek import Broker, task
+from alsek import Broker, StatusTracker, task
 from alsek.storage.backends.redis import RedisBackend
-from alsek.storage.status import StatusStore
 
 backend = RedisBackend("<connection_url>")
 
 broker = Broker(backend)
-status_store = StatusStore(backend)
+status_tracker = StatusTracker(broker)
 
-@task(broker, status_store=status_store)
+@task(broker, status_tracker=status_tracker)
 def sum_n(n: int) -> int:
     return int(n * (n + 1) / 2)
 
@@ -600,16 +599,32 @@ message = sum_n.generate(kwargs={"n": 100})
 The status can be checked using `.get()`:
 
 ```python
-status_store.get(message)
+status_tracker.get(message)
 ```
 
 and can be any one of the following:
 
+  * `<TaskStatus.UNKNOWN: 0>`
   * `<TaskStatus.SUBMITTED: 1>`
   * `<TaskStatus.RUNNING: 2>`
   * `<TaskStatus.RETRYING: 3>`
   * `<TaskStatus.FAILED: 4>`
   * `<TaskStatus.SUCCEEDED: 5>`
+
+!!! note
+    By default, `StatusTracker()` will periodically scan for message statuses
+    which have become invalid. Specifically, a scan will be performed to
+    check for messages with statuses which are non-terminal (i.e., not 
+    ``TaskStatus.FAILED`` or ``TaskStatus.SUCCEEDED``) and no longer exist
+    in the broker. Any messages meeting these criteria will have their status
+    updated to ``TaskStatus.UNKNOWN``.  Status information can become corrupt in 
+    this way in cases where a worker pool is unable to update the message status 
+    before exiting (i.e., in the event of an ungraceful shutdown) and the message
+    is never subsequently retried.
+
+    The frequency of status integrity scans can be changed by altering the
+    ``integrity_scan_trigger`` parameter of `StatusTracker()`. Alternatively,
+    these scan can be disabled by setting ``integrity_scan_trigger=None``.
 
 ## Result Storage
 
