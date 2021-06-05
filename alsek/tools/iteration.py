@@ -45,6 +45,29 @@ class ResultPool:
         if has_duplicates([m.uuid for m in messages]):
             raise ValidationError("Duplicate messages detected")
 
+    def _engine(
+        self,
+        messages: Message,
+        wait: int,
+        break_on_key_error: bool,
+        **kwargs: Any,
+    ) -> Iterable[Tuple[Message, Any]]:
+        self._validate(messages)
+
+        outstanding = list(range(len(messages)))
+        while outstanding and not self.stop_signal.received:
+            to_drop = set()
+            for i in outstanding:
+                try:
+                    yield messages[i], self.result_store.get(messages[i], **kwargs)
+                    to_drop.add(i)
+                except KeyError:
+                    if break_on_key_error:
+                        break
+
+            outstanding = _idx_drop(outstanding, indexes=to_drop)
+            self.stop_signal.wait(wait if outstanding else 0)
+
     def istream(
         self,
         *messages: Message,
@@ -73,19 +96,7 @@ class ResultPool:
               In order to loop over messages multiple times set ``keep=True``.
 
         """
-        self._validate(messages)
-        outstanding = list(range(len(messages)))
-        while outstanding and not self.stop_signal.received:
-            to_drop = set()
-            for i in outstanding:
-                try:
-                    yield messages[i], self.result_store.get(messages[i], **kwargs)
-                    to_drop.add(i)
-                except KeyError:
-                    pass
-
-            outstanding = _idx_drop(outstanding, indexes=to_drop)
-            self.stop_signal.wait(wait if outstanding else 0)
+        yield from self._engine(messages, wait=wait, break_on_key_error=False, **kwargs)
 
     def stream(
         self,
@@ -115,5 +126,4 @@ class ResultPool:
               In order to loop over messages multiple times set ``keep=True``.
 
         """
-        results = self.istream(*messages, wait=wait, **kwargs)
-        yield from sorted(results, key=lambda x: messages.index(x[0]))  # type: ignore
+        yield from self._engine(messages, wait=wait, break_on_key_error=True, **kwargs)
