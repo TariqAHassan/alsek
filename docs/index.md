@@ -81,7 +81,7 @@ Message(
     updated_at='2021-04-06 10:00:00.360000',
     delay=0,
     previous_result=None,
-    previous_message=None,
+    previous_message_uuid=None,
     callback_message_data=None,
     backoff_settings={'algorithm': 'ExponentialBackoff', 'parameters': {'base': 4, 'factor': 10000, 'floor': 60000, 'ceiling': 3600000, 'zero_override': True}},
     mechanism='process',
