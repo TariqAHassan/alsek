@@ -9,7 +9,7 @@ from functools import wraps
 from typing import Any, Callable, Dict, Tuple
 
 LOGGING_FORMAT: str = (
-    "[%(asctime)s.%(msecs)03d] [PID %(process)d] [TID %(thread)d] "
+    "[%(asctime)s.%(msecs)03d] [%(processName)s] [%(threadName)s] "
     "[%(levelname)s] %(name)s: %(message)s"
 )
 LOGGING_DATEFMT: str = "%Y-%m-%d %H:%M:%S"
