@@ -74,7 +74,7 @@ def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
             _generate_callback_message(
                 message.callback_message_data,
                 previous_result=result,
-                progenitor=message.uuid,
+                progenitor=message.progenitor or message.uuid,
             )
         )
     task._update_status(message, status=TaskStatus.SUCCEEDED)

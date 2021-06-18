@@ -451,14 +451,13 @@ _identical_.
     Deferred mode is automatically cancelled by ``generate()``
     prior to it returning.
 
+!!! note
+    The progenitor for a callback message is considered to be the root callback.  
+
 !!! warning
     Each callback message's `previous_result` and `progenitor` fields 
     will be set on the worker pool after successful execution of the 
     previous message, and are not available prior to this.
-
-!!! warning
-    The progenitor for a callback message is considered to be the previous message,
-    *not* the root callback.  
 
 !!! danger
     While it is valid for a task with a trigger to have callbacks,
