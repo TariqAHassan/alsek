@@ -112,7 +112,7 @@ Message(
     metadata=None,
     result_ttl=None,
     uuid='67de0e4c-9816-11eb-8cb0-acde48001122',
-    progenitor=None,
+    progenitor_uuid=None,
     retries=0,
     timeout=3600000,
     created_at='2021-04-08 05:59:16.424000',
@@ -456,7 +456,7 @@ _identical_.
     The progenitor for a callback message is considered to be the root callback.  
 
 !!! warning
-    Each callback message's `previous_result` and `progenitor` fields 
+    Each callback message's `previous_result` and `progenitor_uuid` fields 
     will be set on the worker pool after successful execution of the 
     previous message, and are not available prior to this.
 

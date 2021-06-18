@@ -74,7 +74,7 @@ Message(
     metadata=None,
     result_ttl=None,
     uuid='e49806be-96ad-11eb-9216-acde48001122',
-    progenitor=None,
+    progenitor_uuid=None,
     retries=0,
     timeout=3600000,
     created_at='2021-04-06 10:00:00.360000',

@@ -32,7 +32,7 @@ class ResultStore:
     def _get_stable_prefix(message: Message) -> str:
         """Get a prefix that does not change based on
         whether or not the message has a progenitor or not."""
-        return f"results:{message.progenitor if message.progenitor else message.uuid}"
+        return f"results:{message.progenitor_uuid if message.progenitor_uuid else message.uuid}"
 
     @staticmethod
     def get_storage_name(message: Message) -> str:
@@ -45,8 +45,8 @@ class ResultStore:
             name (str): message-specific name
 
         """
-        if message.progenitor:
-            return f"results:{message.progenitor}:descendants:{message.uuid}"
+        if message.progenitor_uuid:
+            return f"results:{message.progenitor_uuid}:descendants:{message.uuid}"
         else:
             return f"results:{message.uuid}"
 

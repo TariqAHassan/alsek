@@ -15,7 +15,7 @@ from tests._helpers import sleeper
     "message,expected",
     [
         (Message("task", uuid="uuid"), "results:uuid"),
-        (Message("task", uuid="uuid-1", progenitor="uuid-0"), "results:uuid-0"),
+        (Message("task", uuid="uuid-1", progenitor_uuid="uuid-0"), "results:uuid-0"),
     ],
 )
 def test_get_stable_prefix(
@@ -31,7 +31,7 @@ def test_get_stable_prefix(
     [
         (Message("task", uuid="uuid"), "results:uuid"),
         (
-            Message("task", uuid="uuid-1", progenitor="uuid-0"),
+            Message("task", uuid="uuid-1", progenitor_uuid="uuid-0"),
             "results:uuid-0:descendants:uuid-1",
         ),
     ],
@@ -156,7 +156,7 @@ def test_get_no_keep(keep: bool, rolling_result_store: ResultStore) -> None:
 def test_get_descendants(rolling_result_store: ResultStore) -> None:
     progenitor = Message("task")
     descendant_messages = [
-        Message("task", progenitor=progenitor.uuid) for _ in range(3)
+        Message("task", progenitor_uuid=progenitor.uuid) for _ in range(3)
     ]
     for msg in (progenitor, *descendant_messages):
         rolling_result_store.set(msg, result=1)

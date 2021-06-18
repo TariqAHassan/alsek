@@ -25,7 +25,7 @@ def test_generate_callback_message() -> None:
         callback_message_data=message.data,
         previous_result=None,
         # Note: these fields would not be `None` in practice.
-        progenitor=None,
+        progenitor_uuid=None,
         previous_message=None,
     )
     assert result.data == message.data

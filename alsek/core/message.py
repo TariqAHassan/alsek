@@ -39,7 +39,7 @@ class Message:
             this parameter is ``None``, the result will be persisted indefinitely.
         uuid (str, optional): universal unique identifier for the message.
             If ``None``, one will be generated automatically.
-        progenitor (str, optional): universal unique identifier for the message
+        progenitor_uuid (str, optional): universal unique identifier for the message
             from which this message descended. (This field is only set in for tasks
             with triggers and/or callbacks.)
         retries (int): number of retries
@@ -79,7 +79,7 @@ class Message:
         metadata: Optional[Dict[Any, Any]] = None,
         result_ttl: Optional[int] = None,
         uuid: Optional[str] = None,
-        progenitor: Optional[str] = None,
+        progenitor_uuid: Optional[str] = None,
         retries: int = 0,
         timeout: int = DEFAULT_TASK_TIMEOUT,
         created_at: Optional[int] = None,
@@ -100,7 +100,7 @@ class Message:
         self.retries = retries
         self.timeout = timeout
         self.uuid = uuid or _make_uuid()
-        self.progenitor = progenitor
+        self.progenitor_uuid = progenitor_uuid
         self.delay = delay or 0
         self.previous_result = previous_result
         self.previous_message = previous_message
@@ -128,7 +128,7 @@ class Message:
             metadata=self.metadata,
             result_ttl=self.result_ttl,
             uuid=self.uuid,
-            progenitor=self.progenitor,
+            progenitor_uuid=self.progenitor_uuid,
             retries=self.retries,
             timeout=self.timeout,
             created_at=self.created_at,

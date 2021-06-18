@@ -87,7 +87,7 @@ class _MultiSubmit:
         return (
             self.message
             if self.first
-            else self.message.duplicate().update(progenitor=self.message.uuid)
+            else self.message.duplicate().update(progenitor_uuid=self.message.uuid)
         )
 
     def __call__(self) -> None:
