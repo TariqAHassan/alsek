@@ -53,6 +53,9 @@ class Message:
         previous_result (any, optional): the output of any
             previously executed task. (This will only be non-null
             in cases where callbacks are used.)
+        previous_message (str, optional): universal unique identifier for
+            the message for the preceeding message (This will only be non-null
+            in cases where callbacks are used.)
         callback_message_data (dict, optional): data to construct
             a new message as part of a callback operation
         backoff_settings (dict, optional): parameters to control
@@ -83,6 +86,7 @@ class Message:
         updated_at: Optional[int] = None,
         delay: Optional[int] = None,
         previous_result: Optional[Any] = None,
+        previous_message: Optional[str] = None,
         callback_message_data: Optional[Dict[str, Any]] = None,
         backoff_settings: Optional[Dict[str, int]] = None,
         mechanism: str = DEFAULT_MECHANISM,
@@ -99,6 +103,7 @@ class Message:
         self.progenitor = progenitor
         self.delay = delay or 0
         self.previous_result = previous_result
+        self.previous_message = previous_message
         self.callback_message_data = callback_message_data
         self.backoff_settings = backoff_settings or ExponentialBackoff().settings
         self.mechanism = mechanism
@@ -130,6 +135,7 @@ class Message:
             updated_at=self.updated_at,
             delay=self.delay,
             previous_result=self.previous_result,
+            previous_message=self.previous_message,
             callback_message_data=self.callback_message_data,
             backoff_settings=self.backoff_settings,
             mechanism=self.mechanism,

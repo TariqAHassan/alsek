@@ -36,10 +36,12 @@ def _generate_callback_message(
     callback_message_data: Dict[str, Any],
     previous_result: Any,
     progenitor: str,
+    previous_message: str,
 ) -> Message:
     data = deepcopy(callback_message_data)
     data["previous_result"] = previous_result
     data["progenitor"] = progenitor
+    data["previous_message"] = previous_message
     return Message(**data)
 
 
@@ -75,6 +77,7 @@ def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
                 message.callback_message_data,
                 previous_result=result,
                 progenitor=message.progenitor or message.uuid,
+                previous_message=message.uuid,
             )
         )
     task._update_status(message, status=TaskStatus.SUCCEEDED)
