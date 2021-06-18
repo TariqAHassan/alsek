@@ -32,7 +32,7 @@ from alsek.storage.backends import Backend
         Message("task", created_at=0, updated_at=1),
         Message("task", delay=1000),
         Message("task", previous_result=99),
-        Message("task", previous_message="uuid-0"),
+        Message("task", previous_message_uuid="uuid-0"),
         Message("task", callback_message_data=Message("task").data),
         Message("task", backoff_settings=ConstantBackoff().settings),
         Message("task", mechanism="thread"),
