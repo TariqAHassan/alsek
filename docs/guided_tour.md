@@ -414,7 +414,7 @@ add_1.generate(
     args=(1,),
     callback=(
         add_1_previous.defer().generate(
-            callback_message=add_1_previous.defer().generate(
+            callback=add_1_previous.defer().generate(
                 callback=add_1_previous.defer().generate(
                     callback=print_result.defer().generate()
                 )
