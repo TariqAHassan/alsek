@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
 from uuid import uuid1
 
 from alsek._defaults import DEFAULT_MECHANISM, DEFAULT_QUEUE, DEFAULT_TASK_TIMEOUT
@@ -18,6 +18,14 @@ from alsek.core.concurrency import Lock
 
 def _make_uuid() -> str:
     return str(uuid1())
+
+
+def _collect_callback_uuids(callback_message_data: Dict[str, Any]) -> Iterable[str]:
+    yield callback_message_data["uuid"]
+    if callback_message_data["callback_message_data"]:
+        yield from _collect_callback_uuids(
+            callback_message_data["callback_message_data"]
+        )
 
 
 class Message:
@@ -185,6 +193,14 @@ class Message:
         if self.ready:
             return 0
         return max(self.ready_at - utcnow_timestamp_ms(), 0)
+
+    @property
+    def descendant_uuids(self) -> Optional[List[str]]:
+        """A list of uuids which have or will decent from this message."""
+        if self.callback_message_data:
+            return list(_collect_callback_uuids(self.callback_message_data))
+        else:
+            return None
 
     def _link_lock(self, lock: Lock) -> Message:
         """Link a lock to the current message.
