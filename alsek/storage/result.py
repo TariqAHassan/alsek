@@ -31,7 +31,7 @@ class ResultStore:
     @staticmethod
     def _get_stable_prefix(message: Message) -> str:
         """Get a prefix that does not change based on
-        whether or not the message has a progenitor or not."""
+        whether the message has a progenitor."""
         return f"results:{message.progenitor_uuid if message.progenitor_uuid else message.uuid}"
 
     @staticmethod
