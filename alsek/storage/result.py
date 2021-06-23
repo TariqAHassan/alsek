@@ -140,7 +140,7 @@ class ResultStore:
             * ``timeout`` only applies to ``message``, even if ``descendants=True``.
 
         Warning:
-            * If a message has a projenitor, the ``projenitor`` field in the
+            * If a message has a projenitor, the ``projenitor_uuid`` field in the
               ``message`` must be set.
 
         Examples:
