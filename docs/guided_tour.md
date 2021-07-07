@@ -760,10 +760,12 @@ for message, result in result_pool.istream(
     sum_n.generate(kwargs=dict(n=10)),
     sum_n.generate(kwargs=dict(n=100)),
     sum_n.generate(kwargs=dict(n=1000)),
-    descendants=False,
+    descendants=False,  # enable if any messages contain callbacks
 ):
     print(f"The result of message '{message.uuid}' is {result}.")
 ```
+
+Result pools can be used in applications, or for interactive distributed computing.
 
 !!! note
     If your use case requires a guarantee that results will be yielded 
