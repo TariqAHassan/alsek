@@ -62,7 +62,7 @@ class ResultPool:
                     yield messages[i], self.result_store.get(messages[i], **kwargs)
                     to_drop.add(i)
                 except KeyError:
-                    if break_on_key_error:
+                    if break_on_error:
                         break
 
             outstanding = _idx_drop(outstanding, indexes=to_drop)
@@ -96,7 +96,7 @@ class ResultPool:
               In order to loop over messages multiple times set ``keep=True``.
 
         """
-        yield from self._engine(messages, wait=wait, break_on_key_error=False, **kwargs)
+        yield from self._engine(messages, wait=wait, break_on_error=False, **kwargs)
 
     def stream(
         self,
@@ -126,4 +126,4 @@ class ResultPool:
               In order to loop over messages multiple times set ``keep=True``.
 
         """
-        yield from self._engine(messages, wait=wait, break_on_key_error=True, **kwargs)
+        yield from self._engine(messages, wait=wait, break_on_error=True, **kwargs)
