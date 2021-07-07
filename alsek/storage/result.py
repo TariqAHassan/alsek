@@ -50,21 +50,30 @@ class ResultStore:
         else:
             return f"results:{message.uuid}"
 
+    def _get_all_storage_names(self, message: Message, descendants: bool) -> List[str]:
+        if descendants:
+            return list(self.backend.scan(f"{self._get_stable_prefix(message)}*"))
+        else:
+            return [self.get_storage_name(message)]
+
     @staticmethod
     def _extract_uuid(storage_name: str) -> str:
         return storage_name.rsplit(":", 1)[-1]
 
-    def exists(self, message: Message) -> bool:
+    def exists(self, message: Message, descendants: bool = False) -> bool:
         """Whether or not data for ``message`` exists in the store.
 
         Args:
             message (Message): an Alsek message
+            descendants (bool): if ``True``, this method will return ``True``
+                iff all of the descendants of ``message`` also exist.
 
         Returns:
             bool
 
         """
-        return self.backend.exists(self.get_storage_name(message))
+        names = self._get_all_storage_names(message, descendants=descendants)
+        return all(self.backend.exists(n) for n in names)
 
     def set(self, message: Message, result: Any, nx: bool = True) -> None:
         """Store a ``result`` for ``message``.
@@ -84,12 +93,6 @@ class ResultStore:
             nx=nx,
             ttl=message.result_ttl,
         )
-
-    def _determine_names(self, message: Message, descendants: bool) -> List[str]:
-        if descendants:
-            return list(self.backend.scan(f"{self._get_stable_prefix(message)}*"))
-        else:
-            return [self.get_storage_name(message)]
 
     def _get_engine(self, names: Iterable[str], with_metadata: bool) -> List[Any]:
         def bundle_data(n: str) -> Dict[str, Any]:
@@ -125,8 +128,7 @@ class ResultStore:
                 "result" is the result persisted to the backend, "uuid" if the uuid
                  of the message associated with the result and "timestamp" is the
                 time at which the result was written to the backend.
-            descendants (bool): if ``True`` fetch any descendant results
-                currently available.
+            descendants (bool): if ``True`` also fetch results for descendants.
 
         Returns:
             result (Any, List[Any]): the stored result. If ``descendants``
@@ -155,10 +157,10 @@ class ResultStore:
             >>> result_store.get(Message(uuid="..."))
 
         """
-        if not self.exists(message):
+        if not self.exists(message, descendants=descendants):
             if timeout:
                 waiter(
-                    lambda: self.exists(message),
+                    lambda: self.exists(message, descendants=descendants),
                     timeout=timeout,
                     timeout_msg=f"Timeout waiting on result for {message.summary}",
                     sleep_interval=_GET_RESULT_WAIT_SLEEP_INTERVAL,
@@ -166,7 +168,7 @@ class ResultStore:
             else:
                 raise KeyError(f"No results for {message.uuid}")
 
-        names = self._determine_names(message, descendants=descendants)
+        names = self._get_all_storage_names(message, descendants=descendants)
         results = self._get_engine(names, with_metadata=with_metadata)
         if not keep:
             for n in names:
@@ -174,14 +176,22 @@ class ResultStore:
 
         return results if descendants else results[0]
 
-    def delete(self, message: Message) -> None:
+    def delete(
+        self,
+        message: Message,
+        descendants: bool = True,
+        missing_ok: bool = False,
+    ) -> None:
         """Delete any data for ``message`` from the backend.
 
         Args:
             message (Message): an Alsek message.
+            descendants (bool): if ``True`` also delete results for descendants.
+            missing_ok (bool): if ``True``, do not raise for missing
 
         Returns:
             None
 
         """
-        self.backend.delete(self.get_storage_name(message), missing_ok=True)
+        for name in self._get_all_storage_names(message, descendants=descendants):
+            self.backend.delete(name, missing_ok=missing_ok)
