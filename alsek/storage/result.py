@@ -61,6 +61,7 @@ class ResultStore:
             message (Message): an Alsek message
 
         Returns:
+            bool
 
         """
         return self.backend.exists(self.get_storage_name(message))
