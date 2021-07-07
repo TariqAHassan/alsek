@@ -49,7 +49,7 @@ class ResultPool:
         self,
         messages: Tuple[Message, ...],
         wait: int,
-        break_on_key_error: bool,
+        break_on_error: bool,
         **kwargs: Any,
     ) -> Iterable[Tuple[Message, Any]]:
         self._validate(messages)
