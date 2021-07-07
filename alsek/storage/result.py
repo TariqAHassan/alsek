@@ -181,7 +181,7 @@ class ResultStore:
         message: Message,
         descendants: bool = True,
         missing_ok: bool = False,
-    ) -> None:
+    ) -> int:
         """Delete any data for ``message`` from the backend.
 
         Args:
