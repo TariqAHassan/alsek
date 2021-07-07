@@ -760,6 +760,7 @@ for message, result in result_pool.istream(
     sum_n.generate(kwargs=dict(n=10)),
     sum_n.generate(kwargs=dict(n=100)),
     sum_n.generate(kwargs=dict(n=1000)),
+    descendants=False,
 ):
     print(f"The result of message '{message.uuid}' is {result}.")
 ```
