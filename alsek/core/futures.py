@@ -195,7 +195,11 @@ class ThreadTaskFuture(TaskFuture):
         thread_raise(self._thread.ident, exception=exception)
         if not self._wrapper_exit:
             self._wrapper_exit = True
-            _retry_future_handler(self.task, self.message, exception=exception())
+            _retry_future_handler(
+                self.task,
+                message=self.message,
+                exception=exception(f"Stopped thread {self._thread.ident}"),
+            )
 
 
 class ProcessTaskFuture(TaskFuture):
