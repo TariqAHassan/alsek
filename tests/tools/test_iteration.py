@@ -99,7 +99,7 @@ def test_istream(
         rolling_result_pool.result_store.set(m, result=1)
 
     actual_uuids, actual_results = set(), set()
-    for uuid, result in rolling_result_pool.istream(*messages):
+    for uuid, result in rolling_result_pool.istream(*messages, descendants=False):
         actual_uuids.add(uuid)
         actual_results.add(result)
 
@@ -138,7 +138,7 @@ def test_stream(
         rolling_result_pool.result_store.set(m, result=1)
 
     actual_uuids, actual_results = list(), list()
-    for uuid, result in rolling_result_pool.stream(*messages):
+    for uuid, result in rolling_result_pool.stream(*messages, descendants=False):
         actual_uuids.append(uuid)
         actual_results.append(result)
 
