@@ -72,6 +72,7 @@ class ResultPool:
         self,
         *messages: Message,
         wait: int = 5 * 1000,
+        descendants: bool = True,
         **kwargs: Any,
     ) -> Iterable[Tuple[Message, Any]]:
         """Stream the results of one or more messages. Results are yielded
@@ -82,6 +83,8 @@ class ResultPool:
             *messages (Message): one or more messages to iterate over
             wait (int): time to wait (in milliseconds) between checks for
                 available results
+            descendants (bool): if ``True``, wait for and return all
+                the results of all descendant (callback) messages.
             **kwargs (Keyword Args): keyword arguments to pass to
                 ``result_store.get()``.
 
@@ -96,12 +99,19 @@ class ResultPool:
               In order to loop over messages multiple times set ``keep=True``.
 
         """
-        yield from self._engine(messages, wait=wait, break_on_error=False, **kwargs)
+        yield from self._engine(
+            messages,
+            wait=wait,
+            break_on_error=False,
+            descendants=descendants,
+            **kwargs,
+        )
 
     def stream(
         self,
         *messages: Message,
         wait: int = 5 * 1000,
+        descendants: bool = True,
         **kwargs: Any,
     ) -> Iterable[Tuple[Message, Any]]:
         """Stream the results of one or more messages. The order of the
@@ -111,6 +121,8 @@ class ResultPool:
             *messages (Message): one or more messages to iterate over
             wait (int): time to wait (in milliseconds) between checks for
                 available results
+            descendants (bool): if ``True``, wait for and return all
+                the results of all descendant (callback) messages.
             **kwargs (Keyword Args): keyword arguments to pass to
                 ``result_store.get()``.
 
@@ -126,4 +138,10 @@ class ResultPool:
               In order to loop over messages multiple times set ``keep=True``.
 
         """
-        yield from self._engine(messages, wait=wait, break_on_error=True, **kwargs)
+        yield from self._engine(
+            messages,
+            wait=wait,
+            break_on_error=True,
+            descendants=descendants,
+            **kwargs,
+        )
