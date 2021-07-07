@@ -190,8 +190,11 @@ class ResultStore:
             missing_ok (bool): if ``True``, do not raise for missing
 
         Returns:
-            None
+            count (int): number of results deleted
 
         """
+        count: int = 0
         for name in self._get_all_storage_names(message, descendants=descendants):
             self.backend.delete(name, missing_ok=missing_ok)
+            count += 1
+        return count
