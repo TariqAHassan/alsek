@@ -72,7 +72,7 @@ class ResultPool:
         self,
         *messages: Message,
         wait: int = 5 * 1000,
-        descendants: bool = True,
+        descendants: bool = False,
         **kwargs: Any,
     ) -> Iterable[Tuple[Message, Any]]:
         """Stream the results of one or more messages. Results are yielded
@@ -111,7 +111,7 @@ class ResultPool:
         self,
         *messages: Message,
         wait: int = 5 * 1000,
-        descendants: bool = True,
+        descendants: bool = False,
         **kwargs: Any,
     ) -> Iterable[Tuple[Message, Any]]:
         """Stream the results of one or more messages. The order of the
