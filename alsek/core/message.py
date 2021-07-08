@@ -277,7 +277,7 @@ class Message:
             if k in self.data:
                 setattr(self, k, v)
             else:
-                raise KeyError(f"Updating '{k}' is not supported")
+                raise KeyError(f"Unsupported key '{k}'")
         return self
 
     def duplicate(self, uuid: Optional[str] = None) -> Message:
