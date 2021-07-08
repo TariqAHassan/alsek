@@ -58,15 +58,19 @@ class StopSignalListener:
     Args:
         stop_signals (Tuple[int, ...], optional): one or more stop
             signals to listen for.
-
-    Warning:
-        * Two or more SIGTERM or SIGINT signals will trigger an
-          immediate and non-graceful shutdown of the current process.
+        exit_override (bool): trigger an immediate and non-graceful shutdown
+            of the current process if two or more SIGTERM or SIGINT signals
+            are received.
 
     """
 
-    def __init__(self, stop_signals: Tuple[int, ...] = DEFAULT_STOP_SIGNALS) -> None:
+    def __init__(
+        self,
+        stop_signals: Tuple[int, ...] = DEFAULT_STOP_SIGNALS,
+        exit_override: bool = True,
+    ) -> None:
         self.stop_signals = stop_signals
+        self.exit_override = exit_override
 
         self.exit_event = Event()
         for s in self.stop_signals:
@@ -74,7 +78,7 @@ class StopSignalListener:
 
     def _signal_handler(self, signum: int, *args: Any) -> None:  # noqa
         log.debug("Received stop signal %s...", Signals(signum).name)
-        if self.received:
+        if self.received and self.exit_override:
             sys.exit(1)
         self.exit_event.set()
 

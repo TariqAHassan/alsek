@@ -38,7 +38,7 @@ class ResultPool:
     def __init__(self, result_store: ResultStore) -> None:
         self.result_store = result_store
 
-        self.stop_signal = StopSignalListener()
+        self.stop_signal = StopSignalListener(exit_override=False)
 
     @staticmethod
     def _validate(messages: Tuple[Message, ...]) -> None:
