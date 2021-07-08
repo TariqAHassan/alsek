@@ -243,10 +243,10 @@ class Message:
             lock = self._lock
             self._lock = None
             return lock
-        elif not missing_ok:
-            raise AttributeError("No lock linked to message")
-        else:
+        elif missing_ok:
             return None
+        else:
+            raise AttributeError("No lock linked to message")
 
     def clone(self) -> Message:
         """Create an exact copy of the current message.
