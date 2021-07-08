@@ -27,7 +27,7 @@ def _wait_for_signal(
     first_iter_queue: Queue,
     signal_queue: Queue,
 ) -> None:
-    # Note: this must be defined here due to pickling limiations
+    # Note: this must be defined here due to pickling limitations
     c = 0
     stop_signal = StopSignalListener()
     while True:
