@@ -136,6 +136,8 @@ class ResultStore:
 
         Raises:
             KeyError: if results are not available for ``message``
+            TimeoutError: if results are not available for ``message``
+                following ``timeout``.
 
         Notes:
             * The order of results when ``descendants=True`` is determined
