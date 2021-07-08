@@ -83,7 +83,7 @@ class ResultPool:
             *messages (Message): one or more messages to iterate over
             wait (int): time to wait (in milliseconds) between checks for
                 available results
-            descendants (bool): if ``True``, wait for and return all
+            descendants (bool): if ``True``, wait for and return
                 the results of all descendant (callback) messages.
             **kwargs (Keyword Args): keyword arguments to pass to
                 ``result_store.get()``.
@@ -121,7 +121,7 @@ class ResultPool:
             *messages (Message): one or more messages to iterate over
             wait (int): time to wait (in milliseconds) between checks for
                 available results
-            descendants (bool): if ``True``, wait for and return all
+            descendants (bool): if ``True``, wait for and return
                 the results of all descendant (callback) messages.
             **kwargs (Keyword Args): keyword arguments to pass to
                 ``result_store.get()``.
