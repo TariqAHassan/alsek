@@ -61,7 +61,7 @@ class ResultPool:
                 try:
                     yield messages[i], self.result_store.get(messages[i], **kwargs)
                     to_drop.add(i)
-                except KeyError:
+                except (KeyError, TimeoutError):
                     if break_on_error:
                         break
 
