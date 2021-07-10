@@ -119,6 +119,10 @@ class Backend(ABC):
         Returns:
             short_name (str): ``name`` without the namespace prefix
 
+        Notes:
+            * If ``name`` is already the short name, this method
+              will collapse to a no-op.
+
         """
         return re.sub(rf"^{self.namespace}:", repl="", string=name)
 
