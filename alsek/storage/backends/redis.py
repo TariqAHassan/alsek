@@ -153,7 +153,8 @@ class RedisBackend(Backend):
             Any
 
         """
-        return self.serializer.reverse(self.conn.get(self.full_name(name)))
+        encoded = self.conn.get(self.full_name(name))
+        return self.serializer.reverse(encoded)
 
     def delete(self, name: str, missing_ok: bool = False) -> None:
         """Delete a ``name`` from the Redis backend.
