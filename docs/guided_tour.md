@@ -518,7 +518,7 @@ def simple_task() -> int:
 The number of times a task will be retried is determined by
 `max_retries` by default. In cases where this is not sufficiently 
 sophisticated to determine if message should be retried, the `do_retry()` 
-method of the `Task` class be overridden.
+method of the `Task` class can be overridden.
 
 ```python
 from alsek import Message
