@@ -98,7 +98,7 @@ broker = Broker(DiskCacheBackend())
 def simple_task() -> int:
     return 99
 
-message = simple_task.generate(args=(1, 1))
+message = simple_task.generate()
 ```
 
 First, let's print the message:
