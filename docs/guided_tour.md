@@ -111,7 +111,7 @@ Message(
     kwargs={},
     metadata=None,
     result_ttl=None,
-    uuid='dc4127a0-e1f5-11eb-993c-3e22fb7dd1a2',
+    uuid='67de0e4c-9816-11eb-8cb0-acde48001122',
     progenitor_uuid=None,
     retries=0,
     timeout=3600000,
