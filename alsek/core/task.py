@@ -26,7 +26,7 @@ from alsek._defaults import (
 )
 from alsek._utils.aggregation import gather_init_params
 from alsek._utils.printing import auto_repr
-from alsek.core.backoff import Backoff, ExponentialBackoff
+from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
 from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.core.status import StatusTracker, TaskStatus
@@ -113,7 +113,7 @@ class Task:
         timeout (int): the maximum amount of time (in milliseconds)
             this task is permitted to run.
         max_retries (int, optional): maximum number of allowed retries
-        backoff (Backoff): backoff algorithm and parameters to use when computing
+        backoff (Backoff, optional): backoff algorithm and parameters to use when computing
             delay between retries
         result_store (ResultStore, optional): store for persisting task results
         status_tracker (StatusTracker, optional): store for persisting task statuses
@@ -139,7 +139,7 @@ class Task:
         priority: int = 0,
         timeout: int = DEFAULT_TASK_TIMEOUT,
         max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
-        backoff: Backoff = ExponentialBackoff(),
+        backoff: Optional[Backoff] = ExponentialBackoff(),
         result_store: Optional[ResultStore] = None,
         status_tracker: Optional[StatusTracker] = None,
         mechanism: str = DEFAULT_MECHANISM,
@@ -151,7 +151,12 @@ class Task:
         self.timeout = timeout
         self._name = name
         self.max_retries = max_retries
-        self.backoff = backoff
+        self.backoff = backoff or ConstantBackoff(
+            constant=0,
+            floor=0,
+            ceiling=0,
+            zero_override=True,
+        )
         self.result_store = result_store
         self.status_tracker = status_tracker
         self.mechanism = mechanism
@@ -430,7 +435,7 @@ class TriggerTask(Task):
         timeout (int): the maximum amount of time (in milliseconds)
             this task is permitted to run.
         max_retries (int, optional): maximum number of allowed retries
-        backoff (Backoff): backoff algorithm and parameters to use when computing
+        backoff (Backoff, optional): backoff algorithm and parameters to use when computing
             delay between retries
         result_store (ResultStore, optional): store for persisting task results
         status_tracker (StatusTracker, optional): store for persisting task statuses
@@ -456,7 +461,7 @@ class TriggerTask(Task):
         priority: int = 0,
         timeout: int = DEFAULT_TASK_TIMEOUT,
         max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
-        backoff: Backoff = ExponentialBackoff(),
+        backoff: Optional[Backoff] = ExponentialBackoff(),
         result_store: Optional[ResultStore] = None,
         status_tracker: Optional[StatusTracker] = None,
         mechanism: str = DEFAULT_MECHANISM,
@@ -573,7 +578,7 @@ def task(
     priority: int = 0,
     timeout: int = DEFAULT_TASK_TIMEOUT,
     max_retries: int = DEFAULT_MAX_RETRIES,
-    backoff: Backoff = ExponentialBackoff(),
+    backoff: Optional[Backoff] = ExponentialBackoff(),
     trigger: Optional[Union[CronTrigger, DateTrigger, IntervalTrigger]] = None,
     result_store: Optional[ResultStore] = None,
     status_tracker: Optional[StatusTracker] = None,
@@ -593,7 +598,7 @@ def task(
         timeout (int): the maximum amount of time (in milliseconds)
             this task is permitted to run.
         max_retries (int, optional): maximum number of allowed retries
-        backoff (Backoff): backoff algorithm and parameters to use when computing
+        backoff (Backoff, optional): backoff algorithm and parameters to use when computing
             delay between retries
         trigger (CronTrigger, DateTrigger, IntervalTrigger, optional): trigger
             for task execution.

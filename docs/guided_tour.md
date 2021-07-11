@@ -571,7 +571,8 @@ def task_c() -> int:
     Here, an incident is a failed attempt to process the message.
 
 !!! note
-    Backoff can be disabled by using ``ConstantBackoff(constant=0, floor=0, ceiling=0, zero_override=True)``.
+    Setting `backoff=None` is functionally equlivant to 
+    ``ConstantBackoff(constant=0, floor=0, ceiling=0, zero_override=True)``.
 
 
 ## Status Tracking
