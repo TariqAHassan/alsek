@@ -107,7 +107,7 @@ First, let's print the message:
 Message(
     task_name='simple_task',
     queue='alsek_queue',
-    args=(1, 1),
+    args=(),
     kwargs={},
     metadata=None,
     result_ttl=None,
