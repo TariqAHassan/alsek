@@ -76,7 +76,7 @@ class WorkerPool(Consumer):
         management_interval (int): amount of time (in milliseconds) between
             maintenance scans of background task execution.
         slot_wait_interval (int): amount of time (in milliseconds) to wait
-            between checks to determine if a process for task execution is available
+            between checks to determine worker availability for pending tasks.
         **kwargs (Keyword Args): Keyword arguments to pass to ``Consumer()``.
 
     Raises:
