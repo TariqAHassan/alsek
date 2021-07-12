@@ -68,9 +68,9 @@ class WorkerPool(Consumer):
             to ``queues``.
         queues (List[str], optional): the names of one or more queues
             consume messages from. If ``None``, all queues will be consumed.
-        max_threads (int): the maximum of task with ``mechanism="thread"``
+        max_threads (int): the maximum of tasks with ``mechanism="thread"``
             supported at any 'one' time.
-        max_processes (int, optional): the maximum of task with ``mechanism="process"``
+        max_processes (int, optional): the maximum of tasks with ``mechanism="process"``
             supported at any one time. If ``None``, ``max(1, cpu_count() - 1)`` will
             be used.
         management_interval (int): amount of time (in milliseconds) between
