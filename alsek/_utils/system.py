@@ -78,7 +78,7 @@ class StopSignalListener:
 
     def _signal_handler(self, signum: int, *args: Any) -> None:  # noqa
         log.debug("Received stop signal %s...", Signals(signum).name)
-        if self.received and self.exit_override:
+        if self.exit_override and self.received:
             sys.exit(1)
         self.exit_event.set()
 
