@@ -145,7 +145,7 @@ message.ready_at
 message.ttr
 # Output: 0
 
-# UUIDs which descended from this message
+# UUIDs which have descended or will descend from this message
 message.descendant_uuids
 # Output: None
 
