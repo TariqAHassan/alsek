@@ -52,7 +52,7 @@ def _derive_consumer_subset(
     for t in sorted(tasks, key=lambda i: i.priority):
         if queues is None or t.queue in queues:
             subset[t.queue].append(t.name)
-    return dict_sort(subset, key=queues.index if queues else lambda k: k)
+    return dict_sort(subset, key=queues.index if queues else None)
 
 
 class WorkerPool(Consumer):

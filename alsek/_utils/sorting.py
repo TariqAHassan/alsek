@@ -3,12 +3,12 @@
     Sorting
 
 """
-from typing import Any, Callable, Dict
+from typing import Any, Callable, Dict, Optional
 
 
 def dict_sort(
     dictionary: Dict[Any, Any],
-    key: Callable[[Any], Any] = lambda k: k,
+    key: Optional[Callable[[Any], Any]] = None,
 ) -> Dict[Any, Any]:
     """Sort a dictionary by key.
 
@@ -22,4 +22,4 @@ def dict_sort(
         sorted_dictionary (dict): ``dictionary`` sorted
 
     """
-    return dict(sorted(dictionary.items(), key=lambda x: key(x[0])))  # type: ignore
+    return dict(sorted(dictionary.items(), key=lambda x: (key or (lambda k: k))(x[0])))  # type: ignore
