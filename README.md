@@ -17,7 +17,7 @@ capable while remaining very lightweight. Current functionality includes:
   * Prioritization of queues and tasks
   * Result storage
   * Task Status Tracking
-  * Interactive result iteration
+  * Interactive Result Iteration
   * Cron, date and interval task triggers (with result storage support)
   * Robust task timeouts
   * Callbacks
