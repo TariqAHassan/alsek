@@ -145,6 +145,10 @@ message.ready_at
 message.ttr
 # Output: 0
 
+# UUID which descended from this message
+message.descendant_uuids
+# Output: None
+
 # Whether or not the message is ready for processing
 message.ready
 # Output: True
