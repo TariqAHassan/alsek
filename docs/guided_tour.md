@@ -8,8 +8,6 @@ Please feel free to feed the functions. 🙂
 Alsek currently provides 'out of the box' support for two popular databases: [`Redis`](https://redis.io) 
 and [`Sqite`](https://www.sqlite.org) (via [`DiskCache`](http://www.grantjenks.com/docs/diskcache/index.html)).
 
-### Included
-
 #### Redis
 
 ```python
