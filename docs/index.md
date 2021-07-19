@@ -8,13 +8,13 @@ capable while remaining very lightweight. Current functionality includes:
   * Multiprocess and multi-thread task execution
   * Automatic retries, with customizable backoff procedures
   * Prioritization of queues and tasks
-  * Task Status
   * Result storage
-  * Result iteration
-  * Cron, date and interval task triggers with result storage support
+  * Task Status Tracking
+  * Interactive result iteration
+  * Cron, date and interval task triggers (with result storage support)
   * Robust task timeouts
   * Callbacks
-  * Dead Letter Queue (DLQ)
+  * Dead Letter Queues (DLQ)
 
 ## Installing
 
