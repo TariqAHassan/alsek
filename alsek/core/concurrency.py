@@ -14,7 +14,7 @@ from alsek.storage.backends import Backend
 
 
 class Lock:
-    """Distributed mutual exclusion lock (MUTEX).
+    """Distributed mutual exclusion (MUTEX) lock.
 
     Args:
         name (str): name of the lock
