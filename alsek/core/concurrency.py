@@ -125,7 +125,7 @@ class Lock:
         """Enter the context and try to acquire the lock.
 
         Returns:
-          lock (Lock): underlying lock object.
+            lock (Lock): underlying lock object.
 
         """
         return self
