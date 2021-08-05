@@ -102,7 +102,7 @@ class Consumer:
             if message.ready:
                 empty = False
                 with _ConsumptionMutex(message, self.broker.backend) as lock:
-                    if lock.acquire():
+                    if lock.acquire(strict=False):
                         yield message._link_lock(lock)
 
         self._empty_passes = self._empty_passes + 1 if empty else 0
