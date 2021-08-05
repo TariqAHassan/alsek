@@ -788,7 +788,7 @@ backend = DiskCacheBackend()
 @task(...)
 def send_data() -> None:
     with Lock("send_data", backend=backend) as lock:
-        if lock.acquire():
+        if lock.acquire(strict=False):
             print("Sending data...")
         else:
             print("Failed to acquire lock")
