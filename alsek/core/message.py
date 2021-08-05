@@ -202,13 +202,14 @@ class Message:
         else:
             return None
 
-    def _link_lock(self, lock: Lock) -> Message:
+    def _link_lock(self, lock: Lock, override: bool = False) -> Message:
         """Link a lock to the current message.
 
         Links are formed against the ``long_name`` of ``lock``.
 
         Args:
             lock (Lock): a concurrency lock
+            override (bool): if ``True`` replace any existing lock
 
         Returns:
             message (Message): the updated message
@@ -218,7 +219,7 @@ class Message:
               never persisted to the data backend.
 
         """
-        if self._lock:
+        if self._lock and not override:
             raise AttributeError(f"Already linked to '{self._lock}'")
         else:
             self._lock = lock.long_name
