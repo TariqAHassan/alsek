@@ -873,7 +873,7 @@ alsek my_project
 
 ### Advanced options
 
-Alsek's CLI includes several dials to fine-grain control over the worker pool.
+Alsek's CLI includes several dials to achieve fine-grain control over the worker pool.
 We won't cover all of them here, but there are at least three worth highlighting.
 
 The first is the `-q`/`--queues` option. This allows one to limit the queues
