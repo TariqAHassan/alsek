@@ -62,7 +62,7 @@ When we generate an instance of this task, as shown below, it will be persisted 
 message = add.generate(args=(1, 1))
 ```
 
-Task generation yields a `Message() `object, which contains detailed information about the task. 
+Task generation yields a `Message()` object, which contains detailed information about the task. 
 We can see this information by simply printing the message:
 
 ```python
@@ -90,7 +90,7 @@ Message(
 
 Here we can see the name of the original task was "add" and that it was enqueued on the "math_ops" queue. 
 We can also see more advanced information, such as the backoff procedure that will be used in the case of 
-retries as well as the mechanism that will use to execute the task. 
+retries as well as the mechanism that will be use to execute the task. 
 (In this case, the _Worker Pool_ will execute the task in a distinct process.)
 
 In order for this message to be processed, we will need to start up a worker pool. 
