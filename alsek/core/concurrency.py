@@ -83,8 +83,12 @@ class Lock:
         """If the lock is held by the current host."""
         return self.holder == gethostname()
 
-    def acquire(self) -> bool:
+    def acquire(self, strict: bool = True) -> bool:
         """Try to acquire the lock.
+
+        Args:
+            strict (bool): if ``True`` return ``False`` if
+                the lock is already held.
 
         Returns:
             acquired (bool): ``True`` if the message is
@@ -98,7 +102,7 @@ class Lock:
               holds the lock.
 
         """
-        if self.held:
+        if strict and self.held:
             return False
 
         try:
