@@ -37,7 +37,7 @@ class Lock:
         >>> backend = DiskCacheBackend()
         ...
         >>> with Lock("mutex", backend=backend) as lock:
-        >>>     if lock.acquire():
+        >>>     if lock.acquire(strict=False):
         >>>         print("Acquired lock.")
         >>>     else:
         >>>         print("Did not acquire lock.")
