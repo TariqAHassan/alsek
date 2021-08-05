@@ -102,8 +102,8 @@ class Lock:
               holds the lock.
 
         """
-        if strict and self.held:
-            return False
+        if self.held:
+            return not strict
 
         try:
             self.backend.set(self.long_name, value=gethostname(), nx=True, ttl=self.ttl)
