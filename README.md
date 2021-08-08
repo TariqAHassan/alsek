@@ -79,11 +79,11 @@ Which will result in output similar to this:
 
 As we can see above, the message was quickly processed by the worker pool.
 
-If you would like a longer introduction to Alsek, see [Getting Started]().
+If you would like a longer introduction to Alsek, see [Getting Started](https://tariqahassan.github.io/alsek/#getting-started).
 
 ## Documentation
 
-Documentation can be found [here]().
+Documentation can be found [here](https://TariqAHassan.github.io/alsek/).
 
 ## Examples
 
