@@ -53,7 +53,7 @@ class ResultStore:
     def _get_all_storage_names(self, message: Message, descendants: bool) -> List[str]:
         if descendants:
             if message.descendant_uuids:
-                return message.descendant_uuids
+                return [self.get_storage_name(message), *message.descendant_uuids]
             else:
                 return list(self.backend.scan(f"{self._get_stable_prefix(message)}*"))
         else:
