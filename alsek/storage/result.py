@@ -54,7 +54,9 @@ class ResultStore:
         if descendants:
             if message.descendant_uuids:
                 descendant_names = [
-                    self.get_storage_name(Message(uuid=u, progenitor_uuid=message.uuid))
+                    self.get_storage_name(
+                        Message(message.task_name, uuid=u, progenitor_uuid=message.uuid)
+                    )
                     for u in message.descendant_uuids
                 ]
                 return [self.get_storage_name(message), *descendant_names]
