@@ -59,9 +59,12 @@ class ResultStore:
                     )
                     for u in message.descendant_uuids
                 ]
-                return [self.get_storage_name(message), *descendant_names]
+                return [*descendant_names, self.get_storage_name(message)]
             else:
-                return list(self.backend.scan(f"{self._get_stable_prefix(message)}*"))
+                return sorted(
+                    self.backend.scan(f"{self._get_stable_prefix(message)}*"),
+                    key=lambda i: 1 if i == message.uuid else 0,
+                )
         else:
             return [self.get_storage_name(message)]
 
