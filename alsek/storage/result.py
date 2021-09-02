@@ -151,7 +151,6 @@ class ResultStore:
         Notes:
             * The order of results when ``descendants=True`` is determined
               by the time at which the data was written to the backend.
-            * ``timeout`` only applies to ``message``, even if ``descendants=True``.
 
         Warning:
             * If a message has a projenitor, the ``projenitor_uuid`` field in the
