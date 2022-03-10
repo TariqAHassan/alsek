@@ -62,7 +62,7 @@ class Message:
             previously executed task. (This will only be non-null
             in cases where callbacks are used.)
         previous_message_uuid (str, optional): universal unique identifier
-            for the message for the preceeding message (This will only be
+            for the message for the preceding message (This will only be
             non-null in cases where callbacks are used.)
         callback_message_data (dict, optional): data to construct
             a new message as part of a callback operation
