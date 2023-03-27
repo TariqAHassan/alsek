@@ -11,7 +11,7 @@ setup(
         "APScheduler==3.7.0",
         "click==7.1.2",
         "dill==0.3.3",
-        "redis==3.5.3",
+        "redis==4.5.3",
     ],
     extras_require={
         "diskcache": ["diskcache==5.2.1"],
