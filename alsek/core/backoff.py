@@ -250,7 +250,7 @@ class ExponentialBackoff(Backoff):
             backoff (int): backoff in milliseconds
 
         """
-        return int(self.factor * (self.base ** incidents))
+        return int(self.factor * (self.base**incidents))
 
 
 @lru_cache(maxsize=8)
