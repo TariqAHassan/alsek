@@ -78,7 +78,7 @@ def base_backend() -> Backend:
             raise NotImplementedError()
 
         def delete(self, name: str, missing_ok: bool = False) -> None:
-            raise NotImplementedError
+            raise NotImplementedError()
 
     return MockBaseBackend()
 
