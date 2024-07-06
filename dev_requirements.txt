@@ -13,4 +13,3 @@ pytest-mock==3.5.1
 pytest_redis==2.0.0
 pytest-timeout==1.4.2
 schema==0.7.4
-torch>=2.3.1
