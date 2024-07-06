@@ -222,9 +222,11 @@ class Backend(ABC):
     def clear_namespace(self, raise_on_error: bool = True) -> int:
         """Clear all items in backend under the current namespace.
 
+        Args:
+             raise_on_error (bool): raise if a delete operation fails
+
         Returns:
             count (int): number of items cleared
-            raise_on_error (bool): raise if a delete operation fails
 
         Raises:
             KeyError: if ``raise_on_error`` and a delete operation fails
