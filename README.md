@@ -33,6 +33,16 @@ Note: Alsek will be added to PyPI in the near future.
 
 Requires Python 3.7+
 
+### Development
+
+For development, it might also be helpful to install `redis`.
+
+```shell
+# MacOS
+brew install redis
+brew services start redis
+```
+
 ## Quick Start
 
 First, add the following to a file named `quick_start.py`:
