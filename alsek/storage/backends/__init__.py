@@ -55,6 +55,8 @@ class Backend(ABC):
 
     """
 
+    SUPPORTS_PUBSUB: bool = False
+
     def __init__(
         self,
         namespace: str = DEFAULT_NAMESPACE,
@@ -192,6 +194,12 @@ class Backend(ABC):
             KeyError: if ``missing_ok`` is ``False`` and ``name`` is not found.
 
         """
+        raise NotImplementedError()
+
+    def pub(self, channel: str, value: Any) -> None:
+        raise NotImplementedError()
+
+    def sub(self, channel: str) -> Iterable[str | dict[str, Any]]:
         raise NotImplementedError()
 
     @abstractmethod

@@ -36,6 +36,8 @@ class RedisBackend(Backend):
 
     """
 
+    SUPPORTS_PUBSUB: bool = False
+
     def __init__(
         self,
         conn: Optional[Union[str, Redis, LazyClient]] = None,
@@ -173,6 +175,21 @@ class RedisBackend(Backend):
         found = self.conn.delete(self.full_name(name))
         if not missing_ok and not found:
             raise KeyError(f"No name '{name}' found")
+
+    def pub(self, channel: str, value: Any) -> None:
+        self.conn.publish(
+            channel=channel,
+            message=self.serializer.forward(value),
+        )
+
+    def sub(self, channel: str) -> Iterable[str | dict[str, Any]]:
+        pubsub = self.conn.pubsub()
+        pubsub.subscribe(channel)
+        try:
+            for i in pubsub.listen():
+                yield i
+        finally:
+            pubsub.close()
 
     def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
         """Scan the backend for matching names.

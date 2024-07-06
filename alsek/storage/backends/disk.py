@@ -43,6 +43,8 @@ class DiskCacheBackend(Backend):
 
     """
 
+    SUPPORTS_PUBSUB: bool = False
+
     def __init__(
         self,
         conn: Optional[Union[str, Path, DiskCache, LazyClient]] = None,
