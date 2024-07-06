@@ -5,11 +5,11 @@
 """
 from abc import ABC, abstractmethod
 from functools import lru_cache
-from typing import Any, Dict, Optional, Type
+from typing import Any, Optional, Type
 
 from alsek._utils.printing import auto_repr
 
-BackoffSettingsType = Dict[str, Any]
+BackoffSettingsType = dict[str, Any]
 
 
 class Backoff(ABC):
@@ -41,7 +41,7 @@ class Backoff(ABC):
 
     @property
     @abstractmethod
-    def parameters(self) -> Dict[str, Optional[int]]:
+    def parameters(self) -> dict[str, Optional[int]]:
         """Parameters of the current instance which uniquely
         characterize it.
 
@@ -117,7 +117,7 @@ class ConstantBackoff(Backoff):
         self.constant = constant
 
     @property
-    def parameters(self) -> Dict[str, Optional[int]]:
+    def parameters(self) -> dict[str, Optional[int]]:
         """Parameters of the current ``ConstantBackoff``
         instance which uniquely characterize it.
 
@@ -167,7 +167,7 @@ class LinearBackoff(Backoff):
         self.factor = factor
 
     @property
-    def parameters(self) -> Dict[str, Optional[int]]:
+    def parameters(self) -> dict[str, Optional[int]]:
         """Parameters of the current ``LinearBackoff``
         instance which uniquely characterize it.
 
@@ -218,7 +218,7 @@ class ExponentialBackoff(Backoff):
         self.factor = factor
 
     @property
-    def parameters(self) -> Dict[str, Optional[int]]:
+    def parameters(self) -> dict[str, Optional[int]]:
         """Parameters of the current ``ExponentialBackoff``
         instance which uniquely characterize it.
 
@@ -250,7 +250,7 @@ class ExponentialBackoff(Backoff):
             backoff (int): backoff in milliseconds
 
         """
-        return int(self.factor * (self.base ** incidents))
+        return int(self.factor * (self.base**incidents))
 
 
 @lru_cache(maxsize=8)

@@ -10,7 +10,7 @@ from importlib import import_module
 from inspect import getmembers
 from pkgutil import walk_packages
 from types import ModuleType
-from typing import Any, Dict, Iterable, Tuple
+from typing import Any, Iterable
 
 from alsek._utils.logging import magic_logger
 from alsek.core.task import Task
@@ -60,14 +60,14 @@ def _is_task(obj: Any) -> bool:
         "s" if len(output) > 1 else "",
     ),
 )
-def collect_tasks(name: str) -> Tuple[Task, ...]:
+def collect_tasks(name: str) -> tuple[Task, ...]:
     """Recursively collect all tasks in ``name``.
 
     Args:
         name (str): name of a module
 
     Returns:
-        tasks (Tuple[Task, ...]): collected tasks
+        tasks (tuple[Task, ...]): collected tasks
 
     Raises:
         NoTasksFoundError: if no tasks can be found
@@ -75,7 +75,7 @@ def collect_tasks(name: str) -> Tuple[Task, ...]:
     """
     sys.path.append(os.getcwd())
 
-    all_tasks: Dict[str, Task] = dict()
+    all_tasks: dict[str, Task] = dict()
     for module in _enumerate_modules(import_module(name)):
         for name, task in getmembers(module, predicate=_is_task):
             if name in all_tasks:

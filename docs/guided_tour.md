@@ -149,7 +149,7 @@ message.ttr
 message.descendant_uuids
 # Output: None
 
-# Whether or not the message is ready for processing
+# Whether the message is ready for processing
 message.ready
 # Output: True
 ```

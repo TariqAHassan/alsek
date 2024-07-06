@@ -3,7 +3,7 @@
     Result Iteration
 
 """
-from typing import Any, Iterable, List, Set, Tuple
+from typing import Any, Iterable
 
 from alsek._utils.checks import has_duplicates
 from alsek._utils.system import StopSignalListener
@@ -12,7 +12,7 @@ from alsek.exceptions import ValidationError
 from alsek.storage.result import ResultStore
 
 
-def _idx_drop(items: List[Any], indexes: Set[int]) -> List[Any]:
+def _idx_drop(items: list[Any], indexes: set[int]) -> list[Any]:
     return [i for e, i in enumerate(items) if e not in indexes]
 
 
@@ -41,17 +41,17 @@ class ResultPool:
         self.stop_signal = StopSignalListener(exit_override=False)
 
     @staticmethod
-    def _validate(messages: Tuple[Message, ...]) -> None:
+    def _validate(messages: tuple[Message, ...]) -> None:
         if has_duplicates([m.uuid for m in messages]):
             raise ValidationError("Duplicate messages detected")
 
     def _engine(
         self,
-        messages: Tuple[Message, ...],
+        messages: tuple[Message, ...],
         wait: int,
         break_on_error: bool,
         **kwargs: Any,
-    ) -> Iterable[Tuple[Message, Any]]:
+    ) -> Iterable[tuple[Message, Any]]:
         self._validate(messages)
 
         outstanding = list(range(len(messages)))
@@ -74,7 +74,7 @@ class ResultPool:
         wait: int = 5 * 1000,
         descendants: bool = False,
         **kwargs: Any,
-    ) -> Iterable[Tuple[Message, Any]]:
+    ) -> Iterable[tuple[Message, Any]]:
         """Stream the results of one or more messages. Results are yielded
         in the order in which they become available. (This may differ from
         the order in which messages are provided.)
@@ -113,7 +113,7 @@ class ResultPool:
         wait: int = 5 * 1000,
         descendants: bool = False,
         **kwargs: Any,
-    ) -> Iterable[Tuple[Message, Any]]:
+    ) -> Iterable[tuple[Message, Any]]:
         """Stream the results of one or more messages. The order of the
         results are guaranteed to match the order of ``messages``.
 

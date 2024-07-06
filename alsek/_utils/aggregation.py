@@ -4,13 +4,13 @@
 
 """
 import inspect
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Optional
 
 
 def gather_init_params(
     obj: Any,
-    ignore: Optional[Tuple[str, ...]] = None,
-) -> Dict[str, Any]:
+    ignore: Optional[tuple[str, ...]] = None,
+) -> dict[str, Any]:
     """Extract the parameters passed to an object's ``__init__()``.
 
     Args:

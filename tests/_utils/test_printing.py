@@ -4,7 +4,7 @@
 
 """
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import pytest
 
@@ -40,7 +40,7 @@ def test_format_value(value: Any, expected: Any) -> None:
     ],
 )
 def test_format_params(
-    params: Dict[str, Any],
+    params: dict[str, Any],
     join_on: str,
     expected: str,
 ) -> None:
@@ -64,7 +64,7 @@ def test_format_params(
 def test_auto_repr(
     obj: Any,
     new_line_threshold: Optional[int],
-    params: Dict[str, Any],
+    params: dict[str, Any],
     expected: str,
 ) -> None:
     actual = auto_repr(obj, new_line_threshold=new_line_threshold, **params)

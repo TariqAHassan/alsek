@@ -9,7 +9,7 @@ capable while remaining very lightweight. Current functionality includes:
   * Automatic retries, with customizable backoff procedures
   * Prioritization of queues and tasks
   * Result storage
-  * Status Tracking
+  * Status Tracking and Publishing
   * Interactive Result Iteration
   * Cron, date and interval task triggers (with result storage support)
   * Robust task timeouts
@@ -24,7 +24,7 @@ pip install git+git://github.com/TariqAHassan/alsek@master
 
 Note: Alsek will be added to PyPI in the near future.
 
-Requires Python 3.7+
+Requires Python 3.9+
 
 ## Getting Started
 

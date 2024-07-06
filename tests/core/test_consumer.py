@@ -3,7 +3,7 @@
     Test Consumer
 
 """
-from typing import Dict, List, Optional, Union
+from typing import Optional, Union
 
 import pytest
 
@@ -36,7 +36,7 @@ def test_consumption_mutex_settings(rolling_backend: Backend) -> None:
     ],
 )
 def test_scan_subnamespaces(
-    subset: Optional[Union[List[str], Dict[str, List[str]]]],
+    subset: Optional[Union[list[str], dict[str, list[str]]]],
     rolling_broker: Broker,
 ) -> None:
     consumer = Consumer(rolling_broker, subset=subset)

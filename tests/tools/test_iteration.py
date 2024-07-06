@@ -6,7 +6,7 @@
 """
 import copy
 import random
-from typing import Any, List, Optional, Set
+from typing import Any, Optional
 
 import pytest
 
@@ -15,7 +15,7 @@ from alsek.exceptions import ValidationError
 from alsek.tools.iteration import ResultPool, _idx_drop
 
 
-def _shuffle(l: List[Any], seed: int = 42) -> List[Any]:
+def _shuffle(l: list[Any], seed: int = 42) -> list[Any]:
     random.seed(seed)
     l = copy.deepcopy(l)
     random.shuffle(l)
@@ -32,7 +32,7 @@ def _shuffle(l: List[Any], seed: int = 42) -> List[Any]:
         (["a", "b", "c"], {2}, ["a", "b"]),
     ],
 )
-def test_idx_drop(items: List[Any], indexes: Set[int], expected: List[Any]) -> None:
+def test_idx_drop(items: list[Any], indexes: set[int], expected: list[Any]) -> None:
     assert _idx_drop(items, indexes=indexes) == expected
 
 
@@ -58,7 +58,7 @@ def test_idx_drop(items: List[Any], indexes: Set[int], expected: List[Any]) -> N
     ],
 )
 def test_validation(
-    messages: List[Message],
+    messages: list[Message],
     expected: Optional[Exception],
     rolling_result_pool: ResultPool,
 ) -> None:
@@ -89,7 +89,7 @@ def test_validation(
     ],
 )
 def test_istream(
-    messages: List[Message],
+    messages: list[Message],
     rolling_result_pool: ResultPool,
 ) -> None:
     expected_msgs = set(messages)
@@ -128,7 +128,7 @@ def test_istream(
     ],
 )
 def test_stream(
-    messages: List[Message],
+    messages: list[Message],
     rolling_result_pool: ResultPool,
 ) -> None:
     expected_msgs = messages

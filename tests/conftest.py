@@ -3,6 +3,7 @@
     Conftest
 
 """
+from __future__ import annotations
 from functools import partial
 from pathlib import Path
 from subprocess import PIPE, Popen
@@ -64,6 +65,12 @@ def base_backend() -> Backend:
         def get(self, name: str) -> Any:
             raise NotImplementedError()
 
+        def pub(self, pattern: Optional[str] = None) -> Iterable[str]:
+            raise NotImplementedError()
+
+        def sub(self, channel: str) -> Iterable[str | dict[str, Any]]:
+            raise NotImplementedError()
+
         def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
             raise NotImplementedError()
 
@@ -71,7 +78,7 @@ def base_backend() -> Backend:
             raise NotImplementedError()
 
         def delete(self, name: str, missing_ok: bool = False) -> None:
-            raise NotImplementedError
+            raise NotImplementedError()
 
     return MockBaseBackend()
 

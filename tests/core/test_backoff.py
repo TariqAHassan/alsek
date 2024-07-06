@@ -4,7 +4,7 @@
 
 """
 from inspect import signature
-from typing import Tuple, Type
+from typing import Type
 
 import pytest
 from schema import Schema
@@ -24,7 +24,7 @@ ALL_BACKOFF_ALGORITHMS = tuple(Backoff.__subclasses__())
 backoff_expander = expand_params_factory(ALL_BACKOFF_ALGORITHMS)
 
 
-def _extract_algorithm_specific_params(backoff: Type[Backoff]) -> Tuple[str, ...]:
+def _extract_algorithm_specific_params(backoff: Type[Backoff]) -> tuple[str, ...]:
     all_parameters = signature(backoff.__init__).parameters
     return tuple(p for p in all_parameters if p not in ("self", "kwargs"))
 

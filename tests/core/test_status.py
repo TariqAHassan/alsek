@@ -3,8 +3,6 @@
     Test Status
 
 """
-from typing import Tuple
-
 import pytest
 
 from alsek.core.message import Message
@@ -126,7 +124,7 @@ def test_status_delete_no_check(
         ("namespace:status:queue2:task2:uuid2", ("task2", "queue2", "uuid2")),
     ],
 )
-def test_name2message(name, expected: Tuple[str, str, str]) -> None:
+def test_name2message(name, expected: tuple[str, str, str]) -> None:
     message = _name2message(name)
     actual = (message.task_name, message.queue, message.uuid)
     assert actual == expected

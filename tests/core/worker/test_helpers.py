@@ -3,7 +3,7 @@
     Test Worker Helpers
 
 """
-from typing import Collection, Dict, List, Optional, Union
+from typing import Collection, Optional, Union
 
 import pytest
 
@@ -55,8 +55,8 @@ def test_extract_broker_multi_broker(rolling_backend: Backend) -> None:
 )
 def test_derive_consumer_subset(
     task_names: Collection[Task],
-    queues: Optional[List[str]],
-    expected: Union[Dict[str, List[str]], BaseException],
+    queues: Optional[list[str]],
+    expected: Union[dict[str, list[str]], BaseException],
     rolling_broker: Broker,
 ) -> None:
     if queues:

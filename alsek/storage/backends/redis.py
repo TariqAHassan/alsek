@@ -5,7 +5,7 @@
 """
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, Optional, Union, cast
+from typing import Any, Iterable, Optional, Union, cast
 
 import dill
 from redis import ConnectionPool, Redis
@@ -35,6 +35,8 @@ class RedisBackend(Backend):
           is expected to be set to ``True``.
 
     """
+
+    SUPPORTS_PUBSUB: bool = False
 
     def __init__(
         self,
@@ -77,7 +79,7 @@ class RedisBackend(Backend):
         )
 
     def _encode(self) -> bytes:
-        data: Dict[str, Any] = dict(
+        data: dict[str, Any] = dict(
             backend=self.__class__,
             settings=gather_init_params(self, ignore=("conn",)),
         )
@@ -89,7 +91,7 @@ class RedisBackend(Backend):
         return cast(bytes, dill.dumps(data))
 
     @classmethod
-    def _from_settings(cls, settings: Dict[str, Any]) -> RedisBackend:
+    def _from_settings(cls, settings: dict[str, Any]) -> RedisBackend:
         settings["conn"] = Redis(
             connection_pool=ConnectionPool(
                 connection_class=settings["conn"]["connection_class"],
@@ -173,6 +175,20 @@ class RedisBackend(Backend):
         found = self.conn.delete(self.full_name(name))
         if not missing_ok and not found:
             raise KeyError(f"No name '{name}' found")
+
+    def pub(self, channel: str, value: Any) -> None:
+        self.conn.publish(
+            channel=channel,
+            message=self.serializer.forward(value),
+        )
+
+    def sub(self, channel: str) -> Iterable[str | dict[str, Any]]:
+        pubsub = self.conn.pubsub()
+        pubsub.subscribe(channel)
+        try:
+            yield from pubsub.listen()
+        finally:
+            pubsub.close()
 
     def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
         """Scan the backend for matching names.

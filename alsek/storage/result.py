@@ -3,7 +3,7 @@
     Result Storage
 
 """
-from typing import Any, Dict, Iterable, List, Union
+from typing import Any, Iterable, Union
 
 from alsek._utils.temporal import utcnow_timestamp_ms
 from alsek._utils.waiting import waiter
@@ -50,7 +50,7 @@ class ResultStore:
         else:
             return f"results:{message.uuid}"
 
-    def _get_all_storage_names(self, message: Message, descendants: bool) -> List[str]:
+    def _get_all_storage_names(self, message: Message, descendants: bool) -> list[str]:
         if descendants:
             if message.descendant_uuids:
                 descendant_names = [
@@ -73,7 +73,7 @@ class ResultStore:
         return storage_name.rsplit(":", 1)[-1]
 
     def exists(self, message: Message, descendants: bool = False) -> bool:
-        """Whether or not data for ``message`` exists in the store.
+        """Whether data for ``message`` exists in the store.
 
         Args:
             message (Message): an Alsek message
@@ -106,9 +106,9 @@ class ResultStore:
             ttl=message.result_ttl,
         )
 
-    def _get_engine(self, names: Iterable[str], with_metadata: bool) -> List[Any]:
-        def bundle_data(n: str) -> Dict[str, Any]:
-            data: Dict[str, Any] = self.backend.get(n)
+    def _get_engine(self, names: Iterable[str], with_metadata: bool) -> list[Any]:
+        def bundle_data(n: str) -> dict[str, Any]:
+            data: dict[str, Any] = self.backend.get(n)
             if with_metadata:
                 data["uuid"] = self._extract_uuid(n)
             return data
@@ -126,14 +126,14 @@ class ResultStore:
         keep: bool = False,
         with_metadata: bool = False,
         descendants: bool = False,
-    ) -> Union[Any, List[Any]]:
+    ) -> Union[Any, list[Any]]:
         """Get the result for ``message``.
 
         Args:
             message (Message): an Alsek message.
             timeout (int): amount of time (in milliseconds) to wait
                 for the result to become available
-            keep (bool): whether or not to keep the result afer fetching it.
+            keep (bool): whether to keep the result after fetching it.
                 Defaults to ``False`` to conserve storage space.
             with_metadata (bool): if ``True`` return results of the form
                 ``{"result": <result>, "uuid": str, "timestamp": int}``, where
@@ -143,7 +143,7 @@ class ResultStore:
             descendants (bool): if ``True`` also fetch results for descendants.
 
         Returns:
-            result (Any, List[Any]): the stored result. If ``descendants``
+            result (Any, list[Any]): the stored result. If ``descendants``
                 is ``True`` a list of results will be returned.
 
         Raises:

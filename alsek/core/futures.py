@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from copy import deepcopy
 from platform import python_implementation
 from threading import Thread
-from typing import Any, Dict, Tuple, Type, cast
+from typing import Any, Type, cast
 
 import dill
 
@@ -26,14 +26,18 @@ MULTIPROCESSING_BACKEND = os.getenv("ALSEK_MULTIPROCESSING_BACKEND", "standard")
 
 if MULTIPROCESSING_BACKEND == "standard":
     from multiprocessing import Process, Queue
+
+    log.info("Using standard multiprocessing backend.")
 elif MULTIPROCESSING_BACKEND == "torch":
     from torch.multiprocessing import Process, Queue  # type: ignore
+
+    log.info("Using torch multiprocessing backend.")
 else:
     raise ImportError(f"Invalid multiprocessing backend '{MULTIPROCESSING_BACKEND}'")
 
 
 def _generate_callback_message(
-    callback_message_data: Dict[str, Any],
+    callback_message_data: dict[str, Any],
     previous_result: Any,
     progenitor_uuid: str,
     previous_message_uuid: str,
@@ -49,7 +53,7 @@ def _process_future_encoder(task: Task, message: Message) -> bytes:
     return cast(bytes, dill.dumps((task._serialize(), message)))
 
 
-def _process_future_decoder(encoded_data: bytes) -> Tuple[Task, Message]:
+def _process_future_decoder(encoded_data: bytes) -> tuple[Task, Message]:
     task_data, message = dill.loads(encoded_data)
     return Task._deserialize(task_data), cast(Message, message)
 
@@ -102,12 +106,12 @@ class TaskFuture(ABC):
     @property
     @abstractmethod
     def complete(self) -> bool:
-        """Whether or not the task has finished."""
+        """Whether the task has finished."""
         raise NotImplementedError()
 
     @property
     def time_limit_exceeded(self) -> bool:
-        """Whether or not task has been running longer
+        """Whether task has been running longer
         than the allowed time window."""
         if self.complete:
             return False
@@ -145,7 +149,7 @@ class ThreadTaskFuture(TaskFuture):
 
     @property
     def complete(self) -> bool:
-        """Whether or not the task has finished."""
+        """Whether the task has finished."""
         return not self._thread.is_alive()
 
     def _wrapper(self) -> None:
@@ -232,7 +236,7 @@ class ProcessTaskFuture(TaskFuture):
 
     @property
     def complete(self) -> bool:
-        """Whether or not the task has finished."""
+        """Whether the task has finished."""
         return not self._process.is_alive()
 
     @staticmethod

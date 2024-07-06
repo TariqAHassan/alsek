@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, Iterable, Optional, cast
+from typing import Any, Callable, Iterable, Optional, cast
 
 import dill
 
@@ -55,6 +55,8 @@ class Backend(ABC):
 
     """
 
+    SUPPORTS_PUBSUB: bool = False
+
     def __init__(
         self,
         namespace: str = DEFAULT_NAMESPACE,
@@ -71,7 +73,7 @@ class Backend(ABC):
         return cast(bytes, dill.dumps(data))
 
     @classmethod
-    def _from_settings(cls, settings: Dict[str, Any]) -> Backend:
+    def _from_settings(cls, settings: dict[str, Any]) -> Backend:
         return cls(**settings)
 
     def in_namespace(self, name: str) -> bool:
@@ -194,6 +196,12 @@ class Backend(ABC):
         """
         raise NotImplementedError()
 
+    def pub(self, channel: str, value: Any) -> None:
+        raise NotImplementedError()
+
+    def sub(self, channel: str) -> Iterable[str | dict[str, Any]]:
+        raise NotImplementedError()
+
     @abstractmethod
     def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
         """Scan the backend for matching names.
@@ -222,9 +230,11 @@ class Backend(ABC):
     def clear_namespace(self, raise_on_error: bool = True) -> int:
         """Clear all items in backend under the current namespace.
 
+        Args:
+             raise_on_error (bool): raise if a delete operation fails
+
         Returns:
             count (int): number of items cleared
-            raise_on_error (bool): raise if a delete operation fails
 
         Raises:
             KeyError: if ``raise_on_error`` and a delete operation fails

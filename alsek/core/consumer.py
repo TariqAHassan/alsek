@@ -3,7 +3,7 @@
     Consumer
 
 """
-from typing import Dict, Iterable, List, Optional, Union
+from typing import Iterable, Optional, Union
 
 from alsek._utils.system import StopSignalListener
 from alsek.core.backoff import Backoff, ConstantBackoff, LinearBackoff
@@ -33,7 +33,7 @@ class Consumer:
 
     Args:
         broker (Broker): an Alsek broker
-        subset (List[str], Dict[str, List[str]], optional): subset of messages to consume
+        subset (list[str], dict[str, list[str]], optional): subset of messages to consume
             Must be one of the following
 
                 * ``None``: consume messages from all queues and tasks
@@ -59,7 +59,7 @@ class Consumer:
     def __init__(
         self,
         broker: Broker,
-        subset: Optional[Union[List[str], Dict[str, List[str]]]] = None,
+        subset: Optional[Union[list[str], dict[str, list[str]]]] = None,
         backoff: Optional[Backoff] = LinearBackoff(
             1 * 1000,
             floor=1000,
