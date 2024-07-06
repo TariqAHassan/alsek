@@ -26,7 +26,7 @@ capable while remaining very lightweight. Current functionality includes:
 ## Installing
 
 ```shell
-pip install git+https://github.com/TariqAHassan/alsek@master
+pip install git+https://github.com/TariqAHassan/alsek@main
 ```
 
 Note: Alsek will be added to PyPI in the near future.
