@@ -186,8 +186,7 @@ class RedisBackend(Backend):
         pubsub = self.conn.pubsub()
         pubsub.subscribe(channel)
         try:
-            for i in pubsub.listen():
-                yield i
+            yield from pubsub.listen()
         finally:
             pubsub.close()
 
