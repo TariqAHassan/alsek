@@ -26,8 +26,12 @@ MULTIPROCESSING_BACKEND = os.getenv("ALSEK_MULTIPROCESSING_BACKEND", "standard")
 
 if MULTIPROCESSING_BACKEND == "standard":
     from multiprocessing import Process, Queue
+
+    log.info("Using standard multiprocessing backend.")
 elif MULTIPROCESSING_BACKEND == "torch":
     from torch.multiprocessing import Process, Queue  # type: ignore
+
+    log.info("Using torch multiprocessing backend.")
 else:
     raise ImportError(f"Invalid multiprocessing backend '{MULTIPROCESSING_BACKEND}'")
 
