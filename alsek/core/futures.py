@@ -9,7 +9,7 @@ from abc import ABC, abstractmethod
 from copy import deepcopy
 from platform import python_implementation
 from threading import Thread
-from typing import Any, Dict, Tuple, Type, cast
+from typing import Any, Type, cast
 
 import dill
 
@@ -37,7 +37,7 @@ else:
 
 
 def _generate_callback_message(
-    callback_message_data: Dict[str, Any],
+    callback_message_data: dict[str, Any],
     previous_result: Any,
     progenitor_uuid: str,
     previous_message_uuid: str,
@@ -53,7 +53,7 @@ def _process_future_encoder(task: Task, message: Message) -> bytes:
     return cast(bytes, dill.dumps((task._serialize(), message)))
 
 
-def _process_future_decoder(encoded_data: bytes) -> Tuple[Task, Message]:
+def _process_future_decoder(encoded_data: bytes) -> tuple[Task, Message]:
     task_data, message = dill.loads(encoded_data)
     return Task._deserialize(task_data), cast(Message, message)
 

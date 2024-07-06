@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
+from typing import Any, Iterable, Optional, Union
 from uuid import uuid1
 
 from alsek._defaults import DEFAULT_MECHANISM, DEFAULT_QUEUE, DEFAULT_TASK_TIMEOUT
@@ -20,7 +20,7 @@ def _make_uuid() -> str:
     return str(uuid1())
 
 
-def _collect_callback_uuids(callback_message_data: Dict[str, Any]) -> Iterable[str]:
+def _collect_callback_uuids(callback_message_data: dict[str, Any]) -> Iterable[str]:
     yield callback_message_data["uuid"]
     if callback_message_data["callback_message_data"]:
         yield from _collect_callback_uuids(
@@ -82,9 +82,9 @@ class Message:
         self,
         task_name: str,
         queue: Optional[str] = None,
-        args: Optional[Union[List[Any], Tuple[Any, ...]]] = None,
-        kwargs: Optional[Dict[Any, Any]] = None,
-        metadata: Optional[Dict[Any, Any]] = None,
+        args: Optional[Union[list[Any], tuple[Any, ...]]] = None,
+        kwargs: Optional[dict[Any, Any]] = None,
+        metadata: Optional[dict[Any, Any]] = None,
         result_ttl: Optional[int] = None,
         uuid: Optional[str] = None,
         progenitor_uuid: Optional[str] = None,
@@ -95,8 +95,8 @@ class Message:
         delay: Optional[int] = None,
         previous_result: Optional[Any] = None,
         previous_message_uuid: Optional[str] = None,
-        callback_message_data: Optional[Dict[str, Any]] = None,
-        backoff_settings: Optional[Dict[str, int]] = None,
+        callback_message_data: Optional[dict[str, Any]] = None,
+        backoff_settings: Optional[dict[str, int]] = None,
         mechanism: str = DEFAULT_MECHANISM,
     ) -> None:
         self.task_name = task_name
@@ -126,7 +126,7 @@ class Message:
         self._lock: Optional[str] = None
 
     @property
-    def data(self) -> Dict[str, Any]:
+    def data(self) -> dict[str, Any]:
         """Underlying message data."""
         return dict(
             task_name=self.task_name,
@@ -195,7 +195,7 @@ class Message:
         return max(self.ready_at - utcnow_timestamp_ms(), 0)
 
     @property
-    def descendant_uuids(self) -> Optional[List[str]]:
+    def descendant_uuids(self) -> Optional[list[str]]:
         """A list of uuids which have or will decent from this message."""
         if self.callback_message_data:
             return list(_collect_callback_uuids(self.callback_message_data))

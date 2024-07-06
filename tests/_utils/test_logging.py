@@ -4,12 +4,11 @@
 
 """
 import logging
-from typing import Any, Callable, Dict, List
+from typing import Any, Callable
 
 import pytest
 
 from alsek._utils.logging import (
-    _magic_parser,
     _merge_args_kwargs,
     _run_func,
     get_logger,
@@ -48,9 +47,9 @@ def test_setup_logging(level: int) -> None:
 )
 def test_merge_args_kwargs(
     function: Callable[..., Any],
-    args: List[Any],
-    kwargs: Dict[str, Any],
-    expected: Dict[str, Any],
+    args: list[Any],
+    kwargs: dict[str, Any],
+    expected: dict[str, Any],
 ) -> None:
     actual = _merge_args_kwargs(function, args=args, kwargs=kwargs)
     assert actual == expected
@@ -65,7 +64,7 @@ def test_merge_args_kwargs(
 )
 def test_run_func(
     function: Callable[..., Any],
-    kwargs: Dict[str, Any],
+    kwargs: dict[str, Any],
     expected: Any,
 ) -> None:
     actual = _run_func(function, **kwargs)

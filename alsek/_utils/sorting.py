@@ -3,13 +3,13 @@
     Sorting
 
 """
-from typing import Any, Callable, Dict, Optional
+from typing import Any, Callable, Optional
 
 
 def dict_sort(
-    dictionary: Dict[Any, Any],
+    dictionary: dict[Any, Any],
     key: Optional[Callable[[Any], Any]] = None,
-) -> Dict[Any, Any]:
+) -> dict[Any, Any]:
     """Sort a dictionary by key.
 
     Args:

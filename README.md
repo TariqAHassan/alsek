@@ -31,7 +31,7 @@ pip install git+https://github.com/TariqAHassan/alsek@master
 
 Note: Alsek will be added to PyPI in the near future.
 
-Requires Python 3.7+
+Requires Python 3.9+
 
 ### Development
 

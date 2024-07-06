@@ -5,7 +5,7 @@
 """
 from __future__ import annotations
 
-from typing import Any, Dict, Iterable, Optional, Union, cast
+from typing import Any, Iterable, Optional, Union, cast
 
 import dill
 from redis import ConnectionPool, Redis
@@ -79,7 +79,7 @@ class RedisBackend(Backend):
         )
 
     def _encode(self) -> bytes:
-        data: Dict[str, Any] = dict(
+        data: dict[str, Any] = dict(
             backend=self.__class__,
             settings=gather_init_params(self, ignore=("conn",)),
         )
@@ -91,7 +91,7 @@ class RedisBackend(Backend):
         return cast(bytes, dill.dumps(data))
 
     @classmethod
-    def _from_settings(cls, settings: Dict[str, Any]) -> RedisBackend:
+    def _from_settings(cls, settings: dict[str, Any]) -> RedisBackend:
         settings["conn"] = Redis(
             connection_pool=ConnectionPool(
                 connection_class=settings["conn"]["connection_class"],

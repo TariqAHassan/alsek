@@ -10,13 +10,13 @@ import sys
 from multiprocessing import cpu_count
 from signal import Signals
 from threading import Event
-from typing import Any, Optional, Tuple, Type, Union
+from typing import Any, Optional, Type, Union
 
 log = logging.getLogger(__name__)
 
 # See https://docs.python.org/3/c-api/init.html#c.PyThreadState_SetAsyncExc
 _SET_AS_ASYNC_EXC_SIGNATURE_CHANGE: float = 37.0
-DEFAULT_STOP_SIGNALS: Tuple[int, ...] = (signal.SIGTERM, signal.SIGINT)
+DEFAULT_STOP_SIGNALS: tuple[int, ...] = (signal.SIGTERM, signal.SIGINT)
 
 
 def _numeric_python_version() -> float:
@@ -56,7 +56,7 @@ class StopSignalListener:
     """Tool for listing for stop signals.
 
     Args:
-        stop_signals (Tuple[int, ...], optional): one or more stop
+        stop_signals (tuple[int, ...], optional): one or more stop
             signals to listen for.
         exit_override (bool): trigger an immediate and non-graceful shutdown
             of the current process if two or more SIGTERM or SIGINT signals
@@ -66,7 +66,7 @@ class StopSignalListener:
 
     def __init__(
         self,
-        stop_signals: Tuple[int, ...] = DEFAULT_STOP_SIGNALS,
+        stop_signals: tuple[int, ...] = DEFAULT_STOP_SIGNALS,
         exit_override: bool = True,
     ) -> None:
         self.stop_signals = stop_signals

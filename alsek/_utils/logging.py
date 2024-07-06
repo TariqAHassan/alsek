@@ -6,7 +6,7 @@
 import inspect
 import logging
 from functools import wraps
-from typing import Any, Callable, Dict, Tuple
+from typing import Any, Callable
 
 LOGGING_FORMAT: str = (
     "[%(asctime)s.%(msecs)03d] [%(processName)s] [%(threadName)s] "
@@ -41,9 +41,9 @@ def setup_logging(level: int) -> None:
 
 def _magic_parser(
     function_raw: Any,
-    args_raw: Tuple[Any, ...],
-    kwargs_raw: Dict[str, Any],
-) -> Tuple[Callable[..., Any], Tuple[Any, ...], Dict[str, Any]]:
+    args_raw: tuple[Any, ...],
+    kwargs_raw: dict[str, Any],
+) -> tuple[Callable[..., Any], tuple[Any, ...], dict[str, Any]]:
     if hasattr(function_raw, "__func__"):
         return function_raw.__func__, args_raw[1:], kwargs_raw
     else:
@@ -52,9 +52,9 @@ def _magic_parser(
 
 def _merge_args_kwargs(
     function: Callable[..., Any],
-    args: Tuple[Any, ...],
-    kwargs: Dict[str, Any],
-) -> Dict[str, Any]:
+    args: tuple[Any, ...],
+    kwargs: dict[str, Any],
+) -> dict[str, Any]:
     args_dict = dict(zip(inspect.signature(function).parameters, args))
     return {**args_dict, **kwargs}
 

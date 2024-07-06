@@ -3,7 +3,7 @@
     Result Storage
 
 """
-from typing import Any, Dict, Iterable, List, Union
+from typing import Any, Iterable, Union
 
 from alsek._utils.temporal import utcnow_timestamp_ms
 from alsek._utils.waiting import waiter
@@ -50,7 +50,7 @@ class ResultStore:
         else:
             return f"results:{message.uuid}"
 
-    def _get_all_storage_names(self, message: Message, descendants: bool) -> List[str]:
+    def _get_all_storage_names(self, message: Message, descendants: bool) -> list[str]:
         if descendants:
             if message.descendant_uuids:
                 descendant_names = [
@@ -106,9 +106,9 @@ class ResultStore:
             ttl=message.result_ttl,
         )
 
-    def _get_engine(self, names: Iterable[str], with_metadata: bool) -> List[Any]:
-        def bundle_data(n: str) -> Dict[str, Any]:
-            data: Dict[str, Any] = self.backend.get(n)
+    def _get_engine(self, names: Iterable[str], with_metadata: bool) -> list[Any]:
+        def bundle_data(n: str) -> dict[str, Any]:
+            data: dict[str, Any] = self.backend.get(n)
             if with_metadata:
                 data["uuid"] = self._extract_uuid(n)
             return data
@@ -126,7 +126,7 @@ class ResultStore:
         keep: bool = False,
         with_metadata: bool = False,
         descendants: bool = False,
-    ) -> Union[Any, List[Any]]:
+    ) -> Union[Any, list[Any]]:
         """Get the result for ``message``.
 
         Args:
@@ -143,7 +143,7 @@ class ResultStore:
             descendants (bool): if ``True`` also fetch results for descendants.
 
         Returns:
-            result (Any, List[Any]): the stored result. If ``descendants``
+            result (Any, list[Any]): the stored result. If ``descendants``
                 is ``True`` a list of results will be returned.
 
         Raises:

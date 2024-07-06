@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Dict, Iterable, Optional, cast
+from typing import Any, Callable, Iterable, Optional, cast
 
 import dill
 
@@ -73,7 +73,7 @@ class Backend(ABC):
         return cast(bytes, dill.dumps(data))
 
     @classmethod
-    def _from_settings(cls, settings: Dict[str, Any]) -> Backend:
+    def _from_settings(cls, settings: dict[str, Any]) -> Backend:
         return cls(**settings)
 
     def in_namespace(self, name: str) -> bool:

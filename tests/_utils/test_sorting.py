@@ -3,7 +3,7 @@
     Test Sorting
 
 """
-from typing import Any, Callable, Dict
+from typing import Any, Callable
 
 import pytest
 
@@ -19,8 +19,8 @@ from alsek._utils.sorting import dict_sort
     ],
 )
 def test_dict_sort(
-    input_: Dict[Any, Any],
+    input_: dict[Any, Any],
     key: Callable[[Any], Any],
-    expected: Dict[Any, Any],
+    expected: dict[Any, Any],
 ) -> None:
     assert dict_sort(input_, key=key) == expected

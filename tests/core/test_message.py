@@ -5,7 +5,7 @@
 """
 import copy
 import time
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 import pytest
 
@@ -141,7 +141,7 @@ def test_clone() -> None:
 
 
 @pytest.mark.parametrize("data", [{"uuid": "uuid_new", "retries": 99}])
-def test_ok_update(data: Dict[str, Any]) -> None:
+def test_ok_update(data: dict[str, Any]) -> None:
     msg = Message("task")
     msg.update(**data)
     for k, v in data.items():
@@ -149,7 +149,7 @@ def test_ok_update(data: Dict[str, Any]) -> None:
 
 
 @pytest.mark.parametrize("data", [{"apples": 1}, {"oranges": 99}])
-def test_bad_update(data: Dict[str, Any]) -> None:
+def test_bad_update(data: dict[str, Any]) -> None:
     msg = Message("task")
     with pytest.raises(KeyError):
         msg.update(**data)

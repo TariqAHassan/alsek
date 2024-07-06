@@ -4,7 +4,7 @@
 
 """
 from datetime import datetime
-from typing import Any, Dict, Optional
+from typing import Any, Optional
 
 
 def _format_value(value: Any) -> Any:
@@ -14,7 +14,7 @@ def _format_value(value: Any) -> Any:
         return value
 
 
-def _format_params(params: Dict[str, Any], join_on: str) -> str:
+def _format_params(params: dict[str, Any], join_on: str) -> str:
     return join_on.join((f"{k}={_format_value(v)}" for k, v in params.items()))
 
 

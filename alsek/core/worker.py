@@ -5,7 +5,7 @@
 """
 import logging
 from collections import defaultdict
-from typing import Any, Collection, DefaultDict, Dict, List, Optional
+from typing import Any, Collection, DefaultDict, Optional
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
@@ -43,12 +43,12 @@ def _extract_broker(tasks: Collection[Task]) -> Broker:
 
 
 def _derive_consumer_subset(
-    tasks: Collection[Task], queues: Optional[List[str]]
-) -> Dict[str, List[str]]:
+    tasks: Collection[Task], queues: Optional[list[str]]
+) -> dict[str, list[str]]:
     if queues and has_duplicates(queues):
         raise ValueError(f"Duplicates in provided queues: {queues}")
 
-    subset: DefaultDict[str, List[str]] = defaultdict(list)
+    subset: DefaultDict[str, list[str]] = defaultdict(list)
     for t in sorted(tasks, key=lambda i: i.priority):
         if queues is None or t.queue in queues:
             subset[t.queue].append(t.name)
@@ -66,7 +66,7 @@ class WorkerPool(Consumer):
         tasks (Collection[Task]): one or more tasks to handle. This
             must include all tasks the worker may encounter by listening
             to ``queues``.
-        queues (List[str], optional): the names of one or more queues
+        queues (list[str], optional): the names of one or more queues
             consume messages from. If ``None``, all queues will be consumed.
         max_threads (int): the maximum of tasks with ``mechanism="thread"``
             supported at any 'one' time.
@@ -90,7 +90,7 @@ class WorkerPool(Consumer):
     def __init__(
         self,
         tasks: Collection[Task],
-        queues: Optional[List[str]] = None,
+        queues: Optional[list[str]] = None,
         max_threads: int = 8,
         max_processes: Optional[int] = None,
         management_interval: int = 100,
@@ -110,7 +110,7 @@ class WorkerPool(Consumer):
         self.slot_wait_interval = slot_wait_interval
 
         self._task_map = {t.name: t for t in tasks}
-        self._futures: Dict[str, List[TaskFuture]] = dict(thread=list(), process=list())
+        self._futures: dict[str, list[TaskFuture]] = dict(thread=list(), process=list())
 
         self._pool_manager = BackgroundScheduler()
         self._pool_manager.add_job(

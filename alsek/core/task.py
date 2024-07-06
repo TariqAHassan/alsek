@@ -8,7 +8,7 @@ from __future__ import annotations
 import inspect
 import logging
 from functools import partial
-from typing import Any, Callable, Dict, List, Optional, Tuple, Type, Union, cast
+from typing import Any, Callable, Optional, Type, Union, cast
 
 import dill
 from apscheduler.job import Job
@@ -35,7 +35,7 @@ from alsek.storage.result import ResultStore
 
 log = logging.getLogger(__name__)
 
-SUPPORTED_MECHANISMS: Tuple[str, ...] = ("process", "thread")
+SUPPORTED_MECHANISMS: tuple[str, ...] = ("process", "thread")
 
 
 def _expects_message(function: Callable[..., Any]) -> bool:
@@ -49,7 +49,7 @@ def _expects_message(function: Callable[..., Any]) -> bool:
         return False
 
 
-def _collapse_callbacks(callbacks: Tuple[Message, ...]) -> Message:
+def _collapse_callbacks(callbacks: tuple[Message, ...]) -> Message:
     # Note: this function operates 'in place' on the items in
     # `callbacks`. This is done so that callback information
     # will become available on the original messages.
@@ -61,7 +61,7 @@ def _collapse_callbacks(callbacks: Tuple[Message, ...]) -> Message:
     return callbacks[0]
 
 
-def _parse_callback(callback: Union[Message, Tuple[Message, ...]]) -> Message:
+def _parse_callback(callback: Union[Message, tuple[Message, ...]]) -> Message:
     if isinstance(callback, Message):
         return callback
     else:
@@ -168,15 +168,15 @@ class Task:
 
         self._deferred: bool = False
 
-    def _serialize(self) -> Dict[str, Any]:
+    def _serialize(self) -> dict[str, Any]:
         settings = gather_init_params(self, ignore=("broker",))
         settings["broker"] = gather_init_params(self.broker, ignore=("backend",))
         settings["broker"]["backend"] = self.broker.backend._encode()
         return dict(task=self.__class__, settings=settings)
 
     @staticmethod
-    def _deserialize(data: Dict[str, Any]) -> Task:
-        def unwind_settings(settings: Dict[str, Any]) -> Dict[str, Any]:
+    def _deserialize(data: dict[str, Any]) -> Task:
+        def unwind_settings(settings: dict[str, Any]) -> dict[str, Any]:
             backend_data = dill.loads(settings["broker"]["backend"])
             settings["broker"]["backend"] = backend_data["backend"]._from_settings(
                 backend_data["settings"]
@@ -251,15 +251,15 @@ class Task:
 
     def generate(
         self,
-        args: Optional[Union[List[Any], Tuple[Any, ...]]] = None,
-        kwargs: Optional[Dict[Any, Any]] = None,
-        metadata: Optional[Dict[Any, Any]] = None,
+        args: Optional[Union[list[Any], tuple[Any, ...]]] = None,
+        kwargs: Optional[dict[Any, Any]] = None,
+        metadata: Optional[dict[Any, Any]] = None,
         result_ttl: Optional[int] = None,
         uuid: Optional[str] = None,
         timeout_override: Optional[int] = None,
         delay: Optional[int] = None,
         previous_result: Any = None,
-        callback: Optional[Union[Message, Tuple[Message, ...]]] = None,
+        callback: Optional[Union[Message, tuple[Message, ...]]] = None,
         submit: bool = True,
         **options: Any,
     ) -> Message:
@@ -285,7 +285,7 @@ class Task:
                 for the task.
             delay (int, optional): delay before message is ready
             previous_result (Any): result of a previous task.
-            callback (Message, Tuple[Message, ...], optional): one ore more messages
+            callback (Message, tuple[Message, ...], optional): one or more messages
                 to be submitted to the broker after the proceeding message has been
                 successfully processed by a worker.
             submit (bool): if ``True`` submit the task to the broker
@@ -486,7 +486,7 @@ class TriggerTask(Task):
         self.scheduler = BackgroundScheduler()
         self.scheduler.start()
 
-    def _serialize(self) -> Dict[str, Any]:
+    def _serialize(self) -> dict[str, Any]:
         serialized_task = super()._serialize()
         serialized_task["settings"]["trigger"] = self.trigger
         return serialized_task

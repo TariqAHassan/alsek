@@ -3,7 +3,7 @@
     Test Serialization
 
 """
-from typing import Any, List, Tuple
+from typing import Any
 
 import pytest
 
@@ -15,7 +15,7 @@ _expand_to_all_serializers = expand_params_factory(_ALL_SERIALIZERS)
 
 
 @pytest.mark.parametrize(
-    "value,seralizer",
+    "value,serializer",
     _expand_to_all_serializers(
         1,
         1.0,
@@ -27,5 +27,5 @@ _expand_to_all_serializers = expand_params_factory(_ALL_SERIALIZERS)
         {"a": [1, 2, 3]},
     ),
 )
-def test_seralizer(value: Any, seralizer: Serializer) -> None:
-    assert seralizer.reverse(seralizer.forward(value)) == value
+def test_serializer(value: Any, serializer: Serializer) -> None:
+    assert serializer.reverse(serializer.forward(value)) == value
