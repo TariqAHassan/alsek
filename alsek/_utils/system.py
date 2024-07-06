@@ -97,7 +97,7 @@ class StopSignalListener:
 
     @property
     def received(self) -> bool:
-        """Whether or not a stop signal has been received."""
+        """Whether a stop signal has been received."""
         return self.exit_event.is_set()
 
 

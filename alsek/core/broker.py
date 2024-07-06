@@ -84,7 +84,7 @@ class Broker:
             message (Message): an Alsek message
 
         Returns:
-            exists (bool): whether or not the message exists.
+            exists (bool): whether the message exists.
 
         """
         name = self.get_message_name(message)

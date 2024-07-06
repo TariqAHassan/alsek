@@ -115,7 +115,7 @@ class Lock:
         """Release the lock.
 
         Returns:
-            released (bool): whether or not the lock was
+            released (bool): whether the lock was
                 found and released.
 
         """

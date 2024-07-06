@@ -216,7 +216,7 @@ class Task:
 
     @property
     def deferred(self) -> bool:
-        """Whether or not deferred mode is currently enabled."""
+        """Whether deferred mode is currently enabled."""
         return self._deferred
 
     def defer(self) -> Task:
@@ -388,7 +388,7 @@ class Task:
         return result
 
     def do_retry(self, message: Message, exception: BaseException) -> bool:  # noqa
-        """Whether or not a failed task should be retried.
+        """Whether a failed task should be retried.
 
         Args:
             message (Message): message which failed

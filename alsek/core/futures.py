@@ -102,12 +102,12 @@ class TaskFuture(ABC):
     @property
     @abstractmethod
     def complete(self) -> bool:
-        """Whether or not the task has finished."""
+        """Whether the task has finished."""
         raise NotImplementedError()
 
     @property
     def time_limit_exceeded(self) -> bool:
-        """Whether or not task has been running longer
+        """Whether task has been running longer
         than the allowed time window."""
         if self.complete:
             return False
@@ -145,7 +145,7 @@ class ThreadTaskFuture(TaskFuture):
 
     @property
     def complete(self) -> bool:
-        """Whether or not the task has finished."""
+        """Whether the task has finished."""
         return not self._thread.is_alive()
 
     def _wrapper(self) -> None:
@@ -232,7 +232,7 @@ class ProcessTaskFuture(TaskFuture):
 
     @property
     def complete(self) -> bool:
-        """Whether or not the task has finished."""
+        """Whether the task has finished."""
         return not self._process.is_alive()
 
     @staticmethod

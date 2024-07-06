@@ -73,7 +73,7 @@ class ResultStore:
         return storage_name.rsplit(":", 1)[-1]
 
     def exists(self, message: Message, descendants: bool = False) -> bool:
-        """Whether or not data for ``message`` exists in the store.
+        """Whether data for ``message`` exists in the store.
 
         Args:
             message (Message): an Alsek message
@@ -133,7 +133,7 @@ class ResultStore:
             message (Message): an Alsek message.
             timeout (int): amount of time (in milliseconds) to wait
                 for the result to become available
-            keep (bool): whether or not to keep the result afer fetching it.
+            keep (bool): whether to keep the result after fetching it.
                 Defaults to ``False`` to conserve storage space.
             with_metadata (bool): if ``True`` return results of the form
                 ``{"result": <result>, "uuid": str, "timestamp": int}``, where
