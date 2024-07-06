@@ -109,7 +109,7 @@ class StatusTracker:
         status: TaskStatus,
         detail: Optional[Any] = None,
     ) -> None:
-        """Publish PUBSUB updates.
+        """Publish a PUBSUB update for a message.
 
         Args:
             message (Message): an Alsek message
