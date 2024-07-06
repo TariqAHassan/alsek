@@ -4,7 +4,7 @@
 
 """
 from enum import Enum
-from typing import Optional, Union
+from typing import Optional, Union, Any, Iterable
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -42,6 +42,9 @@ class StatusTracker:
     Args:
         broker (Broker): broker used by tasks.
         ttl (int, optional): time to live (in milliseconds) for the status
+        enable_pubsub (bool, optional): if ``True`` automatically publish PUBSUB updates.
+            If ``None`` determine automatically given the capabilies of the backend
+            used by ``broker``.
         integrity_scan_trigger (CronTrigger, DateTrigger, IntervalTrigger, optional):
             trigger which determines how often to scan for messages with non-terminal
             statuses (i.e., ``TaskStatus.FAILED`` or ``TaskStatus.SUCCEEDED``) that
@@ -54,13 +57,18 @@ class StatusTracker:
         self,
         broker: Broker,
         ttl: Optional[int] = 60 * 60 * 24 * 7 * 1000,
+        enable_pubsub: Optional[bool] = None,
         integrity_scan_trigger: Optional[
             Union[CronTrigger, DateTrigger, IntervalTrigger]
         ] = IntervalTrigger(hours=1),
     ) -> None:
         self.broker = broker
         self.ttl = ttl
+        self.enable_pubsub = broker.backend.SUPPORTS_PUBSUB if enable_pubsub is None else enable_pubsub  # fmt: skip
         self.integrity_scan_trigger = integrity_scan_trigger
+
+        if enable_pubsub and not broker.backend.SUPPORTS_PUBSUB:
+            raise AssertionError("Backend of broker does not support PUBSUB")
 
         self.scheduler = BackgroundScheduler()
         if integrity_scan_trigger:
@@ -79,6 +87,10 @@ class StatusTracker:
     def get_storage_name(message: Message) -> str:
         return f"status:{message.queue}:{message.task_name}:{message.uuid}"
 
+    @staticmethod
+    def get_pubsub_name(message: Message) -> str:
+        return f"channel:{message.queue}:{message.task_name}:{message.uuid}"
+
     def exists(self, message: Message) -> bool:
         """Check if a status for ``message`` exists in the backend.
 
@@ -90,6 +102,42 @@ class StatusTracker:
 
         """
         return self._backend.exists(self.get_storage_name(message))
+
+    def publish_update(
+        self,
+        message: Message,
+        status: TaskStatus,
+        detail: Optional[Any] = None,
+    ) -> None:
+        """Publish PUBSUB updates.
+
+        Args:
+            message (Message): an Alsek message
+            status (TaskStatus): a status to publish
+            detail (Any, optional): additional information to publish
+
+        Returns:
+            None
+
+        """
+        self.broker.backend.pub(
+            self.get_pubsub_name(message),
+            {"status": status, "detail": detail},
+        )
+
+    def listen_to_updates(self, message: Message) -> Iterable[Any]:
+        """Listen to PUBSUB updates for ``message``.
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            stream (Iterable[Any]): A stream of messages from the pubsub channel
+
+        """
+        if not self.enable_pubsub:
+            raise ValueError("PUBSUB not enabled")
+        yield from self.broker.backend.sub(self.get_pubsub_name(message))
 
     def set(self, message: Message, status: TaskStatus) -> None:
         """Set a ``status`` for ``message``.
@@ -107,6 +155,8 @@ class StatusTracker:
             value=status.name,
             ttl=self.ttl if status == TaskStatus.SUBMITTED else None,
         )
+        if self.enable_pubsub:
+            self.publish_update(message, status=status)
 
     def get(self, message: Message) -> TaskStatus:
         """Get the status of ``message``.
