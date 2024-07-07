@@ -52,7 +52,7 @@ class Consumer:
 
     Warning:
         * If ``subset`` is of type ``dict``, task names not included
-          in the any of the values will be ignored.
+          in any of the values will be ignored.
 
     """
 
