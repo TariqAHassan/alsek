@@ -5,6 +5,7 @@
 """
 import json
 import dill
+from base64 import b64encode, b64decode
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -79,26 +80,34 @@ class JsonSerializer(Serializer):
 
 
 class BinarySerializer(Serializer):
-    def forward(self, obj: Any) -> Any:
+    """Binary serialization."""
+
+    @staticmethod
+    def forward(obj: Any) -> Any:
         """Encode an object.
 
         Args:
             obj (Any): an object to encode
 
         Returns:
-            encoded (Any): ``dill``-encoded object
+            encoded (Any): base64 encoded ``dill``-serialized object
 
         """
-        return dill.dumps(obj)
+        dill_bytes = dill.dumps(obj)
+        return b64encode(dill_bytes).decode("utf-8")
 
-    def reverse(self, obj: Any) -> Any:
+    @staticmethod
+    def reverse(obj: Any) -> Any:
         """Decode an object.
 
         Args:
             obj (Any): an object to decode
 
         Returns:
-            decoded (Any): ``dill``-decoded object
+            decoded (Any): ``dill``-deserialized object from base64 encoded string
 
         """
-        return dill.loads(obj)
+        if obj is None:
+            return None
+        base64_bytes = obj.encode("utf-8")
+        return dill.loads(b64decode(base64_bytes))

@@ -7,10 +7,13 @@ from typing import Any
 
 import pytest
 
-from alsek.storage.serialization import JsonSerializer, Serializer
+from alsek.storage.serialization import JsonSerializer, Serializer, BinarySerializer
 from tests._helpers import expand_params_factory
 
-_ALL_SERIALIZERS = (JsonSerializer(),)
+_ALL_SERIALIZERS = (
+    JsonSerializer(),
+    BinarySerializer(),
+)
 _expand_to_all_serializers = expand_params_factory(_ALL_SERIALIZERS)
 
 
