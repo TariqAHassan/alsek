@@ -78,7 +78,7 @@ from alsek.core.worker import WorkerPool
     is_flag=True,
     help="Enable debugging logging",
 )
-@click.option("-v", "--verbose", is_flag=True, help="Enable detailed logging.")
+@click.option("-q", "--quiet", is_flag=True, help="Disable detailed logging.")
 def main(
     module: str,
     queues: Optional[str],  # noqa
@@ -90,7 +90,7 @@ def main(
     consumer_backoff_floor: int,  # noqa
     consumer_backoff_ceiling: int,  # noqa
     debug: bool,  # noqa
-    verbose: bool,  # noqa
+    quiet: bool,  # noqa
 ) -> None:
     """Start a pool of Alsek workers.
 
@@ -107,7 +107,7 @@ def main(
         * alsek my_package.tasks --q queue_a,queue_b
 
     """
-    setup_logging(parse_logging_level(debug, verbose=verbose))
+    setup_logging(parse_logging_level(debug, verbose=not quiet))
 
     WorkerPool(
         tasks=collect_tasks(module),

@@ -101,11 +101,10 @@ In our case, this means passing `my_tasks`. (Note that Alsek scans this argument
 allowing for task definitions to be nested deep inside directories.)
 
 ```shell
-alsek my_tasks --verbose
+alsek my_tasks
 ```
 
-Because the `--verbose` flag was included in the command above, detailed 
-information about the workers will be logged to the console, which we can see below.
+Now, detailed information about the workers will be logged to the console, which we can see below.
 
 ```shell
 [2021-04-06 10:00:30.250] [MainProcess] [MainThread] [INFO] alsek.core.worker: Alsek v0.0.1 worker pool booting up...
