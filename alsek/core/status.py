@@ -150,10 +150,11 @@ class StatusTracker:
             raise ValueError("PUBSUB not enabled")
 
         for i in self.broker.backend.sub(self.get_pubsub_name(message)):
-            yield StatusUpdate(
-                status=TaskStatus[i["data"]["status"]],
-                detail=i["data"]["detail"],
-            )
+            if i.get("type", "").lower() == "message":
+                yield StatusUpdate(
+                    status=TaskStatus[i["data"]["status"]],
+                    detail=i["data"]["detail"],
+                )
 
     def set(self, message: Message, status: TaskStatus) -> None:
         """Set a ``status`` for ``message``.
