@@ -24,6 +24,7 @@ from alsek._defaults import (
     DEFAULT_QUEUE,
     DEFAULT_TASK_TIMEOUT,
 )
+from alsek.types import SupportedMechanismType
 from alsek._utils.aggregation import gather_init_params
 from alsek._utils.printing import auto_repr
 from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
@@ -117,7 +118,7 @@ class Task:
             delay between retries
         result_store (ResultStore, optional): store for persisting task results
         status_tracker (StatusTracker, optional): store for persisting task statuses
-        mechanism (str): mechanism for executing the task. Must
+        mechanism (SupportedMechanismType): mechanism for executing the task. Must
             be either "process" or "thread".
 
     Notes:
@@ -142,7 +143,7 @@ class Task:
         backoff: Optional[Backoff] = ExponentialBackoff(),
         result_store: Optional[ResultStore] = None,
         status_tracker: Optional[StatusTracker] = None,
-        mechanism: str = DEFAULT_MECHANISM,
+        mechanism: SupportedMechanismType = DEFAULT_MECHANISM,
     ) -> None:
         self.function = function
         self.broker = broker
@@ -439,7 +440,7 @@ class TriggerTask(Task):
             delay between retries
         result_store (ResultStore, optional): store for persisting task results
         status_tracker (StatusTracker, optional): store for persisting task statuses
-        mechanism (str): mechanism for executing the task. Must
+        mechanism (SupportedMechanismType): mechanism for executing the task. Must
             be either "process" or "thread".
 
     Warnings:
@@ -464,7 +465,7 @@ class TriggerTask(Task):
         backoff: Optional[Backoff] = ExponentialBackoff(),
         result_store: Optional[ResultStore] = None,
         status_tracker: Optional[StatusTracker] = None,
-        mechanism: str = DEFAULT_MECHANISM,
+        mechanism: SupportedMechanismType = DEFAULT_MECHANISM,
     ) -> None:
         if inspect.signature(function).parameters:
             raise SchedulingError("Function signature cannot includes parameters")
@@ -582,7 +583,7 @@ def task(
     trigger: Optional[Union[CronTrigger, DateTrigger, IntervalTrigger]] = None,
     result_store: Optional[ResultStore] = None,
     status_tracker: Optional[StatusTracker] = None,
-    mechanism: str = DEFAULT_MECHANISM,
+    mechanism: SupportedMechanismType = DEFAULT_MECHANISM,
     base_task: Optional[Type[Task]] = None,
 ) -> Callable[..., Task]:
     """Wrapper for task construction.
@@ -604,7 +605,7 @@ def task(
             for task execution.
         result_store (ResultStore, optional): store for persisting task results
         status_tracker (StatusTracker, optional): store for persisting task statuses
-        mechanism (str): mechanism for executing the task. Must
+        mechanism (SupportedMechanismType): mechanism for executing the task. Must
             be either "process" or "thread".
         base_task (Type[Task]): base to use for task constuction.
             If ``None``, a base task will be selected automatically.

@@ -11,6 +11,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
 from alsek import __version__
+from alsek.types import SupportedMechanismType
 from alsek._utils.checks import has_duplicates
 from alsek._utils.logging import magic_logger
 from alsek._utils.sorting import dict_sort
@@ -139,7 +140,7 @@ class WorkerPool(Consumer):
             for f in to_remove:
                 self._futures[mechanism].remove(f)
 
-    def _slot_available(self, mechanism: str) -> int:
+    def _slot_available(self, mechanism: SupportedMechanismType) -> int:
         current_count = len(self._futures[mechanism])
         if mechanism == "thread":
             return current_count < self.max_threads
