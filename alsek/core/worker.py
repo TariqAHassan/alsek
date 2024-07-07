@@ -193,6 +193,11 @@ class WorkerPool(Consumer):
             * This method is blocking.
 
         """
+        log.info(
+            "Starting worker pool with %s max threads and %s max processes",
+            self.max_threads,
+            self.max_processes,
+        )
         self._pool_manager.start()
         log.info("Worker pool online.")
 
