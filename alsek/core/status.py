@@ -122,7 +122,7 @@ class StatusTracker:
         """
         self.broker.backend.pub(
             self.get_pubsub_name(message),
-            {"status": status, "detail": detail},
+            {"status": status.name, "detail": detail},
         )
 
     def listen_to_updates(self, message: Message) -> Iterable[Any]:
