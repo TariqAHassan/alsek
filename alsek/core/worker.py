@@ -194,7 +194,7 @@ class WorkerPool(Consumer):
 
         """
         log.info(
-            "Starting worker pool with %s max threads and %s max processes",
+            "Starting worker pool with %s max threads and %s max processes...",
             self.max_threads,
             self.max_processes,
         )
