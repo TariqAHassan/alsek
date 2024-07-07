@@ -195,10 +195,12 @@ class WorkerPool(Consumer):
         """
         self._pool_manager.start()
         log.info("Worker pool online.")
-        for message in self.stream():
-            if self._ready(message, wait=True):
-                self._add_future(message)
 
-        log.info("Worker pool shutting down...")
-        self._pool_manager.shutdown()
-        self._stop_all_futures()
+        try:
+            for message in self.stream():
+                if self._ready(message, wait=True):
+                    self._add_future(message)
+        finally:
+            log.info("Worker pool shutting down...")
+            self._pool_manager.shutdown()
+            self._stop_all_futures()
