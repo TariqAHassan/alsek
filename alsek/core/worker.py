@@ -149,8 +149,6 @@ class WorkerPool(Consumer):
 
     def _ready(self, message: Message, wait: bool) -> bool:
         while True:
-            if not self.broker.exists(message):
-                return False
             if self.stop_signal.received:
                 return False
             elif self._slot_available(message.mechanism):
@@ -206,7 +204,7 @@ class WorkerPool(Consumer):
 
         try:
             for message in self.stream():
-                if self._ready(message, wait=True):
+                if self.broker.exists(message) and self._ready(message, wait=True):
                     self._add_future(message)
         finally:
             log.info("Worker pool shutting down...")
