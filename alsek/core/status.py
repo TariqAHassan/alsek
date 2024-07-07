@@ -136,11 +136,17 @@ class StatusTracker:
             value=StatusUpdate(status=status, detail=detail).as_dict(),
         )
 
-    def listen_to_updates(self, message: Message) -> Iterable[StatusUpdate]:
+    def listen_to_updates(
+        self,
+        message: Message,
+        auto_exit: bool = True,
+    ) -> Iterable[StatusUpdate]:
         """Listen to PUBSUB updates for ``message``.
 
         Args:
             message (Message): an Alsek message
+            auto_exit (bool): if ``True`` stop listening if a terminal status for the
+                task is encoundered (succeeded or failed).
 
         Returns:
             stream (Iterable[StatusUpdate]): A stream of updates from the pubsub channel
@@ -151,10 +157,13 @@ class StatusTracker:
 
         for i in self.broker.backend.sub(self.get_pubsub_name(message)):
             if i.get("type", "").lower() == "message":
-                yield StatusUpdate(
+                update = StatusUpdate(
                     status=TaskStatus[i["data"]["status"]],
                     detail=i["data"]["detail"],
                 )
+                yield update
+                if auto_exit and update.status in TERMINAL_TASK_STATUSES:
+                    break
 
     def set(self, message: Message, status: TaskStatus) -> None:
         """Set a ``status`` for ``message``.
