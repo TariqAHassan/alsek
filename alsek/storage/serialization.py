@@ -4,6 +4,7 @@
 
 """
 import json
+import dill
 from abc import ABC, abstractmethod
 from typing import Any
 
@@ -75,3 +76,29 @@ class JsonSerializer(Serializer):
         if obj is None:
             return None
         return json.loads(obj)
+
+
+class BinarySerializer(Serializer):
+    def forward(self, obj: Any) -> Any:
+        """Encode an object.
+
+        Args:
+            obj (Any): an object to encode
+
+        Returns:
+            encoded (Any): ``dill``-encoded object
+
+        """
+        return dill.dumps(obj)
+
+    def reverse(self, obj: Any) -> Any:
+        """Decode an object.
+
+        Args:
+            obj (Any): an object to decode
+
+        Returns:
+            decoded (Any): ``dill``-decoded object
+
+        """
+        return dill.loads(obj)
