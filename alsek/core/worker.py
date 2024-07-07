@@ -11,7 +11,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
 from alsek import __version__
-from alsek.types import SupportedMechanismType
 from alsek._utils.checks import has_duplicates
 from alsek._utils.logging import magic_logger
 from alsek._utils.sorting import dict_sort
@@ -27,6 +26,7 @@ from alsek.core.futures import (
 from alsek.core.message import Message
 from alsek.core.task import Task
 from alsek.exceptions import MultipleBrokersError, NoTasksFoundError, TerminationError
+from alsek.types import SupportedMechanismType
 
 log = logging.getLogger(__name__)
 

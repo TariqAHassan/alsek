@@ -24,7 +24,6 @@ from alsek._defaults import (
     DEFAULT_QUEUE,
     DEFAULT_TASK_TIMEOUT,
 )
-from alsek.types import SupportedMechanismType, SUPPORTED_MECHANISMS
 from alsek._utils.aggregation import gather_init_params
 from alsek._utils.printing import auto_repr
 from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
@@ -33,6 +32,7 @@ from alsek.core.message import Message
 from alsek.core.status import StatusTracker, TaskStatus
 from alsek.exceptions import SchedulingError, ValidationError
 from alsek.storage.result import ResultStore
+from alsek.types import SUPPORTED_MECHANISMS, SupportedMechanismType
 
 log = logging.getLogger(__name__)
 
