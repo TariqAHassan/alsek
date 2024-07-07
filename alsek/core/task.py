@@ -24,7 +24,7 @@ from alsek._defaults import (
     DEFAULT_QUEUE,
     DEFAULT_TASK_TIMEOUT,
 )
-from alsek.types import SupportedMechanismType
+from alsek.types import SupportedMechanismType, SUPPORTED_MECHANISMS
 from alsek._utils.aggregation import gather_init_params
 from alsek._utils.printing import auto_repr
 from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
@@ -35,8 +35,6 @@ from alsek.exceptions import SchedulingError, ValidationError
 from alsek.storage.result import ResultStore
 
 log = logging.getLogger(__name__)
-
-SUPPORTED_MECHANISMS: tuple[str, ...] = ("process", "thread")
 
 
 def _expects_message(function: Callable[..., Any]) -> bool:
