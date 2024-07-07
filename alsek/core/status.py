@@ -4,7 +4,7 @@
 
 """
 from enum import Enum
-from typing import Any, Iterable, Optional, Union
+from typing import Any, Iterable, Optional, Union, NamedTuple
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -15,6 +15,17 @@ from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.exceptions import ValidationError
 from alsek.storage.backends import Backend
+
+
+class StatusUpdate(NamedTuple):
+    status: TaskStatus
+    detail: Optional[Any]
+
+    def as_dict(self) -> dict[str, Any]:
+        return dict(
+            status=self.status.name,
+            detail=self.detail,
+        )
 
 
 class TaskStatus(Enum):
@@ -122,7 +133,7 @@ class StatusTracker:
         """
         self.broker.backend.pub(
             self.get_pubsub_name(message),
-            value={"status": status.name, "detail": detail},
+            value=StatusUpdate(status=status, detail=detail).as_dict(),
         )
 
     def listen_to_updates(self, message: Message) -> Iterable[Any]:
@@ -137,7 +148,12 @@ class StatusTracker:
         """
         if not self.enable_pubsub:
             raise ValueError("PUBSUB not enabled")
-        yield from self.broker.backend.sub(self.get_pubsub_name(message))
+
+        for i in self.broker.backend.sub(self.get_pubsub_name(message)):
+            yield StatusUpdate(
+                status=TaskStatus[i["data"]["status"]],
+                detail=i["data"]["detail"],
+            )
 
     def set(self, message: Message, status: TaskStatus) -> None:
         """Set a ``status`` for ``message``.
