@@ -204,7 +204,7 @@ class WorkerPool(Consumer):
 
         try:
             for message in self.stream():
-                if self.broker.exists(message) and self._ready(message, wait=True):
+                if self._ready(message, wait=True) and self.broker.exists(message):
                     self._add_future(message)
         finally:
             log.info("Worker pool shutting down...")
