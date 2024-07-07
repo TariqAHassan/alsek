@@ -136,14 +136,14 @@ class StatusTracker:
             value=StatusUpdate(status=status, detail=detail).as_dict(),
         )
 
-    def listen_to_updates(self, message: Message) -> Iterable[Any]:
+    def listen_to_updates(self, message: Message) -> Iterable[StatusUpdate]:
         """Listen to PUBSUB updates for ``message``.
 
         Args:
             message (Message): an Alsek message
 
         Returns:
-            stream (Iterable[Any]): A stream of messages from the pubsub channel
+            stream (Iterable[StatusUpdate]): A stream of updates from the pubsub channel
 
         """
         if not self.enable_pubsub:
