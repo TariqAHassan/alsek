@@ -55,11 +55,11 @@ class RedisBackend(Backend):
             return conn
 
         if conn is None:
-            return Redis(decode_responses=True)
+            return Redis(decode_responses=False)
         elif isinstance(conn, Redis):
             return conn
         elif isinstance(conn, str):
-            return Redis.from_url(conn, decode_responses=True)
+            return Redis.from_url(conn, decode_responses=False)
         else:
             raise ValueError(f"Unsupported `conn` {conn}")
 
