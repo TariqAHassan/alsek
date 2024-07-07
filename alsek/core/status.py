@@ -17,17 +17,6 @@ from alsek.exceptions import ValidationError
 from alsek.storage.backends import Backend
 
 
-class StatusUpdate(NamedTuple):
-    status: TaskStatus
-    detail: Optional[Any]
-
-    def as_dict(self) -> dict[str, Any]:
-        return dict(
-            status=self.status.name,
-            detail=self.detail,
-        )
-
-
 class TaskStatus(Enum):
     """Alsek task statuses."""
 
@@ -40,6 +29,17 @@ class TaskStatus(Enum):
 
 
 TERMINAL_TASK_STATUSES = (TaskStatus.FAILED, TaskStatus.SUCCEEDED)
+
+
+class StatusUpdate(NamedTuple):
+    status: TaskStatus
+    detail: Optional[Any]
+
+    def as_dict(self) -> dict[str, Any]:
+        return dict(
+            status=self.status.name,
+            detail=self.detail,
+        )
 
 
 def _name2message(name: str) -> Message:
