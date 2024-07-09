@@ -4,6 +4,7 @@
 
 """
 from __future__ import annotations
+
 from functools import partial
 from pathlib import Path
 from subprocess import PIPE, Popen

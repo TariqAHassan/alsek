@@ -75,7 +75,7 @@ python quick_start.py
 Now, we can start up a pool of workers on the command line:
 
 ```shell
-$ alsek quick_start --verbose
+$ alsek quick_start
 ```
 
 Which will result in output similar to this:

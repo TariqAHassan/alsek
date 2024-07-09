@@ -26,6 +26,7 @@ from alsek.core.futures import (
 from alsek.core.message import Message
 from alsek.core.task import Task
 from alsek.exceptions import MultipleBrokersError, NoTasksFoundError, TerminationError
+from alsek.types import SupportedMechanismType
 
 log = logging.getLogger(__name__)
 
@@ -139,7 +140,7 @@ class WorkerPool(Consumer):
             for f in to_remove:
                 self._futures[mechanism].remove(f)
 
-    def _slot_available(self, mechanism: str) -> int:
+    def _slot_available(self, mechanism: SupportedMechanismType) -> int:
         current_count = len(self._futures[mechanism])
         if mechanism == "thread":
             return current_count < self.max_threads
@@ -193,12 +194,19 @@ class WorkerPool(Consumer):
             * This method is blocking.
 
         """
+        log.info(
+            "Starting worker pool with %s max thread(s) and %s max process(es)...",
+            self.max_threads,
+            self.max_processes,
+        )
         self._pool_manager.start()
         log.info("Worker pool online.")
-        for message in self.stream():
-            if self._ready(message, wait=True):
-                self._add_future(message)
 
-        log.info("Worker pool shutting down...")
-        self._pool_manager.shutdown()
-        self._stop_all_futures()
+        try:
+            for message in self.stream():
+                if self._ready(message, wait=True) and self.broker.exists(message):
+                    self._add_future(message)
+        finally:
+            log.info("Worker pool shutting down...")
+            self._pool_manager.shutdown()
+            self._stop_all_futures()

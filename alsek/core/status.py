@@ -4,7 +4,7 @@
 
 """
 from enum import Enum
-from typing import Optional, Union, Any, Iterable
+from typing import Any, Iterable, Optional, Union, NamedTuple
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
@@ -29,6 +29,17 @@ class TaskStatus(Enum):
 
 
 TERMINAL_TASK_STATUSES = (TaskStatus.FAILED, TaskStatus.SUCCEEDED)
+
+
+class StatusUpdate(NamedTuple):
+    status: TaskStatus
+    detail: Optional[Any]
+
+    def as_dict(self) -> dict[str, Any]:
+        return dict(
+            status=self.status.name,
+            detail=self.detail,
+        )
 
 
 def _name2message(name: str) -> Message:
@@ -122,22 +133,37 @@ class StatusTracker:
         """
         self.broker.backend.pub(
             self.get_pubsub_name(message),
-            {"status": status, "detail": detail},
+            value=StatusUpdate(status=status, detail=detail).as_dict(),
         )
 
-    def listen_to_updates(self, message: Message) -> Iterable[Any]:
+    def listen_to_updates(
+        self,
+        message: Message,
+        auto_exit: bool = True,
+    ) -> Iterable[StatusUpdate]:
         """Listen to PUBSUB updates for ``message``.
 
         Args:
             message (Message): an Alsek message
+            auto_exit (bool): if ``True`` stop listening if a terminal status for the
+                task is encoundered (succeeded or failed).
 
         Returns:
-            stream (Iterable[Any]): A stream of messages from the pubsub channel
+            stream (Iterable[StatusUpdate]): A stream of updates from the pubsub channel
 
         """
         if not self.enable_pubsub:
             raise ValueError("PUBSUB not enabled")
-        yield from self.broker.backend.sub(self.get_pubsub_name(message))
+
+        for i in self.broker.backend.sub(self.get_pubsub_name(message)):
+            if i.get("type", "").lower() == "message":
+                update = StatusUpdate(
+                    status=TaskStatus[i["data"]["status"]],
+                    detail=i["data"]["detail"],
+                )
+                yield update
+                if auto_exit and update.status in TERMINAL_TASK_STATUSES:
+                    break
 
     def set(self, message: Message, status: TaskStatus) -> None:
         """Set a ``status`` for ``message``.

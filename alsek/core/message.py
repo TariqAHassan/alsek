@@ -14,6 +14,7 @@ from alsek._utils.printing import auto_repr
 from alsek._utils.temporal import fromtimestamp_ms, utcnow_timestamp_ms
 from alsek.core.backoff import ExponentialBackoff, settings2backoff
 from alsek.core.concurrency import Lock
+from alsek.types import SupportedMechanismType
 
 
 def _make_uuid() -> str:
@@ -69,7 +70,7 @@ class Message:
         backoff_settings (dict, optional): parameters to control
             backoff. Expected to be of the form
             ``{"algorithm": str, "parameters": dict}``.
-        mechanism (str): mechanism for executing the task. Must
+        mechanism (SupportedMechanismType): mechanism for executing the task. Must
             be either "process" or "thread".
 
     Notes:
@@ -97,7 +98,7 @@ class Message:
         previous_message_uuid: Optional[str] = None,
         callback_message_data: Optional[dict[str, Any]] = None,
         backoff_settings: Optional[dict[str, int]] = None,
-        mechanism: str = DEFAULT_MECHANISM,
+        mechanism: SupportedMechanismType = DEFAULT_MECHANISM,
     ) -> None:
         self.task_name = task_name
         self.queue = queue or DEFAULT_QUEUE

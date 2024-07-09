@@ -16,7 +16,6 @@ from alsek._utils.printing import auto_repr
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.serialization import JsonSerializer, Serializer
 
-
 class RedisBackend(Backend):
     """Redis Backend.
 
@@ -36,7 +35,7 @@ class RedisBackend(Backend):
 
     """
 
-    SUPPORTS_PUBSUB: bool = False
+    SUPPORTS_PUBSUB: bool = True
 
     def __init__(
         self,
@@ -182,11 +181,16 @@ class RedisBackend(Backend):
             message=self.serializer.forward(value),
         )
 
+    def _parse_sub_data(self, data: dict[str, Any]) -> dict[str, Any]:
+        if data.get("type", "").lower() == "message" and data.get("data") is not None:
+            data["data"] = self.serializer.reverse(data["data"])
+        return data
+
     def sub(self, channel: str) -> Iterable[str | dict[str, Any]]:
         pubsub = self.conn.pubsub()
         pubsub.subscribe(channel)
         try:
-            yield from pubsub.listen()
+            yield from map(self._parse_sub_data, pubsub.listen())
         finally:
             pubsub.close()
 
