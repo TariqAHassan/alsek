@@ -114,11 +114,7 @@ class StatusTracker:
         """
         return self._backend.exists(self.get_storage_name(message))
 
-    def publish_update(
-        self,
-        message: Message,
-        update: StatusUpdate,
-    ) -> None:
+    def publish_update(self, message: Message, update: StatusUpdate) -> None:
         """Publish a PUBSUB update for a message.
 
         Args:
