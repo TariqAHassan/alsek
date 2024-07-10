@@ -13,9 +13,9 @@ from typing import Any, Callable, Iterable, Optional, cast
 import dill
 
 from alsek._defaults import DEFAULT_NAMESPACE
+from alsek.storage.serialization import JsonSerializer, Serializer
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
-from alsek.storage.serialization import JsonSerializer, Serializer
 
 log = logging.getLogger(__name__)
 

@@ -4,7 +4,7 @@
 
 """
 from enum import Enum
-from typing import Any, Iterable, Optional, Union, NamedTuple
+from typing import Any, Iterable, NamedTuple, Optional, Union
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger

@@ -5,10 +5,10 @@
 """
 from typing import Any, Iterable, Union
 
-from alsek.utils.temporal import utcnow_timestamp_ms
-from alsek.utils.waiting import waiter
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
+from alsek.utils.temporal import utcnow_timestamp_ms
+from alsek.utils.waiting import waiter
 
 _GET_RESULT_WAIT_SLEEP_INTERVAL: int = 500
 

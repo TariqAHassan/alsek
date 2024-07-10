@@ -5,11 +5,11 @@
 """
 from typing import Any, Iterable
 
-from alsek.utils.checks import has_duplicates
-from alsek.utils.system import StopSignalListener
 from alsek.core.message import Message
 from alsek.exceptions import ValidationError
 from alsek.storage.result import ResultStore
+from alsek.utils.checks import has_duplicates
+from alsek.utils.system import StopSignalListener
 
 
 def _idx_drop(items: list[Any], indexes: set[int]) -> list[Any]:

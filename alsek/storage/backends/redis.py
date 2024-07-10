@@ -11,10 +11,11 @@ import dill
 from redis import ConnectionPool, Redis
 
 from alsek._defaults import DEFAULT_NAMESPACE
-from alsek.utils.aggregation import gather_init_params
-from alsek.utils.printing import auto_repr
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.serialization import JsonSerializer, Serializer
+from alsek.utils.aggregation import gather_init_params
+from alsek.utils.printing import auto_repr
+
 
 class RedisBackend(Backend):
     """Redis Backend.

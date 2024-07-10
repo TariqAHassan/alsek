@@ -4,7 +4,8 @@
 
 """
 import pytest
-from alsek.utils.parsing import parse_exception, ExceptionDetails
+
+from alsek.utils.parsing import ExceptionDetails, parse_exception
 
 
 @pytest.mark.parametrize(
