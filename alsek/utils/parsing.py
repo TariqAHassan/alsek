@@ -1,6 +1,6 @@
 """
 
-    Exception Parsing
+    Parsing
 
 """
 import traceback
@@ -35,13 +35,3 @@ def extract_exception_details(error: Exception) -> ExceptionDetails:
             )
         ),
     )
-
-
-if __name__ == "__main__":
-    try:
-        1 / 0
-    except Exception as e:
-        details = extract_exception_details(e)
-        print("Exception Type:", details.name)
-        print("Exception Message:", details.text)
-        print("Exception Traceback:", details.traceback)
