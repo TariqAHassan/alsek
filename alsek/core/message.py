@@ -106,7 +106,7 @@ class Message:
         self.args = tuple(args) if args else tuple()
         self.kwargs = kwargs or dict()
         self.metadata = metadata
-        self.exception_details = exception_details or dict()
+        self.exception_details = exception_details
         self.result_ttl = result_ttl
         self.retries = retries
         self.timeout = timeout
