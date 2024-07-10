@@ -45,6 +45,9 @@ class ResultStore:
             name (str): message-specific name
 
         """
+        if message.uuid is None:
+            raise ValueError("Message does not have a uuid")
+
         if message.progenitor_uuid:
             return f"results:{message.progenitor_uuid}:descendants:{message.uuid}"
         else:
