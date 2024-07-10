@@ -32,6 +32,8 @@ TERMINAL_TASK_STATUSES = (TaskStatus.FAILED, TaskStatus.SUCCEEDED)
 
 
 class StatusUpdate(NamedTuple):
+    """Status information."""
+
     status: TaskStatus
     detail: Optional[Any]
 
@@ -96,12 +98,30 @@ class StatusTracker:
 
     @staticmethod
     def get_storage_name(message: Message) -> str:
+        """Get the key for the status information about the message
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            name (string): the key for the status information
+
+        """
         if not message.queue or not message.task_name or not message.uuid:
             raise ValidationError("Required attributes not set for message")
         return f"status:{message.queue}:{message.task_name}:{message.uuid}"
 
     @staticmethod
     def get_pubsub_name(message: Message) -> str:
+        """Get the channel for status updates about the message.
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            name (string): the channel for the status information
+
+        """
         if not message.queue or not message.task_name or not message.uuid:
             raise ValidationError("Required attributes not set for message")
         return f"channel:{message.queue}:{message.task_name}:{message.uuid}"
