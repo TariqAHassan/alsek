@@ -102,12 +102,15 @@ message = simple_task.generate()
 First, let's print the message:
 
 ```python
+from alsek import Message
+
 Message(
     task_name='simple_task',
     queue='alsek_queue',
     args=(),
     kwargs={},
     metadata=None,
+    exception_details=None,
     result_ttl=None,
     uuid='67de0e4c-9816-11eb-8cb0-acde48001122',
     progenitor_uuid=None,

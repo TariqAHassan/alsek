@@ -65,11 +65,11 @@ def _retry_future_handler(
 ) -> None:
     if task.do_retry(message, exception=exception):
         task._update_status(message, status=TaskStatus.RETRYING)
-        task.broker.retry(message)
+        task.broker.retry(message, exception=exception)
     else:
         log.error("Retries exhausted for %s.", message.summary)
         task._update_status(message, status=TaskStatus.FAILED)
-        task.broker.fail(message)
+        task.broker.fail(message, exception=exception)
 
 
 def _complete_future_handler(task: Task, message: Message, result: Any) -> None:

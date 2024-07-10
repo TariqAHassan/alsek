@@ -86,6 +86,7 @@ class Message:
         args: Optional[Union[list[Any], tuple[Any, ...]]] = None,
         kwargs: Optional[dict[Any, Any]] = None,
         metadata: Optional[dict[Any, Any]] = None,
+        exception_details: Optional[dict[str, Any]] = None,
         result_ttl: Optional[int] = None,
         uuid: Optional[str] = None,
         progenitor_uuid: Optional[str] = None,
@@ -105,6 +106,7 @@ class Message:
         self.args = tuple(args) if args else tuple()
         self.kwargs = kwargs or dict()
         self.metadata = metadata
+        self.exception_details = exception_details or dict()
         self.result_ttl = result_ttl
         self.retries = retries
         self.timeout = timeout
@@ -135,6 +137,7 @@ class Message:
             args=self.args,
             kwargs=self.kwargs,
             metadata=self.metadata,
+            exception_details=self.exception_details,
             result_ttl=self.result_ttl,
             uuid=self.uuid,
             progenitor_uuid=self.progenitor_uuid,
