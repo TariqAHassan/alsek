@@ -32,6 +32,8 @@ TERMINAL_TASK_STATUSES = (TaskStatus.FAILED, TaskStatus.SUCCEEDED)
 
 
 class StatusUpdate(NamedTuple):
+    """Status information."""
+
     status: TaskStatus
     detail: Optional[Any]
 
@@ -96,10 +98,32 @@ class StatusTracker:
 
     @staticmethod
     def get_storage_name(message: Message) -> str:
+        """Get the key for the status information about the message
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            name (string): the key for the status information
+
+        """
+        if not message.queue or not message.task_name or not message.uuid:
+            raise ValidationError("Required attributes not set for message")
         return f"status:{message.queue}:{message.task_name}:{message.uuid}"
 
     @staticmethod
     def get_pubsub_name(message: Message) -> str:
+        """Get the channel for status updates about the message.
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            name (string): the channel for the status information
+
+        """
+        if not message.queue or not message.task_name or not message.uuid:
+            raise ValidationError("Required attributes not set for message")
         return f"channel:{message.queue}:{message.task_name}:{message.uuid}"
 
     def exists(self, message: Message) -> bool:
@@ -114,18 +138,12 @@ class StatusTracker:
         """
         return self._backend.exists(self.get_storage_name(message))
 
-    def publish_update(
-        self,
-        message: Message,
-        status: TaskStatus,
-        detail: Optional[Any] = None,
-    ) -> None:
+    def publish_update(self, message: Message, update: StatusUpdate) -> None:
         """Publish a PUBSUB update for a message.
 
         Args:
             message (Message): an Alsek message
-            status (TaskStatus): a status to publish
-            detail (Any, optional): additional information to publish
+            update (StatusUpdate): a status to publish
 
         Returns:
             None
@@ -133,7 +151,7 @@ class StatusTracker:
         """
         self.broker.backend.pub(
             self.get_pubsub_name(message),
-            value=StatusUpdate(status=status, detail=detail).as_dict(),
+            value=update.as_dict(),  # converting to dict makes this serializer-agnostic
         )
 
     def listen_to_updates(
@@ -146,7 +164,7 @@ class StatusTracker:
         Args:
             message (Message): an Alsek message
             auto_exit (bool): if ``True`` stop listening if a terminal status for the
-                task is encoundered (succeeded or failed).
+                task is encountered (succeeded or failed).
 
         Returns:
             stream (Iterable[StatusUpdate]): A stream of updates from the pubsub channel
@@ -165,37 +183,47 @@ class StatusTracker:
                 if auto_exit and update.status in TERMINAL_TASK_STATUSES:
                     break
 
-    def set(self, message: Message, status: TaskStatus) -> None:
+    def set(
+        self,
+        message: Message,
+        status: TaskStatus,
+        detail: Optional[Any] = None,
+    ) -> None:
         """Set a ``status`` for ``message``.
 
         Args:
             message (Message): an Alsek message
             status (TaskStatus): a status to set
+            detail (Any, optional): additional information about the status (e.g., progress percentage)
 
         Returns:
             None
 
         """
+        update = StatusUpdate(status=status, detail=detail)
         self._backend.set(
             self.get_storage_name(message),
-            value=status.name,
+            value=update.as_dict(),
             ttl=self.ttl if status == TaskStatus.SUBMITTED else None,
         )
         if self.enable_pubsub:
-            self.publish_update(message, status=status)
+            self.publish_update(message, update=update)
 
-    def get(self, message: Message) -> TaskStatus:
+    def get(self, message: Message) -> StatusUpdate:
         """Get the status of ``message``.
 
         Args:
             message (Message): an Alsek message
 
         Returns:
-            status (TaskStatus): the status of ``message``
+            status (StatusUpdate): the status of ``message``
 
         """
-        status_name = self._backend.get(self.get_storage_name(message))
-        return TaskStatus[status_name]
+        value = self._backend.get(self.get_storage_name(message))
+        return StatusUpdate(
+            status=TaskStatus[value["status"]],
+            detail=value["detail"],
+        )
 
     def delete(self, message: Message, check: bool = True) -> None:
         """Delete the status of ``message``.
@@ -214,14 +242,14 @@ class StatusTracker:
                 ``message`` is not ``TaskStatus.FAILED`` or ``TaskStatus.SUCCEEDED``.
 
         """
-        if check and self.get(message) not in TERMINAL_TASK_STATUSES:
+        if check and self.get(message).status not in TERMINAL_TASK_STATUSES:
             raise ValidationError(f"Message '{message.uuid}' in a non-terminal state")
         self._backend.delete(self.get_storage_name(message), missing_ok=False)
 
     def _integrity_scan(self) -> None:
         for name in self._backend.scan("status*"):
             message = _name2message(name)
-            status = self.get(message)
+            status = self.get(message).status
             if (
                 status is not None
                 and status not in TERMINAL_TASK_STATUSES

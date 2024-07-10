@@ -69,7 +69,7 @@ def test_status_get(
     rolling_status_tracker: StatusTracker,
 ) -> None:
     rolling_status_tracker.set(message, status=status)
-    value = rolling_status_tracker.get(message)
+    value = rolling_status_tracker.get(message).status
     assert value == status
 
 
@@ -140,4 +140,4 @@ def test_integrity_scan(rolling_status_tracker: StatusTracker) -> None:
     rolling_status_tracker._integrity_scan()
 
     # Check that the status of this message is now 'UNKNOWN'.
-    assert rolling_status_tracker.get(message) == TaskStatus.UNKNOWN
+    assert rolling_status_tracker.get(message).status == TaskStatus.UNKNOWN
