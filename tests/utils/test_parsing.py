@@ -4,7 +4,7 @@
 
 """
 import pytest
-from alsek.utils.parsing import extract_exception_details, ExceptionDetails
+from alsek.utils.parsing import parse_exception, ExceptionDetails
 
 
 @pytest.mark.parametrize(
@@ -27,12 +27,12 @@ from alsek.utils.parsing import extract_exception_details, ExceptionDetails
         ),
     ],
 )
-def test_extract_exception_details(
+def test_parse_exception(
     exception: Exception,
     expected_name: str,
     expected_text: str,
 ) -> None:
-    details = extract_exception_details(exception)
+    details = parse_exception(exception)
 
     assert isinstance(details, ExceptionDetails)
     assert details.name == expected_name

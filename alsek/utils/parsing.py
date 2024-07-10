@@ -13,7 +13,7 @@ class ExceptionDetails(NamedTuple):
     traceback: str
 
 
-def extract_exception_details(error: Exception) -> ExceptionDetails:
+def parse_exception(error: Exception) -> ExceptionDetails:
     """Extracts the exception type, exception message, and exception
     traceback from an error.
 
