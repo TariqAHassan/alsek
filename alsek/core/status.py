@@ -35,12 +35,12 @@ class StatusUpdate(NamedTuple):
     """Status information."""
 
     status: TaskStatus
-    detail: Optional[Any]
+    details: Optional[Any]
 
     def as_dict(self) -> dict[str, Any]:
         return dict(
             status=self.status.name,
-            detail=self.detail,
+            details=self.details,
         )
 
 
@@ -177,7 +177,7 @@ class StatusTracker:
             if i.get("type", "").lower() == "message":
                 update = StatusUpdate(
                     status=TaskStatus[i["data"]["status"]],
-                    detail=i["data"]["detail"],
+                    details=i["data"]["details"],
                 )
                 yield update
                 if auto_exit and update.status in TERMINAL_TASK_STATUSES:
@@ -187,20 +187,20 @@ class StatusTracker:
         self,
         message: Message,
         status: TaskStatus,
-        detail: Optional[Any] = None,
+        details: Optional[Any] = None,
     ) -> None:
         """Set a ``status`` for ``message``.
 
         Args:
             message (Message): an Alsek message
             status (TaskStatus): a status to set
-            detail (Any, optional): additional information about the status (e.g., progress percentage)
+            details (Any, optional): additional information about the status (e.g., progress percentage)
 
         Returns:
             None
 
         """
-        update = StatusUpdate(status=status, detail=detail)
+        update = StatusUpdate(status=status, details=details)
         self._backend.set(
             self.get_storage_name(message),
             value=update.as_dict(),
@@ -222,7 +222,7 @@ class StatusTracker:
         value = self._backend.get(self.get_storage_name(message))
         return StatusUpdate(
             status=TaskStatus[value["status"]],
-            detail=value["detail"],
+            details=value["details"],
         )
 
     def delete(self, message: Message, check: bool = True) -> None:
