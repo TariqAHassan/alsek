@@ -381,10 +381,7 @@ class Task:
             result (Any): output of ``op()``
 
         """
-        self.pre_op(message)
-        result = self.op(message)
-        self.post_op(message, result=result)
-        return result
+        return self.op(message)
 
     def do_retry(self, message: Message, exception: BaseException) -> bool:  # noqa
         """Whether a failed task should be retried.
