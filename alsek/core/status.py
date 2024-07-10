@@ -96,10 +96,14 @@ class StatusTracker:
 
     @staticmethod
     def get_storage_name(message: Message) -> str:
+        if not message.queue or not message.task_name or not message.uuid:
+            raise ValidationError("Required attributes not set for message")
         return f"status:{message.queue}:{message.task_name}:{message.uuid}"
 
     @staticmethod
     def get_pubsub_name(message: Message) -> str:
+        if not message.queue or not message.task_name or not message.uuid:
+            raise ValidationError("Required attributes not set for message")
         return f"channel:{message.queue}:{message.task_name}:{message.uuid}"
 
     def exists(self, message: Message) -> bool:
