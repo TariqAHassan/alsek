@@ -12,6 +12,9 @@ class ExceptionDetails(NamedTuple):
     text: str
     traceback: str
 
+    def as_dict(self) -> dict[str, str]:
+        return self._asdict()
+
 
 def parse_exception(error: Exception) -> ExceptionDetails:
     """Extracts the exception type, exception message, and exception
