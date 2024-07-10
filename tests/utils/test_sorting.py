@@ -7,7 +7,7 @@ from typing import Any, Callable
 
 import pytest
 
-from alsek._utils.sorting import dict_sort
+from alsek.utils.sorting import dict_sort
 
 
 @pytest.mark.parametrize(

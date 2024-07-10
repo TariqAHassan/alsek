@@ -21,6 +21,8 @@ to multiple locations. For example, a Redis database and a PostgreSQL database.
 A short example of how to do this is provided below.
 
 ```python
+from typing import Optional, Any
+
 from alsek.core.message import Message
 from alsek.core.status import StatusTracker, TaskStatus
 
@@ -46,9 +48,9 @@ class Status(Base):
 
     
 class CustomStatusTracker(StatusTracker):
-    def set(self, message: Message, status: TaskStatus) -> None:
-        super().set(message, status=status)
-        
+    def set(self, message: Message, status: TaskStatus, detail: Optional[Any] = None) -> None:
+        super().set(message, status=status, detail=detail)
+
         if status == TaskStatus.SUBMITTED:
             session.add(Status(id=message.uuid, status=status.name))
         else:

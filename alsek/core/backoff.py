@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from functools import lru_cache
 from typing import Any, Optional, Type
 
-from alsek._utils.printing import auto_repr
+from alsek.utils.printing import auto_repr
 
 BackoffSettingsType = dict[str, Any]
 

@@ -5,12 +5,12 @@
 """
 from typing import Iterable, Optional, Union
 
-from alsek._utils.system import StopSignalListener
 from alsek.core.backoff import Backoff, ConstantBackoff, LinearBackoff
 from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
+from alsek.utils.system import StopSignalListener
 
 
 class _ConsumptionMutex(Lock):

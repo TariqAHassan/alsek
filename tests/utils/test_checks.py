@@ -7,7 +7,7 @@ from typing import Any, Collection
 
 import pytest
 
-from alsek._utils.checks import has_duplicates
+from alsek.utils.checks import has_duplicates
 
 
 @pytest.mark.parametrize(

@@ -14,11 +14,12 @@ from typing import Any, Type, cast
 import dill
 
 from alsek import Message
-from alsek._utils.logging import get_logger, setup_logging
-from alsek._utils.system import thread_raise
-from alsek._utils.temporal import utcnow_timestamp_ms
 from alsek.core.status import TaskStatus
 from alsek.core.task import Task
+from alsek.utils.logging import get_logger, setup_logging
+from alsek.utils.parsing import parse_exception
+from alsek.utils.system import thread_raise
+from alsek.utils.temporal import utcnow_timestamp_ms
 
 log = logging.getLogger(__name__)
 
@@ -156,13 +157,16 @@ class ThreadTaskFuture(TaskFuture):
         log.info("Received %s...", self.message.summary)
         self.task._update_status(self.message, status=TaskStatus.RUNNING)
 
+        self.task.pre_op(self.message)
         result, exception = None, None
         try:
             result = self.task.execute(self.message)
+            self.message.update(exception_details=None)  # clear any existing errors
             log.info("Successfully processed %s.", self.message.summary)
         except BaseException as error:
             log.error("Error processing %s.", self.message.summary, exc_info=True)
             exception = error
+            self.message.update(exception_details=parse_exception(exception).as_dict())
 
         if self._wrapper_exit:
             log.debug("Thread task future finished after termination.")
@@ -170,6 +174,9 @@ class ThreadTaskFuture(TaskFuture):
             _retry_future_handler(self.task, self.message, exception=exception)
         else:
             _complete_future_handler(self.task, self.message, result=result)
+
+        # Post op is called here so that exception_details can be set
+        self.task.post_op(self.message, result=result)
 
         self._wrapper_exit = True
 
@@ -250,13 +257,16 @@ class ProcessTaskFuture(TaskFuture):
         log.info("Received %s...", message.summary)
         task._update_status(message, status=TaskStatus.RUNNING)
 
+        task.pre_op(message)
         result, exception = None, None
         try:
             result = task.execute(message)
+            message.update(exception_details=None)  # clear any existing errors
             log.info("Successfully processed %s.", message.summary)
         except BaseException as error:
             log.error("Error processing %s.", message.summary, exc_info=True)
             exception = error
+            message.update(exception_details=parse_exception(exception).as_dict())
 
         if not wrapper_exit_queue.empty():
             log.debug("Process task future finished after termination.")
@@ -264,6 +274,9 @@ class ProcessTaskFuture(TaskFuture):
             _retry_future_handler(task, message=message, exception=exception)
         else:
             _complete_future_handler(task, message=message, result=result)
+
+        # Post op is called here so that exception_details can be set
+        task.post_op(message, result=result)
 
         wrapper_exit_queue.put(1)
 

@@ -8,7 +8,7 @@ from typing import Any, Callable
 
 import pytest
 
-from alsek._utils.logging import (
+from alsek.utils.logging import (
     _merge_args_kwargs,
     _run_func,
     get_logger,

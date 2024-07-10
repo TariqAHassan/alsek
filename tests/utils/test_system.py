@@ -10,7 +10,7 @@ from threading import Thread
 
 import pytest
 
-from alsek._utils.system import (
+from alsek.utils.system import (
     StopSignalListener,
     _cast_ident_to_ctype,
     _numeric_python_version,

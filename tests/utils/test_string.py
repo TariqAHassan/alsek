@@ -7,7 +7,7 @@ from typing import Optional
 
 import pytest
 
-from alsek._utils.string import name_matcher
+from alsek.utils.string import name_matcher
 
 
 @pytest.mark.parametrize(

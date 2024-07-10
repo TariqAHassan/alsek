@@ -8,10 +8,10 @@ from typing import Optional
 import click
 
 from alsek import __version__
-from alsek._utils.logging import setup_logging
 from alsek.cli._helpers import collect_tasks, parse_logging_level
 from alsek.core.backoff import LinearBackoff
 from alsek.core.worker import WorkerPool
+from alsek.utils.logging import setup_logging
 
 
 @click.command()

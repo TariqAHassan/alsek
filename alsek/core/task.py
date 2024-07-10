@@ -24,8 +24,6 @@ from alsek._defaults import (
     DEFAULT_QUEUE,
     DEFAULT_TASK_TIMEOUT,
 )
-from alsek._utils.aggregation import gather_init_params
-from alsek._utils.printing import auto_repr
 from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
 from alsek.core.broker import Broker
 from alsek.core.message import Message
@@ -33,6 +31,8 @@ from alsek.core.status import StatusTracker, TaskStatus
 from alsek.exceptions import SchedulingError, ValidationError
 from alsek.storage.result import ResultStore
 from alsek.types import SUPPORTED_MECHANISMS, SupportedMechanismType
+from alsek.utils.aggregation import gather_init_params
+from alsek.utils.printing import auto_repr
 
 log = logging.getLogger(__name__)
 
@@ -381,10 +381,7 @@ class Task:
             result (Any): output of ``op()``
 
         """
-        self.pre_op(message)
-        result = self.op(message)
-        self.post_op(message, result=result)
-        return result
+        return self.op(message)
 
     def do_retry(self, message: Message, exception: BaseException) -> bool:  # noqa
         """Whether a failed task should be retried.

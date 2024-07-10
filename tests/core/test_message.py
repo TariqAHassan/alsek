@@ -9,11 +9,11 @@ from typing import Any, Optional
 
 import pytest
 
-from alsek._utils.temporal import utcnow_timestamp_ms
 from alsek.core.backoff import ConstantBackoff
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
+from alsek.utils.temporal import utcnow_timestamp_ms
 
 
 @pytest.mark.parametrize(
