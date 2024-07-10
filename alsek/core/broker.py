@@ -13,7 +13,6 @@ from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsErro
 from alsek.storage.backends import Backend
 from alsek.utils.logging import magic_logger
 from alsek.utils.printing import auto_repr
-from alsek.utils.parsing import parse_exception
 
 log = logging.getLogger(__name__)
 
@@ -118,16 +117,11 @@ class Broker:
     @magic_logger(
         before=lambda message: log.debug("Retrying %s...", message.summary),
     )
-    def retry(
-        self,
-        message: Message,
-        exception: Optional[BaseException] = None,
-    ) -> None:
+    def retry(self, message: Message) -> None:
         """Retry a message.
 
         Args:
             message (Message): an Alsek message
-            exception (BaseException, optional): exception which created the need to retry the message
 
         Returns:
             None
@@ -142,8 +136,6 @@ class Broker:
             )
 
         message.increment()
-        if exception:
-            message.exception_details = parse_exception(exception).as_dict()
         self.backend.set(self.get_message_name(message), value=message.data)
         self.nack(message)
         log.info(
@@ -214,22 +206,19 @@ class Broker:
         before=lambda message: log.debug("Failing %s...", message.summary),
         after=lambda input_: log.debug("Failed %s.", input_["message"].summary),
     )
-    def fail(self, message: Message, exception: Optional[BaseException] = None) -> None:
+    def fail(self, message: Message) -> None:
         """Acknowledge and fail a message by removing it from the backend.
         If ``dlq_ttl`` is not null, the messages will be persisted to
         the dead letter queue for the prescribed amount of time.
 
         Args:
             message (Message): an Alsek message
-            exception (BaseException, optional): exception which caused the message to fail
 
         Returns:
             None
 
         """
         self.ack(message)
-        if exception:
-            message.exception_details = parse_exception(exception).as_dict()
         if self.dlq_ttl:
             self.backend.set(
                 f"dlq:{self.get_message_name(message)}",

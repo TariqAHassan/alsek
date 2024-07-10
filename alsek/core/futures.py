@@ -16,6 +16,7 @@ import dill
 from alsek import Message
 from alsek.core.status import TaskStatus
 from alsek.core.task import Task
+from alsek.utils.parsing import parse_exception
 from alsek.utils.logging import get_logger, setup_logging
 from alsek.utils.system import thread_raise
 from alsek.utils.temporal import utcnow_timestamp_ms
@@ -63,13 +64,16 @@ def _retry_future_handler(
     message: Message,
     exception: BaseException,
 ) -> None:
+    message.update(
+        exception_details=parse_exception(exception).as_dict(),
+    )
     if task.do_retry(message, exception=exception):
         task._update_status(message, status=TaskStatus.RETRYING)
-        task.broker.retry(message, exception=exception)
+        task.broker.retry(message)
     else:
         log.error("Retries exhausted for %s.", message.summary)
         task._update_status(message, status=TaskStatus.FAILED)
-        task.broker.fail(message, exception=exception)
+        task.broker.fail(message)
 
 
 def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
