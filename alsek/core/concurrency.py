@@ -9,7 +9,7 @@ from socket import gethostname
 from types import TracebackType
 from typing import Optional, Type, cast
 
-from alsek._utils.printing import auto_repr
+from alsek.utils.printing import auto_repr
 from alsek.storage.backends import Backend
 
 

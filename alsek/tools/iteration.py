@@ -5,8 +5,8 @@
 """
 from typing import Any, Iterable
 
-from alsek._utils.checks import has_duplicates
-from alsek._utils.system import StopSignalListener
+from alsek.utils.checks import has_duplicates
+from alsek.utils.system import StopSignalListener
 from alsek.core.message import Message
 from alsek.exceptions import ValidationError
 from alsek.storage.result import ResultStore

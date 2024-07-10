@@ -14,9 +14,9 @@ from typing import Any, Type, cast
 import dill
 
 from alsek import Message
-from alsek._utils.logging import get_logger, setup_logging
-from alsek._utils.system import thread_raise
-from alsek._utils.temporal import utcnow_timestamp_ms
+from alsek.utils.logging import get_logger, setup_logging
+from alsek.utils.system import thread_raise
+from alsek.utils.temporal import utcnow_timestamp_ms
 from alsek.core.status import TaskStatus
 from alsek.core.task import Task
 

@@ -11,10 +11,10 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 
 from alsek import __version__
-from alsek._utils.checks import has_duplicates
-from alsek._utils.logging import magic_logger
-from alsek._utils.sorting import dict_sort
-from alsek._utils.system import smart_cpu_count
+from alsek.utils.checks import has_duplicates
+from alsek.utils.logging import magic_logger
+from alsek.utils.sorting import dict_sort
+from alsek.utils.system import smart_cpu_count
 from alsek.core.broker import Broker
 from alsek.core.consumer import Consumer
 from alsek.core.futures import (

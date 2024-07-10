@@ -24,8 +24,8 @@ from alsek._defaults import (
     DEFAULT_QUEUE,
     DEFAULT_TASK_TIMEOUT,
 )
-from alsek._utils.aggregation import gather_init_params
-from alsek._utils.printing import auto_repr
+from alsek.utils.aggregation import gather_init_params
+from alsek.utils.printing import auto_repr
 from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
 from alsek.core.broker import Broker
 from alsek.core.message import Message

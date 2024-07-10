@@ -7,7 +7,7 @@ from typing import Optional
 
 import pytest
 
-from alsek._utils.aggregation import gather_init_params
+from alsek.utils.aggregation import gather_init_params
 
 
 class Sample:

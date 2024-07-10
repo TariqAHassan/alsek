@@ -7,8 +7,8 @@ from typing import Any, Optional
 
 import pytest
 
-from alsek._utils.temporal import time_ms
-from alsek._utils.waiting import waiter
+from alsek.utils.temporal import time_ms
+from alsek.utils.waiting import waiter
 
 
 @pytest.mark.parametrize(

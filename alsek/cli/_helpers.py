@@ -12,7 +12,7 @@ from pkgutil import walk_packages
 from types import ModuleType
 from typing import Any, Iterable
 
-from alsek._utils.logging import magic_logger
+from alsek.utils.logging import magic_logger
 from alsek.core.task import Task
 from alsek.exceptions import NoTasksFoundError, TaskNameCollisionError
 

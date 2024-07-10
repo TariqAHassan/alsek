@@ -10,7 +10,7 @@ from typing import Any
 
 import dill
 
-from alsek._utils.printing import auto_repr
+from alsek.utils.printing import auto_repr
 
 
 class Serializer(ABC):

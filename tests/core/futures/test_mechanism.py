@@ -7,7 +7,7 @@ from typing import Type
 
 import pytest
 
-from alsek._utils.waiting import waiter
+from alsek.utils.waiting import waiter
 from alsek.core.broker import Broker
 from alsek.core.futures import ProcessTaskFuture, TaskFuture, ThreadTaskFuture
 from alsek.core.message import Message

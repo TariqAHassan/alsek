@@ -8,8 +8,8 @@ from pathlib import Path
 from typing import Any, Callable, Iterable, Optional, Union, cast
 
 from alsek._defaults import DEFAULT_NAMESPACE
-from alsek._utils.printing import auto_repr
-from alsek._utils.string import name_matcher
+from alsek.utils.printing import auto_repr
+from alsek.utils.string import name_matcher
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.serialization import JsonSerializer, Serializer
 

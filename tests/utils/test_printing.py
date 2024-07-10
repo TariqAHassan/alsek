@@ -8,7 +8,7 @@ from typing import Any, Optional
 
 import pytest
 
-from alsek._utils.printing import _format_params, _format_value, auto_repr
+from alsek.utils.printing import _format_params, _format_value, auto_repr
 
 START_DATETIME = datetime.now()
 

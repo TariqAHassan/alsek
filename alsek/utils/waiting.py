@@ -5,8 +5,8 @@
 """
 from typing import Callable, Optional
 
-from alsek._utils.system import StopSignalListener
-from alsek._utils.temporal import time_ms
+from alsek.utils.system import StopSignalListener
+from alsek.utils.temporal import time_ms
 
 
 def waiter(

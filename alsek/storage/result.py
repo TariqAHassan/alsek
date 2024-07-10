@@ -5,8 +5,8 @@
 """
 from typing import Any, Iterable, Union
 
-from alsek._utils.temporal import utcnow_timestamp_ms
-from alsek._utils.waiting import waiter
+from alsek.utils.temporal import utcnow_timestamp_ms
+from alsek.utils.waiting import waiter
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
 

@@ -7,8 +7,8 @@ import logging
 from typing import Optional
 
 from alsek._defaults import DEFAULT_TASK_TTL
-from alsek._utils.logging import magic_logger
-from alsek._utils.printing import auto_repr
+from alsek.utils.logging import magic_logger
+from alsek.utils.printing import auto_repr
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsError
