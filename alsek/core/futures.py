@@ -161,6 +161,7 @@ class ThreadTaskFuture(TaskFuture):
         result, exception = None, None
         try:
             result = self.task.execute(self.message)
+            self.message.update(exception_details=None)  # clear any existing errors
             log.info("Successfully processed %s.", self.message.summary)
         except BaseException as error:
             log.error("Error processing %s.", self.message.summary, exc_info=True)
@@ -260,6 +261,7 @@ class ProcessTaskFuture(TaskFuture):
         result, exception = None, None
         try:
             result = task.execute(message)
+            message.update(exception_details=None)  # clear any existing errors
             log.info("Successfully processed %s.", message.summary)
         except BaseException as error:
             log.error("Error processing %s.", message.summary, exc_info=True)
