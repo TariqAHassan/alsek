@@ -43,6 +43,8 @@ class Message:
             the task's function during the execution of ``op()``
         metadata (dict, optional): a dictionary of user-defined message metadata.
             This can store any data types supported by the backend's serializer.
+        exception_details (dict, optional): a dictionary of information about exceptions
+            with ``name``, ``text`` and ``traceback`` information. See ``ExceptionDetails()``.
         result_ttl (int, optional): time to live (in milliseconds) for the
             result in the result store. If a result store is provided and
             this parameter is ``None``, the result will be persisted indefinitely.
