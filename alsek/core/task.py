@@ -23,6 +23,7 @@ from alsek._defaults import (
     DEFAULT_MECHANISM,
     DEFAULT_QUEUE,
     DEFAULT_TASK_TIMEOUT,
+    DEFAULT_TTL,
 )
 from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
 from alsek.core.broker import Broker
@@ -429,10 +430,10 @@ class Task:
             None
 
         """
-        self.backend.set(
-            self.broker._make_revoked_key_name(message),
+        self.broker.backend.set(
+            self._make_revoked_key_name(message),
             value=True,
-            ttl=self.dlq_ttl,
+            ttl=DEFAULT_TTL,
         )
         message.update(
             exception_details=ExceptionDetails(
