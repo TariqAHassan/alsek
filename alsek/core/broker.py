@@ -251,7 +251,7 @@ class Broker:
         self.ack(message)
         self.backend.set(
             f"{REVOKED_PREFIX}:{self.get_message_name(message)}",
-            value=message.data,
+            value=True,
             ttl=DEFAULT_TTL,
         )
 
