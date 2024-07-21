@@ -17,6 +17,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
+from alsek.utils.logging import magic_logger
 
 from alsek._defaults import (
     DEFAULT_MAX_RETRIES,
@@ -420,6 +421,10 @@ class Task:
     def _make_revoked_key_name(self, message: Message) -> str:
         return f"revoked:{self.broker.get_message_name(message)}"
 
+    @magic_logger(
+        before=lambda message: log.info("Revoking %s...", message.summary),
+        after=lambda input_: log.debug("Revoked %s.", input_["message"].summary),
+    )
     def revoke(self, message: Message) -> None:
         """Revoke the task.
 
