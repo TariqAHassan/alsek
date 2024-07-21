@@ -32,6 +32,9 @@ class MockFuture:
     def stop(self, exception: Type[BaseException]) -> None:
         pass
 
+    def clean_up(self) -> None:
+        pass
+
 
 def test_tasks_consumed(rolling_worker_pool: WorkerPool) -> None:
     # Validate that there are no futures to start with
