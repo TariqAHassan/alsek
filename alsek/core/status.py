@@ -69,7 +69,7 @@ class StatusTracker:
     def __init__(
         self,
         broker: Broker,
-        ttl: Optional[int] = 60 * 60 * 24 * 7 * 1000,
+        ttl: Optional[int] = 24 * 7 * 60 * 60 * 1000,
         enable_pubsub: Optional[bool] = None,
         integrity_scan_trigger: Optional[
             Union[CronTrigger, DateTrigger, IntervalTrigger]
