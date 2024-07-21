@@ -118,7 +118,6 @@ class TaskFuture(ABC):
             target=self._revocation_scan,
             daemon=True,
         )
-        self._revocation_scan_thread.start()
 
     @property
     @abstractmethod
@@ -183,6 +182,7 @@ class ThreadTaskFuture(TaskFuture):
         self._wrapper_exit: bool = False
         self._thread = Thread(target=self._wrapper, daemon=True)
         self._thread.start()
+        self._revocation_scan_thread.start()
 
     @property
     def complete(self) -> bool:
@@ -283,6 +283,7 @@ class ProcessTaskFuture(TaskFuture):
             daemon=True,
         )
         self._process.start()
+        self._revocation_scan_thread.start()
 
     @property
     def complete(self) -> bool:
