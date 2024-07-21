@@ -28,10 +28,11 @@ from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
 from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.core.status import StatusTracker, TaskStatus
-from alsek.exceptions import SchedulingError, ValidationError
+from alsek.exceptions import SchedulingError, ValidationError, RevokedError
 from alsek.storage.result import ResultStore
 from alsek.types import SUPPORTED_MECHANISMS, SupportedMechanismType
 from alsek.utils.aggregation import gather_init_params
+from alsek.utils.parsing import ExceptionDetails
 from alsek.utils.printing import auto_repr
 
 log = logging.getLogger(__name__)
@@ -430,6 +431,13 @@ class Task:
             self.broker._make_revoked_key_name(message),
             value=True,
             ttl=self.dlq_ttl,
+        )
+        message.update(
+            exception_details=ExceptionDetails(
+                name=RevokedError.__name__,
+                text="Task revoked",
+                traceback=None,
+            )
         )
         self._update_status(message, status=TaskStatus.FAILED)
         self.broker.fail(message)
