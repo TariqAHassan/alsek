@@ -23,15 +23,18 @@ from alsek._defaults import (
     DEFAULT_MECHANISM,
     DEFAULT_QUEUE,
     DEFAULT_TASK_TIMEOUT,
+    DEFAULT_TTL,
 )
 from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
 from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.core.status import StatusTracker, TaskStatus
-from alsek.exceptions import SchedulingError, ValidationError
+from alsek.exceptions import RevokedError, SchedulingError, ValidationError
 from alsek.storage.result import ResultStore
 from alsek.types import SUPPORTED_MECHANISMS, SupportedMechanismType
 from alsek.utils.aggregation import gather_init_params
+from alsek.utils.logging import magic_logger
+from alsek.utils.parsing import ExceptionDetails
 from alsek.utils.printing import auto_repr
 
 log = logging.getLogger(__name__)
@@ -394,6 +397,8 @@ class Task:
             bool
 
         """
+        if self.is_revoked(message):
+            return False
         return self.max_retries is None or message.retries < self.max_retries
 
     def do_callback(self, message: Message, result: Any) -> bool:  # noqa
@@ -408,10 +413,57 @@ class Task:
 
         Warning:
             * If the task message does not have a callback this
-              this method will *not* be invoked.
+              method will *not* be invoked.
 
         """
         return True
+
+    def _make_revoked_key_name(self, message: Message) -> str:
+        return f"revoked:{self.broker.get_message_name(message)}"
+
+    @magic_logger(
+        before=lambda message: log.info("Revoking %s...", message.summary),
+        after=lambda input_: log.debug("Revoked %s.", input_["message"].summary),
+    )
+    def revoke(self, message: Message) -> None:
+        """Revoke the task.
+
+        Args:
+            message (Message): message to revoke
+
+        Returns:
+            None
+
+        """
+        self.broker.backend.set(
+            self._make_revoked_key_name(message),
+            value=True,
+            ttl=DEFAULT_TTL,
+        )
+        message.update(
+            exception_details=ExceptionDetails(
+                name=RevokedError.__name__,
+                text="task revoked",
+                traceback=None,
+            ).as_dict()
+        )
+        self._update_status(message, status=TaskStatus.FAILED)
+        self.broker.fail(message)
+
+    def is_revoked(self, message: Message) -> bool:
+        """Check if a message is revoked.
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            None
+
+        """
+        if self.broker.backend.get(self._make_revoked_key_name(message)):
+            return True
+        else:
+            return False
 
 
 class TriggerTask(Task):

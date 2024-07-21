@@ -3,12 +3,14 @@
     Futures
 
 """
+from __future__ import annotations
+
 import logging
 import os
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from platform import python_implementation
-from threading import Thread
+from threading import Event, Thread
 from typing import Any, Type, cast
 
 import dill
@@ -16,6 +18,7 @@ import dill
 from alsek import Message
 from alsek.core.status import TaskStatus
 from alsek.core.task import Task
+from alsek.exceptions import RevokedError
 from alsek.utils.logging import get_logger, setup_logging
 from alsek.utils.parsing import parse_exception
 from alsek.utils.system import thread_raise
@@ -64,6 +67,9 @@ def _retry_future_handler(
     message: Message,
     exception: BaseException,
 ) -> None:
+    if task.is_revoked(message):
+        return None
+
     if task.do_retry(message, exception=exception):
         task._update_status(message, status=TaskStatus.RETRYING)
         task.broker.retry(message)
@@ -74,6 +80,9 @@ def _retry_future_handler(
 
 
 def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
+    if task.is_revoked(message):
+        return None
+
     if task.result_store:
         task.result_store.set(message, result=result)
     if message.callback_message_data and task.do_callback(message, result=result):
@@ -104,6 +113,12 @@ class TaskFuture(ABC):
 
         self.created_at = utcnow_timestamp_ms()
 
+        self._revocation_stop_event = Event()
+        self._revocation_scan_thread = Thread(
+            target=self._revocation_scan,
+            daemon=True,
+        )
+
     @property
     @abstractmethod
     def complete(self) -> bool:
@@ -131,6 +146,26 @@ class TaskFuture(ABC):
         """
         raise NotImplementedError()
 
+    def _revocation_scan(self, check_interval: int | float = 0.5) -> None:
+        while not self.complete and not self._revocation_stop_event.is_set():
+            if self.task.is_revoked(self.message):
+                self.stop(RevokedError)
+                break
+            self._revocation_stop_event.wait(check_interval)
+
+    def clean_up(self, ignore_errors: bool = False) -> None:
+        try:
+            self._revocation_stop_event.set()
+            self._revocation_scan_thread.join(timeout=0)
+        except BaseException as error:  # noqa
+            log.error(
+                "Clean up error encountered for task %s with message %s.",
+                self.task.name,
+                self.message.summary,
+            )
+            if not ignore_errors:
+                raise error
+
 
 class ThreadTaskFuture(TaskFuture):
     """Future for task execution in a separate thread.
@@ -148,6 +183,10 @@ class ThreadTaskFuture(TaskFuture):
         self._thread = Thread(target=self._wrapper, daemon=True)
         self._thread.start()
 
+        # Note: this must go here b/c the scan depends on
+        #   `.complete`, which in turn depends on `_thread`.
+        self._revocation_scan_thread.start()
+
     @property
     def complete(self) -> bool:
         """Whether the task has finished."""
@@ -161,6 +200,13 @@ class ThreadTaskFuture(TaskFuture):
         result, exception = None, None
         try:
             result = self.task.execute(self.message)
+            if self.task.is_revoked(self.message):
+                log.info(
+                    "Result for %s recovered after revocation. Discarding.",
+                    self.message.summary,
+                )
+                return None
+
             self.message.update(exception_details=None)  # clear any existing errors
             log.info("Successfully processed %s.", self.message.summary)
         except BaseException as error:
@@ -241,6 +287,10 @@ class ProcessTaskFuture(TaskFuture):
         )
         self._process.start()
 
+        # Note: this must go here b/c the scan depends on
+        #   `.complete`, which in turn depends on `_process`.
+        self._revocation_scan_thread.start()
+
     @property
     def complete(self) -> bool:
         """Whether the task has finished."""
@@ -261,6 +311,13 @@ class ProcessTaskFuture(TaskFuture):
         result, exception = None, None
         try:
             result = task.execute(message)
+            if task.is_revoked(message):
+                log.info(
+                    "Result for %s recovered after revocation. Discarding.",
+                    message.summary,
+                )
+                return None
+
             message.update(exception_details=None)  # clear any existing errors
             log.info("Successfully processed %s.", message.summary)
         except BaseException as error:

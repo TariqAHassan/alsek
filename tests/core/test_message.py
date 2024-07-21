@@ -13,6 +13,7 @@ from alsek.core.backoff import ConstantBackoff
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
+from alsek.utils.parsing import ExceptionDetails
 from alsek.utils.temporal import utcnow_timestamp_ms
 
 
@@ -24,6 +25,7 @@ from alsek.utils.temporal import utcnow_timestamp_ms
         Message("task", args=(1, 2, 3)),
         Message("task", kwargs={"a": 1}),
         Message("task", metadata={"meta": "data"}),
+        Message("task", exception_details=ExceptionDetails(name=ValueError.__name__)),
         Message("task", result_ttl=1000),
         Message("task", uuid="uuid"),
         Message("task", progenitor_uuid="uuid-0"),

@@ -14,7 +14,7 @@ class MessageAlreadyExistsError(AlsekError):
 
 
 class MessageDoesNotExistsError(AlsekError):
-    """Message does not exists in backend."""
+    """Message does not exist in backend."""
 
 
 class MultipleBrokersError(AlsekError):
@@ -39,3 +39,7 @@ class TaskNameCollisionError(AlsekError):
 
 class TerminationError(AlsekError):
     """Alsek termination error."""
+
+
+class RevokedError(AlsekError):
+    """Alsek task revoked error."""

@@ -11,6 +11,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
+from alsek._defaults import DEFAULT_TTL
 from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.exceptions import ValidationError
@@ -56,7 +57,7 @@ class StatusTracker:
         broker (Broker): broker used by tasks.
         ttl (int, optional): time to live (in milliseconds) for the status
         enable_pubsub (bool, optional): if ``True`` automatically publish PUBSUB updates.
-            If ``None`` determine automatically given the capabilies of the backend
+            If ``None`` determine automatically given the capabilities of the backend
             used by ``broker``.
         integrity_scan_trigger (CronTrigger, DateTrigger, IntervalTrigger, optional):
             trigger which determines how often to scan for messages with non-terminal
@@ -69,7 +70,7 @@ class StatusTracker:
     def __init__(
         self,
         broker: Broker,
-        ttl: Optional[int] = 60 * 60 * 24 * 7 * 1000,
+        ttl: Optional[int] = DEFAULT_TTL,
         enable_pubsub: Optional[bool] = None,
         integrity_scan_trigger: Optional[
             Union[CronTrigger, DateTrigger, IntervalTrigger]

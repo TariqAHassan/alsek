@@ -6,7 +6,7 @@
 import logging
 from typing import Optional
 
-from alsek._defaults import DEFAULT_TASK_TTL
+from alsek._defaults import DEFAULT_TTL
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsError
@@ -28,12 +28,16 @@ class Broker:
 
     """
 
-    def __init__(self, backend: Backend, dlq_ttl: Optional[int] = None) -> None:
+    def __init__(self, backend: Backend, dlq_ttl: Optional[int] = DEFAULT_TTL) -> None:
         self.backend = backend
         self.dlq_ttl = dlq_ttl
 
     def __repr__(self) -> str:
-        return auto_repr(self, backend=self.backend, dlq_ttl=self.dlq_ttl)
+        return auto_repr(
+            self,
+            backend=self.backend,
+            dlq_ttl=self.dlq_ttl,
+        )
 
     @staticmethod
     def get_subnamespace(
@@ -94,7 +98,7 @@ class Broker:
         before=lambda message: log.debug("Submitting %s...", message.summary),
         after=lambda input_: log.debug("Submitted %s.", input_["message"].summary),
     )
-    def submit(self, message: Message, ttl: int = DEFAULT_TASK_TTL) -> None:
+    def submit(self, message: Message, ttl: int = DEFAULT_TTL) -> None:
         """Submit a message for processing.
 
         Args:
@@ -163,7 +167,7 @@ class Broker:
             None
 
         """
-        self.backend.delete(self.get_message_name(message))
+        self.backend.delete(self.get_message_name(message), missing_ok=True)
         self._clear_lock(message)
 
     @magic_logger(
@@ -202,6 +206,9 @@ class Broker:
         """
         self._clear_lock(message)
 
+    def _make_dlq_key_name(self, message: Message) -> str:
+        return f"dtq:{self.get_message_name(message)}"
+
     @magic_logger(
         before=lambda message: log.debug("Failing %s...", message.summary),
         after=lambda input_: log.debug("Failed %s.", input_["message"].summary),
@@ -221,7 +228,7 @@ class Broker:
         self.ack(message)
         if self.dlq_ttl:
             self.backend.set(
-                f"dlq:{self.get_message_name(message)}",
+                self._make_dlq_key_name(message),
                 value=message.data,
                 ttl=self.dlq_ttl,
             )
