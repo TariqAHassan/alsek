@@ -148,9 +148,13 @@ class TaskFuture(ABC):
                 break
             self._revocation_stop_event.wait(check_interval)
 
-    def clean_up(self) -> None:
-        self._revocation_stop_event.set()
-        self._revocation_scan_thread.join(timeout=0)
+    def clean_up(self, ignore_errors: bool = False) -> None:
+        try:
+            self._revocation_stop_event.set()
+            self._revocation_scan_thread.join(timeout=0)
+        except BaseException as error:  # noqa
+            if not ignore_errors:
+                raise error
 
 
 class ThreadTaskFuture(TaskFuture):

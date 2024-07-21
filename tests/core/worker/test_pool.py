@@ -32,7 +32,7 @@ class MockFuture:
     def stop(self, exception: Type[BaseException]) -> None:
         pass
 
-    def clean_up(self) -> None:
+    def clean_up(self, ignore_errors: bool = False) -> None:
         pass
 
 
