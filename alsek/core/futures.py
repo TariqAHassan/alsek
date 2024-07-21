@@ -3,12 +3,13 @@
     Futures
 
 """
+from __future__ import annotations
 import logging
 import os
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from platform import python_implementation
-from threading import Thread
+from threading import Thread, Event
 from typing import Any, Type, cast
 
 import dill
@@ -20,6 +21,7 @@ from alsek.utils.logging import get_logger, setup_logging
 from alsek.utils.parsing import parse_exception
 from alsek.utils.system import thread_raise
 from alsek.utils.temporal import utcnow_timestamp_ms
+from alsek.exceptions import RevokedError
 
 log = logging.getLogger(__name__)
 
@@ -104,6 +106,13 @@ class TaskFuture(ABC):
 
         self.created_at = utcnow_timestamp_ms()
 
+        self._revocation_stop_event = Event()
+        self._revocation_scan_thread = Thread(
+            target=self._revocation_scan,
+            daemon=True,
+        )
+        self._revocation_scan_thread.start()
+
     @property
     @abstractmethod
     def complete(self) -> bool:
@@ -130,6 +139,17 @@ class TaskFuture(ABC):
 
         """
         raise NotImplementedError()
+
+    def _revocation_scan(self, check_interval: int | float = 0.5) -> None:
+        while not self.complete and not self._revocation_stop_event.is_set():
+            if self.task.is_revoked(self.message):
+                self.stop(RevokedError)
+                break
+            self._revocation_stop_event.wait(check_interval)
+
+    def clean_up(self) -> None:
+        self._revocation_stop_event.set()
+        self._revocation_scan_thread.join(timeout=0)
 
 
 class ThreadTaskFuture(TaskFuture):

@@ -126,6 +126,7 @@ class WorkerPool(Consumer):
         for futures in self._futures.values():
             for future in futures:
                 future.stop(TerminationError)
+                future.clean_up()
 
     def _manage_futures(self) -> None:
         for mechanism, futures in self._futures.items():
@@ -135,6 +136,7 @@ class WorkerPool(Consumer):
                     to_remove.append(future)
                 elif future.time_limit_exceeded:
                     future.stop(TimeoutError)
+                    future.clean_up()
                     to_remove.append(future)
 
             for f in to_remove:
