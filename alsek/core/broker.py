@@ -209,9 +209,6 @@ class Broker:
     def _make_dlq_key_name(self, message: Message) -> str:
         return f"dql:{self.get_message_name(message)}"
 
-    def _make_revoked_key_name(self, message: Message) -> str:
-        return f"{REVOKED_PREFIX}:{self.get_message_name(message)}"
-
     @magic_logger(
         before=lambda message: log.debug("Failing %s...", message.summary),
         after=lambda input_: log.debug("Failed %s.", input_["message"].summary),
@@ -236,18 +233,3 @@ class Broker:
                 ttl=self.dlq_ttl,
             )
             log.debug("Added %s to DLQ.", message.summary)
-
-    def is_revoked(self, message: Message) -> bool:
-        """Check if a message is revoked.
-
-        Args:
-            message (Message): an Alsek message
-
-        Returns:
-            None
-
-        """
-        if self.backend.get(self._make_revoked_key_name(message)):
-            return True
-        else:
-            return False

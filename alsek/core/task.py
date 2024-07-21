@@ -413,6 +413,9 @@ class Task:
         """
         return True
 
+    def _make_revoked_key_name(self, message: Message) -> str:
+        return f"revoked:{self.broker.get_message_name(message)}"
+
     def revoke(self, message: Message) -> None:
         """Revoke the task.
 
@@ -430,6 +433,21 @@ class Task:
         )
         self._update_status(message, status=TaskStatus.FAILED)
         self.broker.fail(message)
+
+    def is_revoked(self, message: Message) -> bool:
+        """Check if a message is revoked.
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            None
+
+        """
+        if self.backend.get(self._make_revoked_key_name(message)):
+            return True
+        else:
+            return False
 
 
 class TriggerTask(Task):
