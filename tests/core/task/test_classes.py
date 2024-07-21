@@ -90,6 +90,14 @@ def test_task_submit(rolling_broker: Broker) -> None:
     assert task.broker.exists(message)
 
 
+def test_task_revoke(rolling_broker: Broker) -> None:
+    message = Message("task")
+    task = Task(lambda: 1, broker=rolling_broker, name="task")
+    task._submit(message)
+    task.revoke(message)
+    assert task.is_revoked(message)
+
+
 @pytest.mark.parametrize(
     "with_result_store,task_class",
     [
