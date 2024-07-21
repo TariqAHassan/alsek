@@ -167,7 +167,7 @@ class Broker:
             None
 
         """
-        self.backend.delete(self.get_message_name(message))
+        self.backend.delete(self.get_message_name(message), missing_ok=True)
         self._clear_lock(message)
 
     @magic_logger(
