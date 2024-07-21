@@ -56,7 +56,7 @@ class StatusTracker:
         broker (Broker): broker used by tasks.
         ttl (int, optional): time to live (in milliseconds) for the status
         enable_pubsub (bool, optional): if ``True`` automatically publish PUBSUB updates.
-            If ``None`` determine automatically given the capabilies of the backend
+            If ``None`` determine automatically given the capabilities of the backend
             used by ``broker``.
         integrity_scan_trigger (CronTrigger, DateTrigger, IntervalTrigger, optional):
             trigger which determines how often to scan for messages with non-terminal
