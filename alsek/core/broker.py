@@ -207,7 +207,7 @@ class Broker:
         self._clear_lock(message)
 
     def _make_dlq_key_name(self, message: Message) -> str:
-        return f"dql:{self.get_message_name(message)}"
+        return f"dtq:{self.get_message_name(message)}"
 
     @magic_logger(
         before=lambda message: log.debug("Failing %s...", message.summary),

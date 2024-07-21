@@ -219,9 +219,9 @@ def test_fail(dlq_ttl: Optional[int], rolling_broker: Broker) -> None:
     assert not lock.held
 
     if dlq_ttl:
-        # Check that the message has been moved to the dql
-        dql_name = f"dlq:{rolling_broker.get_message_name(message)}"
-        assert rolling_broker.backend.exists(dql_name)
-        # Check that the DQL TTL was respected.
+        # Check that the message has been moved to the dtq
+        dtq_name = rolling_broker._make_dlq_key_name(message)
+        assert rolling_broker.backend.exists(dtq_name)
+        # Check that the DTQ TTL was respected.
         sleeper(dlq_ttl)
-        assert not rolling_broker.backend.exists(dql_name)
+        assert not rolling_broker.backend.exists(dtq_name)
