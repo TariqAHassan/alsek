@@ -67,6 +67,9 @@ def _retry_future_handler(
     message: Message,
     exception: BaseException,
 ) -> None:
+    if task.is_revoked(message):
+        return None
+
     if task.do_retry(message, exception=exception):
         task._update_status(message, status=TaskStatus.RETRYING)
         task.broker.retry(message)
@@ -77,6 +80,9 @@ def _retry_future_handler(
 
 
 def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
+    if task.is_revoked(message):
+        return None
+
     if task.result_store:
         task.result_store.set(message, result=result)
     if message.callback_message_data and task.do_callback(message, result=result):
