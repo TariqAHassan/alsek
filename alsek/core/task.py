@@ -412,7 +412,7 @@ class Task:
 
         Warning:
             * If the task message does not have a callback this
-              this method will *not* be invoked.
+              method will *not* be invoked.
 
         """
         return True
