@@ -413,6 +413,24 @@ class Task:
         """
         return True
 
+    def revoke(self, message: Message) -> None:
+        """Revoke the task.
+
+        Args:
+            message (Message): message to revoke
+
+        Returns:
+            None
+
+        """
+        self.backend.set(
+            self.broker._make_revoked_key_name(message),
+            value=True,
+            ttl=self.dlq_ttl,
+        )
+        self._update_status(message, status=TaskStatus.FAILED)
+        self.broker.fail(message)
+
 
 class TriggerTask(Task):
     """Triggered Task.
