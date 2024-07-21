@@ -19,6 +19,8 @@ log = logging.getLogger(__name__)
 DLQ_PREFIX: str = "dlq"
 REVOKED_PREFIX: str = "revoked"
 
+DEFAULT_TTL: int = 7 * 24 * 60 * 60 * 1000  # 1 week
+
 
 class Broker:
     """Alsek Broker.
@@ -33,7 +35,7 @@ class Broker:
 
     def __init__(self, backend: Backend, dlq_ttl: Optional[int] = None) -> None:
         self.backend = backend
-        self.dlq_ttl = dlq_ttl
+        self.dlq_ttl = dlq_ttl or DEFAULT_TTL
 
     def __repr__(self) -> str:
         return auto_repr(
@@ -252,5 +254,5 @@ class Broker:
         self.backend.set(
             f"{REVOKED_PREFIX}:{self.get_message_name(message)}",
             value=message.data,
-            ttl=self.dlq_ttl,
+            ttl=DEFAULT_TTL,
         )
