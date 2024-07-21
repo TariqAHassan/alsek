@@ -94,6 +94,7 @@ def test_task_revoke(rolling_broker: Broker) -> None:
     message = Message("task")
     task = Task(lambda: 1, broker=rolling_broker, name="task")
     task._submit(message)
+    assert not task.is_revoked(message)
     task.revoke(message)
     assert task.is_revoked(message)
 
