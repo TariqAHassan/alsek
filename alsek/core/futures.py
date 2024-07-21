@@ -188,6 +188,7 @@ class ThreadTaskFuture(TaskFuture):
                     self.message.summary,
                 )
                 return None
+
             self.message.update(exception_details=None)  # clear any existing errors
             log.info("Successfully processed %s.", self.message.summary)
         except BaseException as error:
