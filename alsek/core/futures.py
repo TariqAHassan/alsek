@@ -182,6 +182,12 @@ class ThreadTaskFuture(TaskFuture):
         result, exception = None, None
         try:
             result = self.task.execute(self.message)
+            if self.task.is_revoked(self.message):
+                log.info(
+                    "Result for %s recovered after revocation Discarding.",
+                    self.message.summary,
+                )
+                return None
             self.message.update(exception_details=None)  # clear any existing errors
             log.info("Successfully processed %s.", self.message.summary)
         except BaseException as error:
@@ -282,6 +288,13 @@ class ProcessTaskFuture(TaskFuture):
         result, exception = None, None
         try:
             result = task.execute(message)
+            if task.is_revoked(message):
+                log.info(
+                    "Result for %s recovered after revocation Discarding.",
+                    message.summary,
+                )
+                return None
+
             message.update(exception_details=None)  # clear any existing errors
             log.info("Successfully processed %s.", message.summary)
         except BaseException as error:
