@@ -33,9 +33,9 @@ class Broker:
 
     """
 
-    def __init__(self, backend: Backend, dlq_ttl: Optional[int] = None) -> None:
+    def __init__(self, backend: Backend, dlq_ttl: Optional[int] = DEFAULT_TTL) -> None:
         self.backend = backend
-        self.dlq_ttl = dlq_ttl or DEFAULT_TTL
+        self.dlq_ttl = dlq_ttl
 
     def __repr__(self) -> str:
         return auto_repr(
