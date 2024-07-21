@@ -159,6 +159,11 @@ class TaskFuture(ABC):
             self._revocation_stop_event.set()
             self._revocation_scan_thread.join(timeout=0)
         except BaseException as error:  # noqa
+            log.error(
+                "Clean up error encountered for task %s with message %s.",
+                self.task.name,
+                self.message.summary,
+            )
             if not ignore_errors:
                 raise error
 
