@@ -39,3 +39,7 @@ class TaskNameCollisionError(AlsekError):
 
 class TerminationError(AlsekError):
     """Alsek termination error."""
+
+
+class AbortedError(AlsekError):
+    """Alsek task aborted error."""
