@@ -16,9 +16,6 @@ from alsek.utils.printing import auto_repr
 
 log = logging.getLogger(__name__)
 
-DLQ_PREFIX: str = "dlq"
-REVOKED_PREFIX: str = "revoked"
-
 
 class Broker:
     """Alsek Broker.
@@ -209,6 +206,12 @@ class Broker:
         """
         self._clear_lock(message)
 
+    def _make_dlq_key_name(self, message: Message) -> str:
+        return f"dql:{self.get_message_name(message)}"
+
+    def _make_revoked_key_name(self, message: Message) -> str:
+        return f"{REVOKED_PREFIX}:{self.get_message_name(message)}"
+
     @magic_logger(
         before=lambda message: log.debug("Failing %s...", message.summary),
         after=lambda input_: log.debug("Failed %s.", input_["message"].summary),
@@ -228,32 +231,11 @@ class Broker:
         self.ack(message)
         if self.dlq_ttl:
             self.backend.set(
-                f"{DLQ_PREFIX}:{self.get_message_name(message)}",
+                self._make_dlq_key_name(message),
                 value=message.data,
                 ttl=self.dlq_ttl,
             )
             log.debug("Added %s to DLQ.", message.summary)
-
-    @magic_logger(
-        before=lambda message: log.debug("Revoking %s...", message.summary),
-        after=lambda input_: log.debug("Revoking %s.", input_["message"].summary),
-    )
-    def revoke(self, message: Message) -> None:
-        """Revoke a message by removing it from the backend.
-
-        Args:
-            message (Message): an Alsek message
-
-        Returns:
-            None
-
-        """
-        self.ack(message)
-        self.backend.set(
-            f"{REVOKED_PREFIX}:{self.get_message_name(message)}",
-            value=True,
-            ttl=DEFAULT_TTL,
-        )
 
     def is_revoked(self, message: Message) -> bool:
         """Check if a message is revoked.
@@ -265,7 +247,7 @@ class Broker:
             None
 
         """
-        if self.backend.get(f"{REVOKED_PREFIX}:{self.get_message_name(message)}"):
+        if self.backend.get(self._make_revoked_key_name(message)):
             return True
         else:
             return False
