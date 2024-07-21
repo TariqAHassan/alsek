@@ -445,7 +445,7 @@ class Task:
                 name=RevokedError.__name__,
                 text="task revoked",
                 traceback=None,
-            )
+            ).as_dict()
         )
         self._update_status(message, status=TaskStatus.FAILED)
         self.broker.fail(message)
