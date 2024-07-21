@@ -184,7 +184,7 @@ class ThreadTaskFuture(TaskFuture):
             result = self.task.execute(self.message)
             if self.task.is_revoked(self.message):
                 log.info(
-                    "Result for %s recovered after revocation Discarding.",
+                    "Result for %s recovered after revocation. Discarding.",
                     self.message.summary,
                 )
                 return None
@@ -290,7 +290,7 @@ class ProcessTaskFuture(TaskFuture):
             result = task.execute(message)
             if task.is_revoked(message):
                 log.info(
-                    "Result for %s recovered after revocation Discarding.",
+                    "Result for %s recovered after revocation. Discarding.",
                     message.summary,
                 )
                 return None
