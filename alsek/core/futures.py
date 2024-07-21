@@ -168,15 +168,15 @@ class ThreadTaskFuture(TaskFuture):
             exception = error
             self.message.update(exception_details=parse_exception(exception).as_dict())
 
+        # Post op is called here so that exception_details can be set
+        self.task.post_op(self.message, result=result)
+
         if self._wrapper_exit:
             log.debug("Thread task future finished after termination.")
         elif exception is not None:
             _retry_future_handler(self.task, self.message, exception=exception)
         else:
             _complete_future_handler(self.task, self.message, result=result)
-
-        # Post op is called here so that exception_details can be set
-        self.task.post_op(self.message, result=result)
 
         self._wrapper_exit = True
 
@@ -268,15 +268,15 @@ class ProcessTaskFuture(TaskFuture):
             exception = error
             message.update(exception_details=parse_exception(exception).as_dict())
 
+        # Post op is called here so that exception_details can be set
+        task.post_op(message, result=result)
+
         if not wrapper_exit_queue.empty():
             log.debug("Process task future finished after termination.")
         elif exception is not None:
             _retry_future_handler(task, message=message, exception=exception)
         else:
             _complete_future_handler(task, message=message, result=result)
-
-        # Post op is called here so that exception_details can be set
-        task.post_op(message, result=result)
 
         wrapper_exit_queue.put(1)
 
