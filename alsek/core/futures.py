@@ -23,7 +23,9 @@ from alsek.utils.temporal import utcnow_timestamp_ms
 
 log = logging.getLogger(__name__)
 
-MULTIPROCESSING_BACKEND = os.getenv("ALSEK_MULTIPROCESSING_BACKEND", "standard").strip()
+MULTIPROCESSING_BACKEND = (
+    os.getenv("ALSEK_MULTIPROCESSING_BACKEND", "standard").strip().lower()
+)
 
 if MULTIPROCESSING_BACKEND == "standard":
     from multiprocessing import Process, Queue
