@@ -395,6 +395,8 @@ class Task:
             bool
 
         """
+        if self.is_revoked(message):
+            return False
         return self.max_retries is None or message.retries < self.max_retries
 
     def do_callback(self, message: Message, result: Any) -> bool:  # noqa
