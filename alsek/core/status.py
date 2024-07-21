@@ -11,6 +11,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
+from alsek._defaults import DEFAULT_TTL
 from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.exceptions import ValidationError
@@ -69,7 +70,7 @@ class StatusTracker:
     def __init__(
         self,
         broker: Broker,
-        ttl: Optional[int] = 24 * 7 * 60 * 60 * 1000,
+        ttl: Optional[int] = DEFAULT_TTL,
         enable_pubsub: Optional[bool] = None,
         integrity_scan_trigger: Optional[
             Union[CronTrigger, DateTrigger, IntervalTrigger]

@@ -6,7 +6,7 @@
 import logging
 from typing import Optional
 
-from alsek._defaults import DEFAULT_TASK_TTL
+from alsek._defaults import DEFAULT_TTL
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsError
@@ -18,9 +18,6 @@ log = logging.getLogger(__name__)
 
 DLQ_PREFIX: str = "dlq"
 REVOKED_PREFIX: str = "revoked"
-
-DEFAULT_TTL: int = 7 * 24 * 60 * 60 * 1000  # 1 week
-
 
 class Broker:
     """Alsek Broker.
@@ -103,7 +100,7 @@ class Broker:
         before=lambda message: log.debug("Submitting %s...", message.summary),
         after=lambda input_: log.debug("Submitted %s.", input_["message"].summary),
     )
-    def submit(self, message: Message, ttl: int = DEFAULT_TASK_TTL) -> None:
+    def submit(self, message: Message, ttl: int = DEFAULT_TTL) -> None:
         """Submit a message for processing.
 
         Args:

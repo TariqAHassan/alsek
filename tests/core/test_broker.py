@@ -7,7 +7,7 @@ from typing import Optional, Union
 
 import pytest
 
-from alsek._defaults import DEFAULT_TASK_TTL
+from alsek._defaults import DEFAULT_TTL
 from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
@@ -88,8 +88,8 @@ def test_exists(
 @pytest.mark.parametrize(
     "message,ttl",
     [
-        (Message("task-a", queue="queue-a", uuid="uuid-a"), DEFAULT_TASK_TTL),
-        (Message("task-b", queue="queue-b", uuid="uuid-b"), DEFAULT_TASK_TTL),
+        (Message("task-a", queue="queue-a", uuid="uuid-a"), DEFAULT_TTL),
+        (Message("task-b", queue="queue-b", uuid="uuid-b"), DEFAULT_TTL),
         (Message("task-a", queue="queue-a", uuid="uuid-a"), 250),
         (Message("task-b", queue="queue-b", uuid="uuid-b"), 250),
     ],
@@ -103,7 +103,7 @@ def test_submit(
     rolling_broker.submit(message, ttl=ttl)
 
     assert rolling_broker.exists(message)
-    if ttl != DEFAULT_TASK_TTL:
+    if ttl != DEFAULT_TTL:
         sleeper(ttl)
         assert not rolling_broker.exists(message)
 
