@@ -19,6 +19,7 @@ log = logging.getLogger(__name__)
 DLQ_PREFIX: str = "dlq"
 REVOKED_PREFIX: str = "revoked"
 
+
 class Broker:
     """Alsek Broker.
 
@@ -253,3 +254,18 @@ class Broker:
             value=message.data,
             ttl=DEFAULT_TTL,
         )
+
+    def is_revoked(self, message: Message) -> bool:
+        """Check if a message is revoked.
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            None
+
+        """
+        if self.backend.get(f"{REVOKED_PREFIX}:{self.get_message_name(message)}"):
+            return True
+        else:
+            return False
