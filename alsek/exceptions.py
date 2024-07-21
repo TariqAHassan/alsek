@@ -41,5 +41,5 @@ class TerminationError(AlsekError):
     """Alsek termination error."""
 
 
-class AbortedError(AlsekError):
-    """Alsek task aborted error."""
+class RevokedError(AlsekError):
+    """Alsek task revoked error."""
