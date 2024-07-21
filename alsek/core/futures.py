@@ -182,6 +182,9 @@ class ThreadTaskFuture(TaskFuture):
         self._wrapper_exit: bool = False
         self._thread = Thread(target=self._wrapper, daemon=True)
         self._thread.start()
+
+        # Note: this must go here b/c the scan depends on
+        #   `.complete`, which in turn depends on `_thread`.
         self._revocation_scan_thread.start()
 
     @property
@@ -283,6 +286,9 @@ class ProcessTaskFuture(TaskFuture):
             daemon=True,
         )
         self._process.start()
+
+        # Note: this must go here b/c the scan depends on
+        #   `.complete`, which in turn depends on `_process`.
         self._revocation_scan_thread.start()
 
     @property
