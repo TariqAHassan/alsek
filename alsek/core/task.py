@@ -444,7 +444,7 @@ class Task:
             None
 
         """
-        if self.backend.get(self._make_revoked_key_name(message)):
+        if self.broker.backend.get(self._make_revoked_key_name(message)):
             return True
         else:
             return False
