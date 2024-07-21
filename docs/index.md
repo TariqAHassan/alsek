@@ -13,6 +13,7 @@ capable while remaining very lightweight. Current functionality includes:
   * Interactive Result Iteration
   * Cron, date and interval task triggers (with result storage support)
   * Robust task timeouts
+  * Revoking tasks
   * Callbacks
   * Dead Letter Queues (DLQs)
 
