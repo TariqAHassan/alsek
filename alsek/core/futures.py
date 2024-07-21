@@ -4,12 +4,13 @@
 
 """
 from __future__ import annotations
+
 import logging
 import os
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from platform import python_implementation
-from threading import Thread, Event
+from threading import Event, Thread
 from typing import Any, Type, cast
 
 import dill
@@ -17,11 +18,11 @@ import dill
 from alsek import Message
 from alsek.core.status import TaskStatus
 from alsek.core.task import Task
+from alsek.exceptions import RevokedError
 from alsek.utils.logging import get_logger, setup_logging
 from alsek.utils.parsing import parse_exception
 from alsek.utils.system import thread_raise
 from alsek.utils.temporal import utcnow_timestamp_ms
-from alsek.exceptions import RevokedError
 
 log = logging.getLogger(__name__)
 
