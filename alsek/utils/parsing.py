@@ -4,13 +4,13 @@
 
 """
 import traceback
-from typing import NamedTuple
+from typing import NamedTuple, Optional
 
 
 class ExceptionDetails(NamedTuple):
     name: str
-    text: str
-    traceback: str
+    text: Optional[str] = None
+    traceback: Optional[str] = None
 
     def as_dict(self) -> dict[str, str]:
         return self._asdict()
