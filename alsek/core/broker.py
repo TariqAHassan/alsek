@@ -16,6 +16,9 @@ from alsek.utils.printing import auto_repr
 
 log = logging.getLogger(__name__)
 
+DLQ_PREFIX: str = "dlq"
+REVOKED_PREFIX: str = "revoked"
+
 
 class Broker:
     """Alsek Broker.
@@ -221,8 +224,29 @@ class Broker:
         self.ack(message)
         if self.dlq_ttl:
             self.backend.set(
-                f"dlq:{self.get_message_name(message)}",
+                f"{DLQ_PREFIX}:{self.get_message_name(message)}",
                 value=message.data,
                 ttl=self.dlq_ttl,
             )
             log.debug("Added %s to DLQ.", message.summary)
+
+    @magic_logger(
+        before=lambda message: log.debug("Revoking %s...", message.summary),
+        after=lambda input_: log.debug("Revoking %s.", input_["message"].summary),
+    )
+    def revoke(self, message: Message) -> None:
+        """Revoke a message by removing it from the backend.
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            None
+
+        """
+        self.ack(message)
+        self.backend.set(
+            f"{REVOKED_PREFIX}:{self.get_message_name(message)}",
+            value=message.data,
+            ttl=self.dlq_ttl,
+        )
