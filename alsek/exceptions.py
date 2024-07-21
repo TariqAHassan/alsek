@@ -14,7 +14,7 @@ class MessageAlreadyExistsError(AlsekError):
 
 
 class MessageDoesNotExistsError(AlsekError):
-    """Message does not exists in backend."""
+    """Message does not exist in backend."""
 
 
 class MultipleBrokersError(AlsekError):
