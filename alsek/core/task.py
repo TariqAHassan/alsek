@@ -17,7 +17,6 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
-from alsek.utils.logging import magic_logger
 
 from alsek._defaults import (
     DEFAULT_MAX_RETRIES,
@@ -34,6 +33,7 @@ from alsek.exceptions import RevokedError, SchedulingError, ValidationError
 from alsek.storage.result import ResultStore
 from alsek.types import SUPPORTED_MECHANISMS, SupportedMechanismType
 from alsek.utils.aggregation import gather_init_params
+from alsek.utils.logging import magic_logger
 from alsek.utils.parsing import ExceptionDetails
 from alsek.utils.printing import auto_repr
 
