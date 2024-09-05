@@ -262,6 +262,7 @@ class Task:
         delay: Optional[int] = None,
         previous_result: Any = None,
         callback: Optional[Union[Message, tuple[Message, ...]]] = None,
+        queue: Optional[str] = None,
         submit: bool = True,
         **options: Any,
     ) -> Message:
@@ -290,6 +291,8 @@ class Task:
             callback (Message, tuple[Message, ...], optional): one or more messages
                 to be submitted to the broker after the proceeding message has been
                 successfully processed by a worker.
+            queue (str, optional): queue to use for the task. If none, the default
+                queue for this task will be used.
             submit (bool): if ``True`` submit the task to the broker
             options (Keyword Args): options to use when submitting
                 the message via the broker. See ``Broker.submit()``.
@@ -307,7 +310,7 @@ class Task:
 
         message = Message(
             task_name=self.name,
-            queue=self.queue,
+            queue=queue or self.queue,
             args=args,
             kwargs=kwargs,
             metadata=metadata,
