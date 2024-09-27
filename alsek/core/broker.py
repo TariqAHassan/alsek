@@ -154,8 +154,8 @@ class Broker:
             Lock(lock_name, backend=self.backend).release()
 
     @magic_logger(
-        before=lambda message: log.debug("Removing %s...", message.summary),
-        after=lambda input_: log.debug("Removed %s.", input_["message"].summary),
+        before=lambda message: log.info("Removing %s...", message.summary),
+        after=lambda input_: log.info("Removed %s.", input_["message"].summary),
     )
     def remove(self, message: Message) -> None:
         """Remove a message from the backend.
@@ -210,8 +210,8 @@ class Broker:
         return f"dtq:{self.get_message_name(message)}"
 
     @magic_logger(
-        before=lambda message: log.debug("Failing %s...", message.summary),
-        after=lambda input_: log.debug("Failed %s.", input_["message"].summary),
+        before=lambda message: log.info("Failing %s...", message.summary),
+        after=lambda input_: log.info("Failed %s.", input_["message"].summary),
     )
     def fail(self, message: Message) -> None:
         """Acknowledge and fail a message by removing it from the backend.
