@@ -438,6 +438,7 @@ class Task:
             None
 
         """
+        log.info("Revoking %s...", message.summary)
         self.broker.backend.set(
             self._make_revoked_key_name(message),
             value=True,
