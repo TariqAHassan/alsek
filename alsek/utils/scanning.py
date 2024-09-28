@@ -80,7 +80,7 @@ def collect_tasks(module: str | ModuleType) -> tuple[Task, ...]:
     if isinstance(module, str):
         module = import_module(module)
     elif not isinstance(module, ModuleType):
-        raise TypeError(f"Unsupport input type")
+        raise TypeError(f"Unsupport input type, got {type(module)}")
 
     all_tasks: dict[str, Task] = dict()
     for m in _enumerate_modules(module):
