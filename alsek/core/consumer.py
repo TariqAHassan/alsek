@@ -3,6 +3,7 @@
     Consumer
 
 """
+
 from typing import Iterable, Optional, Union
 
 from alsek.core.backoff import Backoff, ConstantBackoff, LinearBackoff

@@ -3,6 +3,7 @@
     Result Iteration
 
 """
+
 from typing import Any, Iterable
 
 from alsek.core.message import Message

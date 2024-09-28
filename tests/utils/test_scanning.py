@@ -3,12 +3,13 @@
     Test CLI Helpers
 
 """
+
 import logging
 from typing import Set
 
 import pytest
 
-from alsek.cli._helpers import collect_tasks, parse_logging_level
+from alsek.utils.scanning import collect_tasks, parse_logging_level
 
 
 @pytest.mark.parametrize(
@@ -32,12 +33,12 @@ def test_parse_logging_level(
 
 
 @pytest.mark.parametrize(
-    "name,expected",
+    "module,expected",
     [
         ("examples.simple", {"add"}),
         ("examples.ml", {"predict"}),
     ],
 )
-def test_collect_tasks(name: str, expected: Set[str]) -> None:
-    actual = collect_tasks(name)
+def test_collect_tasks(module: str, expected: Set[str]) -> None:
+    actual = collect_tasks(module)
     assert {i.name for i in actual} == expected

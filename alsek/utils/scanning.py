@@ -3,6 +3,9 @@
     Helpers
 
 """
+
+from __future__ import annotations
+
 import logging
 import os
 import sys
@@ -53,31 +56,35 @@ def _is_task(obj: Any) -> bool:
 
 
 @magic_logger(
-    before=lambda name: log.debug("Scanning %r for tasks...", name),
+    before=lambda module: log.debug("Scanning %r for tasks...", module),
     after=lambda output: log.debug(
         "Found %s task%s.",
         len(output),
         "s" if len(output) > 1 else "",
     ),
 )
-def collect_tasks(name: str) -> tuple[Task, ...]:
+def collect_tasks(module: str | ModuleType) -> tuple[Task, ...]:
     """Recursively collect all tasks in ``name``.
 
     Args:
-        name (str): name of a module
+        name (str, ModuleType): name of a module
 
     Returns:
-        tasks (tuple[Task, ...]): collected tasks
+        module (tuple[Task, ...]): collected tasks
 
     Raises:
         NoTasksFoundError: if no tasks can be found
 
     """
     sys.path.append(os.getcwd())
+    if isinstance(module, str):
+        module = import_module(module)
+    elif not isinstance(module, ModuleType):
+        raise TypeError(f"Unsupport input type, got {type(module)}")
 
     all_tasks: dict[str, Task] = dict()
-    for module in _enumerate_modules(import_module(name)):
-        for name, task in getmembers(module, predicate=_is_task):
+    for m in _enumerate_modules(module):
+        for name, task in getmembers(m, predicate=_is_task):
             if name in all_tasks:
                 if task != all_tasks[name]:
                     raise TaskNameCollisionError(f"Multiple tasks '{name}'")

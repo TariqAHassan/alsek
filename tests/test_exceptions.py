@@ -3,6 +3,7 @@
     Test Exceptions
 
 """
+
 import pytest
 
 from alsek.exceptions import AlsekError

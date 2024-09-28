@@ -3,6 +3,7 @@
     Test Serialization
 
 """
+
 from typing import Any
 
 import pytest

@@ -4,6 +4,7 @@
     ~~~~~~~~~~~~~~
 
 """
+
 import copy
 import random
 from typing import Any, Optional

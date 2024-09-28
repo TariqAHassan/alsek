@@ -3,6 +3,7 @@
     Conftest
 
 """
+
 from __future__ import annotations
 
 from functools import partial
@@ -39,7 +40,7 @@ def _get_redis_path() -> str:
 custom_redisdb_proc = redis_factories.redis_proc(
     executable=_get_redis_path(),
     port=None,
-    logsdir="/tmp",
+    datadir="/tmp",
 )
 custom_redisdb = redis_factories.redisdb("custom_redisdb_proc", decode=True)
 

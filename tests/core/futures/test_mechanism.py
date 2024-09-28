@@ -3,6 +3,7 @@
     Test Worker Futures
 
 """
+
 from typing import Type
 
 import pytest

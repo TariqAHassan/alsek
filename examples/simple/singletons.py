@@ -3,6 +3,7 @@
     Singletons
 
 """
+
 from pathlib import Path
 
 from alsek import Broker

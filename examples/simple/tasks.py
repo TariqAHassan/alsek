@@ -3,6 +3,7 @@
     Tasks
 
 """
+
 from alsek.core.task import task
 from examples.simple.singletons import broker
 

@@ -3,6 +3,7 @@
     Test Aggregation
 
 """
+
 from typing import Optional
 
 import pytest
