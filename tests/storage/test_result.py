@@ -3,6 +3,7 @@
     Test Result
 
 """
+
 import pytest
 from schema import Schema
 

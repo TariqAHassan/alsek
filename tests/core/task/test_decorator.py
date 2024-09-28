@@ -3,6 +3,7 @@
     Test Task Decorator
 
 """
+
 from functools import partial
 from typing import Any, Optional, Type, Union
 

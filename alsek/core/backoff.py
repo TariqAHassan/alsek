@@ -3,6 +3,7 @@
     Backoff Algorithms
 
 """
+
 from abc import ABC, abstractmethod
 from functools import lru_cache
 from typing import Any, Optional, Type

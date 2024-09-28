@@ -3,6 +3,7 @@
     Test Consumer
 
 """
+
 from typing import Optional, Union
 
 import pytest

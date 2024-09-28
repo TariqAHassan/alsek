@@ -3,6 +3,7 @@
     Test Worker Pool
 
 """
+
 import copy
 from typing import Type
 

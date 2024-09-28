@@ -3,6 +3,7 @@
     Test Status
 
 """
+
 import pytest
 
 from alsek.core.message import Message

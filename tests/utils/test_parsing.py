@@ -3,6 +3,7 @@
     Exception Parsing Test
 
 """
+
 import pytest
 
 from alsek.utils.parsing import ExceptionDetails, parse_exception

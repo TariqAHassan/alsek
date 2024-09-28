@@ -3,6 +3,7 @@
     Waiting
 
 """
+
 from typing import Callable, Optional
 
 from alsek.utils.system import StopSignalListener

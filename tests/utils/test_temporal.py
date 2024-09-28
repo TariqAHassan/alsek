@@ -3,6 +3,7 @@
     Test Temporal
 
 """
+
 import pytest
 
 from alsek.utils.temporal import fromtimestamp_ms, time_ms, utcnow_timestamp_ms

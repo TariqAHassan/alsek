@@ -8,6 +8,7 @@
     ToDo: expand cli testing
 
 """
+
 from __future__ import annotations
 
 from typing import Any

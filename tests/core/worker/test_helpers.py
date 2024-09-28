@@ -3,6 +3,7 @@
     Test Worker Helpers
 
 """
+
 from typing import Collection, Optional, Union
 
 import pytest

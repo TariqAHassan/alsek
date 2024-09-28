@@ -3,6 +3,7 @@
     Test Sorting
 
 """
+
 from typing import Any, Callable
 
 import pytest

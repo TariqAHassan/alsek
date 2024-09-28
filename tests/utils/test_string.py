@@ -3,6 +3,7 @@
     Test String Utils
 
 """
+
 from typing import Optional
 
 import pytest

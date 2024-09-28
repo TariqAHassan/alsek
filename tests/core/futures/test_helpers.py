@@ -3,6 +3,7 @@
     Test Future Helpers
 
 """
+
 import pytest
 
 from alsek._defaults import DEFAULT_MAX_RETRIES

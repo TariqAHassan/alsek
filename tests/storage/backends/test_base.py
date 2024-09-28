@@ -3,6 +3,7 @@
     Test Base
 
 """
+
 import pytest
 from diskcache import Cache as DiskCache
 

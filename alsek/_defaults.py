@@ -3,6 +3,7 @@
     Defaults
 
 """
+
 from alsek.types import SupportedMechanismType
 
 DEFAULT_QUEUE: str = "alsek_queue"

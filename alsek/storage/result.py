@@ -3,6 +3,7 @@
     Result Storage
 
 """
+
 from typing import Any, Iterable, Union
 
 from alsek.core.message import Message
