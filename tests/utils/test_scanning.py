@@ -8,7 +8,7 @@ from typing import Set
 
 import pytest
 
-from alsek.cli._helpers import collect_tasks, parse_logging_level
+from alsek.utils.scanning import collect_tasks, parse_logging_level
 
 
 @pytest.mark.parametrize(
