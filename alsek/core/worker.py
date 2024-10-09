@@ -120,6 +120,7 @@ class WorkerPool(Consumer):
             trigger=IntervalTrigger(seconds=self.management_interval / 1000),
         )
 
+        log.info("Starting with %s tasks", len(self.tasks))
         if self.max_processes:
             log.debug("Using %s multiprocessing backend.", MULTIPROCESSING_BACKEND)
 
