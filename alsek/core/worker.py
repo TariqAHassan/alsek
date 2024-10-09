@@ -214,13 +214,15 @@ class WorkerPool(Consumer):
 
         """
         log.info(
-            "Starting worker pool with %s max thread(s) and %s max process(es)...",
+            "Starting worker pool with %s max thread%s and %s max process%s...",
             self.max_threads,
+            "(s)" if self.max_threads > 1 else "",
             self.max_processes,
+            "(es)" if self.max_processes > 1 else "",
         )
         self._pool_manager.start()
         log.info(
-            "Monitoring %s %s",
+            "Monitoring %s %s.",
             len(self.tasks) if self.task_specific_mode else len(self.queues),
             "tasks" if self.task_specific_mode else "queues"
         )
