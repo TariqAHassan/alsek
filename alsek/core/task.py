@@ -308,6 +308,13 @@ class Task:
         """
         if result_ttl and not self.result_store:
             raise ValidationError(f"`result_ttl` invalid. No result store set.")
+        elif queue and queue != self.queue:
+            log.warning(
+                "Assigning task to non-default queue '%s'. "
+                "Worker pools built without manual specification of "
+                "supported queues may not acknowledge this message.",
+                queue,
+            )
 
         message = Message(
             task_name=self.name,
