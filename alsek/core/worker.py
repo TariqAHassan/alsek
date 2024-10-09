@@ -121,6 +121,7 @@ class WorkerPool(Consumer):
         )
         self.tasks = tasks
         self.queues = queues
+        self.task_specific = task_specific
         self.max_threads = max_threads
         self.max_processes = max_processes or smart_cpu_count()
         self.management_interval = management_interval
@@ -218,7 +219,11 @@ class WorkerPool(Consumer):
             self.max_processes,
         )
         self._pool_manager.start()
-        log.info("Monitoring to %s tasks", len(self.tasks))
+        log.info(
+            "Monitoring %s %s",
+            len(self.tasks) if self.task_specific else len(self.queues),
+            "tasks" if self.task_specific else "queues"
+        )
         log.info("Worker pool online.")
 
         try:
