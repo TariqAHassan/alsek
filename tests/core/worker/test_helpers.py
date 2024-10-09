@@ -40,7 +40,7 @@ def test_extract_broker_multi_broker(rolling_backend: Backend) -> None:
 
 
 @pytest.mark.parametrize(
-    "task_names,queues,task_specific,expected",
+    "task_names,queues,task_specific_mode,expected",
     [
         # Tasks & no queues specified
         (
@@ -86,7 +86,7 @@ def test_extract_broker_multi_broker(rolling_backend: Backend) -> None:
 def test_derive_consumer_subset(
     task_names: Collection[Task],
     queues: Optional[list[str]],
-    task_specific: bool,
+    task_specific_mode: bool,
     expected: Union[dict[str, list[str]], BaseException],
     rolling_broker: Broker,
 ) -> None:
@@ -102,7 +102,7 @@ def test_derive_consumer_subset(
         actual = _derive_consumer_subset(
             tasks=tasks,
             queues=queues,
-            task_specific=task_specific,
+            task_specific_mode=task_specific_mode,
         )
         if isinstance(expected, dict):
             assert actual == expected
@@ -113,5 +113,5 @@ def test_derive_consumer_subset(
             _derive_consumer_subset(
                 tasks=tasks,
                 queues=queues,
-                task_specific=task_specific,
+                task_specific_mode=task_specific_mode,
             )

@@ -47,11 +47,11 @@ def _extract_broker(tasks: Collection[Task]) -> Broker:
 def _derive_consumer_subset(
     tasks: Collection[Task],
     queues: Optional[list[str]],
-    task_specific: bool,
+    task_specific_mode: bool,
 ) -> dict[str, list[str]]:
     if queues and has_duplicates(queues):
         raise ValueError(f"Duplicates in provided queues: {queues}")
-    elif queues and not task_specific:
+    elif queues and not task_specific_mode:
         return queues
 
     subset: DefaultDict[str, list[str]] = defaultdict(list)
@@ -59,7 +59,7 @@ def _derive_consumer_subset(
         if queues is None or t.queue in queues:
             subset[t.queue].append(t.name)
 
-    if task_specific:
+    if task_specific_mode:
         return dict_sort(subset, key=queues.index if queues else None)
     else:
         return sorted(subset.keys())
@@ -78,7 +78,7 @@ class WorkerPool(Consumer):
             to ``queues``.
         queues (list[str], optional): the names of one or more queues
             consume messages from. If ``None``, all queues will be consumed.
-        task_specific (bool, optional): when defining queues to monitor, include
+        task_specific_mode (bool, optional): when defining queues to monitor, include
             tasks names. Otherwise, consider queues broadly.
         max_threads (int): the maximum of tasks with ``mechanism="thread"``
             supported at any 'one' time.
@@ -103,7 +103,7 @@ class WorkerPool(Consumer):
         self,
         tasks: Collection[Task],
         queues: Optional[list[str]] = None,
-        task_specific: bool = False,
+        task_specific_mode: bool = False,
         max_threads: int = 8,
         max_processes: Optional[int] = None,
         management_interval: int = 100,
@@ -115,13 +115,13 @@ class WorkerPool(Consumer):
             subset=_derive_consumer_subset(
                 tasks=tasks,
                 queues=queues,
-                task_specific=task_specific,
+                task_specific_mode=task_specific_mode,
             ),
             **kwargs,
         )
         self.tasks = tasks
         self.queues = queues
-        self.task_specific = task_specific
+        self.task_specific_mode = task_specific_mode
         self.max_threads = max_threads
         self.max_processes = max_processes or smart_cpu_count()
         self.management_interval = management_interval
@@ -221,8 +221,8 @@ class WorkerPool(Consumer):
         self._pool_manager.start()
         log.info(
             "Monitoring %s %s",
-            len(self.tasks) if self.task_specific else len(self.queues),
-            "tasks" if self.task_specific else "queues"
+            len(self.tasks) if self.task_specific_mode else len(self.queues),
+            "tasks" if self.task_specific_mode else "queues"
         )
         log.info("Worker pool online.")
 

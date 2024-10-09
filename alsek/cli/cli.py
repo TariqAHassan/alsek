@@ -27,8 +27,8 @@ from alsek.utils.scanning import collect_tasks, parse_logging_level
     "If null, all queues will be consumed.",
 )
 @click.option(
-    "-ts",
-    "--task_specific",
+    "-tsm",
+    "--task_specific_mode",
     is_flag=True,
     help="Narrowly monitor the tasks (true) or queues more broadly (false; default)",
 )
@@ -89,7 +89,7 @@ from alsek.utils.scanning import collect_tasks, parse_logging_level
 def main(
     module: str,
     queues: Optional[str],  # noqa
-    task_specific: bool,  # noqa
+    task_specific_mode: bool,  # noqa
     max_threads: int,  # noqa
     max_processes: Optional[int],  # noqa
     management_interval: int,  # noqa
@@ -120,7 +120,7 @@ def main(
     WorkerPool(
         tasks=collect_tasks(module),
         queues=[i.strip() for i in queues.split(",")] if queues else None,
-        task_specific=task_specific,
+        task_specific_mode=task_specific_mode,
         max_threads=max_threads,
         max_processes=max_processes,
         management_interval=management_interval,
