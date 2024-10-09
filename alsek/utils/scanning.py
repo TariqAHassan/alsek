@@ -67,7 +67,7 @@ def collect_tasks(module: str | ModuleType) -> tuple[Task, ...]:
     """Recursively collect all tasks in ``name``.
 
     Args:
-        name (str, ModuleType): name of a module
+        module (str, ModuleType): name of a module
 
     Returns:
         module (tuple[Task, ...]): collected tasks
