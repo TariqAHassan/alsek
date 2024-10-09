@@ -112,7 +112,7 @@ def main(
 
     WorkerPool(
         tasks=collect_tasks(module),
-        queues=queues.split(",") if queues else None,
+        queues=[i.strip() for i in queues.split(",")] if queues else None,
         max_threads=max_threads,
         max_processes=max_processes,
         management_interval=management_interval,
