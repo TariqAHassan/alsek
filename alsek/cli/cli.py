@@ -19,12 +19,18 @@ from alsek.utils.scanning import collect_tasks, parse_logging_level
 @click.version_option(__version__)
 @click.argument("module", type=str)
 @click.option(
-    "-q",
+    "-qu",
     "--queues",
     type=str,
     default=None,
     help="Comma separated list of queues to consume from. "
     "If null, all queues will be consumed.",
+)
+@click.option(
+    "-ts",
+    "--task_specific",
+    is_flag=True,
+    help="Narrowly monitor the tasks (true) or queues more broadly (false; default)",
 )
 @click.option(
     "--max_threads",
@@ -83,6 +89,7 @@ from alsek.utils.scanning import collect_tasks, parse_logging_level
 def main(
     module: str,
     queues: Optional[str],  # noqa
+    task_specific: bool,  # noqa
     max_threads: int,  # noqa
     max_processes: Optional[int],  # noqa
     management_interval: int,  # noqa
@@ -113,6 +120,7 @@ def main(
     WorkerPool(
         tasks=collect_tasks(module),
         queues=[i.strip() for i in queues.split(",")] if queues else None,
+        task_specific=task_specific,
         max_threads=max_threads,
         max_processes=max_processes,
         management_interval=management_interval,

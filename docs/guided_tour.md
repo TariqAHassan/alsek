@@ -879,15 +879,15 @@ alsek my_project
 Alsek's CLI includes several dials to achieve fine-grain control over the worker pool.
 We won't cover all of them here, but there are at least three worth highlighting.
 
-The first is the `-q`/`--queues` option. This allows one to limit the queues
+The first is the `-qu`/`--queues` option. This allows one to limit the queues
 which will be consumed by the worker pool. It can be set using a comma-separated list.
 
 ```shell
-alsek my_project -q queue_a
+alsek my_project -qu queue_a
 ```
 
 ```shell
-alsek my_project -q queue_a,queue_b,queue_z
+alsek my_project -qu queue_a,queue_b,queue_z
 ```
 
 The `--max_threads` and `--max_processes` options are also noteworthy.
@@ -905,7 +905,7 @@ alsek my_project --max_processes 2
 
 !!! note
     The worker pool's `Consumer` will respect the order in which queues
-    are listed for the `-q`/`--queues` option. If, this option is not specified, 
+    are listed for the `-qu`/`--queues` option. If, this option is not specified, 
     queues will be consumed in alphabetical order.
 
 !!! note

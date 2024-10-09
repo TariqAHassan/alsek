@@ -47,15 +47,22 @@ def _extract_broker(tasks: Collection[Task]) -> Broker:
 def _derive_consumer_subset(
     tasks: Collection[Task],
     queues: Optional[list[str]],
+    task_specific: bool,
 ) -> dict[str, list[str]]:
     if queues and has_duplicates(queues):
         raise ValueError(f"Duplicates in provided queues: {queues}")
+    elif queues and not task_specific:
+        return queues
 
     subset: DefaultDict[str, list[str]] = defaultdict(list)
     for t in sorted(tasks, key=lambda i: i.priority):
         if queues is None or t.queue in queues:
             subset[t.queue].append(t.name)
-    return dict_sort(subset, key=queues.index if queues else None)
+
+    if task_specific:
+        return dict_sort(subset, key=queues.index if queues else None)
+    else:
+        return sorted(subset.keys())
 
 
 class WorkerPool(Consumer):
@@ -71,6 +78,8 @@ class WorkerPool(Consumer):
             to ``queues``.
         queues (list[str], optional): the names of one or more queues
             consume messages from. If ``None``, all queues will be consumed.
+        task_specific (bool, optional): when defining queues to monitor, include
+            tasks names. Otherwise, consider queues broadly.
         max_threads (int): the maximum of tasks with ``mechanism="thread"``
             supported at any 'one' time.
         max_processes (int, optional): the maximum of tasks with ``mechanism="process"``
@@ -94,6 +103,7 @@ class WorkerPool(Consumer):
         self,
         tasks: Collection[Task],
         queues: Optional[list[str]] = None,
+        task_specific: bool = False,
         max_threads: int = 8,
         max_processes: Optional[int] = None,
         management_interval: int = 100,
@@ -102,7 +112,11 @@ class WorkerPool(Consumer):
     ) -> None:
         super().__init__(
             broker=_extract_broker(tasks),
-            subset=_derive_consumer_subset(tasks, queues=queues),
+            subset=_derive_consumer_subset(
+                tasks=tasks,
+                queues=queues,
+                task_specific=task_specific,
+            ),
             **kwargs,
         )
         self.tasks = tasks

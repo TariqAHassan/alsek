@@ -40,23 +40,53 @@ def test_extract_broker_multi_broker(rolling_backend: Backend) -> None:
 
 
 @pytest.mark.parametrize(
-    "task_names,queues,expected",
+    "task_names,queues,task_specific,expected",
     [
         # Tasks & no queues specified
-        (["task-1", "task-2"], None, {DEFAULT_QUEUE: ["task-1", "task-2"]}),
-        # Tasks & queues specified
+        (
+            ["task-1", "task-2"],
+            None,
+            True,
+            {DEFAULT_QUEUE: ["task-1", "task-2"]},
+        ),
+        (
+            ["task-1", "task-2"],
+            None,
+            False,
+            [DEFAULT_QUEUE],
+        ),
+        # Tasks & queues both specified
         (
             ["task-1", "task-2"],
             ["queue-b", "queue-a"],
+            True,
             {"queue-a": ["task-2"], "queue-b": ["task-1"]},
         ),
+        (
+            ["task-1", "task-2"],
+            ["queue-b", "queue-a"],
+            False,
+            ["queue-a", "queue-b"],
+        ),
         # Duplicate queues
-        (["task-1", "task-2"], ["queue-a", "queue-a"], ValueError),
+        (
+            ["task-1", "task-2"],
+            ["queue-a", "queue-a"],
+            True,
+            ValueError,
+        ),
+        (
+            ["task-1", "task-2"],
+            ["queue-a", "queue-a"],
+            False,
+            ValueError,
+        ),
     ],
 )
 def test_derive_consumer_subset(
     task_names: Collection[Task],
     queues: Optional[list[str]],
+    task_specific: bool,
     expected: Union[dict[str, list[str]], BaseException],
     rolling_broker: Broker,
 ) -> None:
@@ -68,9 +98,20 @@ def test_derive_consumer_subset(
     else:
         tasks = [_task_factory(n, broker=rolling_broker) for n in task_names]
 
-    if isinstance(expected, dict):
-        actual = _derive_consumer_subset(tasks, queues=queues)
-        assert actual == expected
+    if isinstance(expected, (dict, list)):
+        actual = _derive_consumer_subset(
+            tasks=tasks,
+            queues=queues,
+            task_specific=task_specific,
+        )
+        if isinstance(expected, dict):
+            assert actual == expected
+        else:
+            assert sorted(actual) == sorted(expected)
     else:
         with pytest.raises(expected):
-            _derive_consumer_subset(tasks, queues=queues)
+            _derive_consumer_subset(
+                tasks=tasks,
+                queues=queues,
+                task_specific=task_specific,
+            )
