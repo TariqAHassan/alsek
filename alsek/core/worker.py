@@ -45,7 +45,8 @@ def _extract_broker(tasks: Collection[Task]) -> Broker:
 
 
 def _derive_consumer_subset(
-    tasks: Collection[Task], queues: Optional[list[str]]
+    tasks: Collection[Task],
+    queues: Optional[list[str]],
 ) -> dict[str, list[str]]:
     if queues and has_duplicates(queues):
         raise ValueError(f"Duplicates in provided queues: {queues}")
@@ -203,6 +204,7 @@ class WorkerPool(Consumer):
             self.max_processes,
         )
         self._pool_manager.start()
+        log.info("Monitoring to %s tasks", len(self.tasks))
         log.info("Worker pool online.")
 
         try:

@@ -67,7 +67,7 @@ def collect_tasks(module: str | ModuleType) -> tuple[Task, ...]:
     """Recursively collect all tasks in ``name``.
 
     Args:
-        name (str, ModuleType): name of a module
+        module (str, ModuleType): name of a module
 
     Returns:
         module (tuple[Task, ...]): collected tasks
@@ -80,7 +80,7 @@ def collect_tasks(module: str | ModuleType) -> tuple[Task, ...]:
     if isinstance(module, str):
         module = import_module(module)
     elif not isinstance(module, ModuleType):
-        raise TypeError(f"Unsupport input type, got {type(module)}")
+        raise TypeError(f"Unsupported input type, got {type(module)}")
 
     all_tasks: dict[str, Task] = dict()
     for m in _enumerate_modules(module):
