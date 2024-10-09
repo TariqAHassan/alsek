@@ -305,22 +305,12 @@ class Task:
             * ``submit`` is overridden to ``False`` if deferred mode is active
             * ``uuid`` is refreshed after the first event when using a trigger.
             * If manually overriding ``queue`` such that it differs from the default
-              for this task, Worker Pools built by automatically extracting the queue
-              on which a task runs using the default queue for this task may fail
-              to acknowledge its existence. If this problem occurs it can be resolved
-              by manually enumerating all the possible queues on which this task
-              will be entered when defining it.
+              for this task, Worker Pools built using ``task_specific_mode=True`` will
+              fail acknowledge its existence.
 
         """
         if result_ttl and not self.result_store:
             raise ValidationError(f"`result_ttl` invalid. No result store set.")
-        elif queue and queue != self.queue:
-            log.warning(
-                "Assigning task to non-default queue '%s'. "
-                "Worker pools built without manual specification of "
-                "supported queues may not acknowledge this message.",
-                queue,
-            )
 
         message = Message(
             task_name=self.name,
