@@ -120,7 +120,7 @@ class WorkerPool(Consumer):
             **kwargs,
         )
         self.tasks = tasks
-        self.queues = queues
+        self.queues = queues or sorted(self.subset)
         self.task_specific_mode = task_specific_mode
         self.max_threads = max_threads
         self.max_processes = max_processes or smart_cpu_count()
