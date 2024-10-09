@@ -216,9 +216,9 @@ class WorkerPool(Consumer):
         log.info(
             "Starting worker pool with %s max thread%s and %s max process%s...",
             self.max_threads,
-            "(s)" if self.max_threads > 1 else "",
+            "" if self.max_threads == 1 else "(s)",
             self.max_processes,
-            "(es)" if self.max_processes > 1 else "",
+            "" if self.max_processes == 1 else "(es)",
         )
         self._pool_manager.start()
         log.info(
