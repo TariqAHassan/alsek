@@ -18,13 +18,15 @@ from importlib.util import find_spec
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from alsek.utils.scanning import collect_tasks, parse_logging_level
 
+WATCHED_FILE_EXTENSIONS = (".py",)
+
 
 class RestartOnChangeHandler(FileSystemEventHandler):
     def __init__(self, restart_callback: Callable[[], None]) -> None:
         self.restart_callback = restart_callback
 
     def on_modified(self, event: FileSystemEvent) -> None:
-        if not event.is_directory:
+        if not event.is_directory and event.src_path.endswith(WATCHED_FILE_EXTENSIONS):
             click.echo(f"Detected changes in {event.src_path}. Restarting worker pool...")  # fmt: skip
             self.restart_callback()
 
