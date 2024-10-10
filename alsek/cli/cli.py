@@ -4,15 +4,44 @@
 
 """
 
-from typing import Optional
-
+from typing import Optional, Callable
 import click
-
+import sys
+import os
+from pathlib import Path
 from alsek import __version__
+from watchdog.observers import Observer
 from alsek.core.backoff import LinearBackoff
 from alsek.core.worker import WorkerPool
 from alsek.utils.logging import setup_logging
+from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from alsek.utils.scanning import collect_tasks, parse_logging_level
+
+
+class RestartOnChangeHandler(FileSystemEventHandler):
+    def __init__(self, restart_callback: Callable[[], None]) -> None:
+        self.restart_callback = restart_callback
+
+    def on_modified(self, event: FileSystemEvent) -> None:
+        if not event.is_directory:
+            click.echo(f"Detected changes in {event.src_path}. Restarting worker pool...")  # fmt: skip
+            self.restart_callback()
+
+
+def _configure_watch(watch: str) -> Observer:
+    """Configure and start a watchdog observer."""
+    if not Path(watch).is_dir():
+        raise NotADirectoryError(f"The provided path '{watch}' is not a directory")
+
+    def restart_program() -> None:
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+
+    observer = Observer()
+    handler = RestartOnChangeHandler(restart_callback=restart_program)
+    observer.schedule(handler, path=watch, recursive=True)
+    observer.start()
+    click.echo(f"Watching directory {watch} for changes...")
+    return observer
 
 
 @click.command()
@@ -56,7 +85,7 @@ from alsek.utils.scanning import collect_tasks, parse_logging_level
     "--slot_wait_interval",
     type=int,
     default=100,
-    help="amount of time (in milliseconds) to wait between checks to "
+    help="Amount of time (in milliseconds) to wait between checks to "
     "determine if a process for task execution is available.",
 )
 @click.option(
@@ -85,7 +114,17 @@ from alsek.utils.scanning import collect_tasks, parse_logging_level
     is_flag=True,
     help="Enable debugging logging",
 )
-@click.option("-q", "--quiet", is_flag=True, help="Disable detailed logging.")
+@click.option(
+    "-q",
+    "--quiet",
+    is_flag=True,
+    help="Disable detailed logging.",
+)
+@click.option(
+    "--watch",
+    type=str,
+    help="Directory to monitor for changes. If changes are detected, the worker pool restarts.",
+)
 def main(
     module: str,
     queues: Optional[str],  # noqa
@@ -99,6 +138,7 @@ def main(
     consumer_backoff_ceiling: int,  # noqa
     debug: bool,  # noqa
     quiet: bool,  # noqa
+    watch: Optional[str],  # noqa
 ) -> None:
     """Start a pool of Alsek workers.
 
@@ -112,26 +152,40 @@ def main(
 
         * alsek my_package.tasks --processes 4
 
-        * alsek my_package.tasks --q queue_a,queue_b
+        * alsek my_package.tasks --qu queue_a,queue_b
 
     """
     setup_logging(parse_logging_level(debug, verbose=not quiet))
 
-    WorkerPool(
-        tasks=collect_tasks(module),
-        queues=[i.strip() for i in queues.split(",")] if queues else None,
-        task_specific_mode=task_specific_mode,
-        max_threads=max_threads,
-        max_processes=max_processes,
-        management_interval=management_interval,
-        slot_wait_interval=slot_wait_interval,
-        backoff=LinearBackoff(
-            factor=consumer_backoff_factor,
-            floor=consumer_backoff_floor,
-            ceiling=consumer_backoff_ceiling,
-            zero_override=False,
-        ),
-    ).run()
+    # Set up file watching, if a watch directory is provided
+    observer = None
+    if watch:
+        try:
+            observer = _configure_watch(watch)
+        except NotADirectoryError as error:
+            click.echo(f"Error: {str(error)}")
+            return
+
+    try:
+        WorkerPool(
+            tasks=collect_tasks(module),
+            queues=[i.strip() for i in queues.split(",")] if queues else None,
+            task_specific_mode=task_specific_mode,
+            max_threads=max_threads,
+            max_processes=max_processes,
+            management_interval=management_interval,
+            slot_wait_interval=slot_wait_interval,
+            backoff=LinearBackoff(
+                factor=consumer_backoff_factor,
+                floor=consumer_backoff_floor,
+                ceiling=consumer_backoff_ceiling,
+                zero_override=False,
+            ),
+        ).run()
+    finally:
+        if observer:
+            observer.stop()
+            observer.join()
 
 
 if __name__ == "__main__":
