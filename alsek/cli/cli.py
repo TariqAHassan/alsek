@@ -167,7 +167,6 @@ def main(
     """
     setup_logging(parse_logging_level(debug, verbose=not quiet))
 
-    # Set up file watching, if a watch directory is provided
     observer = None
     if reload:
         try:
