@@ -54,7 +54,6 @@ def _configure_reload(directory: Path) -> Observer:
     handler = RestartOnChangeHandler(restart_callback=restart_program)
     observer.schedule(handler, path=str(directory), recursive=True)
     observer.start()
-    click.echo(f"Watching '{directory}' for changes...")
     return observer
 
 
