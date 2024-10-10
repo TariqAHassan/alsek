@@ -14,6 +14,7 @@ from watchdog.observers import Observer
 from alsek.core.backoff import LinearBackoff
 from alsek.core.worker import WorkerPool
 from alsek.utils.logging import setup_logging
+from importlib.util import find_spec
 from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from alsek.utils.scanning import collect_tasks, parse_logging_level
 
@@ -28,25 +29,33 @@ class RestartOnChangeHandler(FileSystemEventHandler):
             self.restart_callback()
 
 
-def _configure_watch(watch: str) -> Observer:
+def _package2path(package: str) -> Path:
+    """Convert a Python package name into its corresponding filesystem path."""
+    spec = find_spec(package)
+    if spec is None or spec.origin is None:
+        raise ModuleNotFoundError(f"Package '{package}' not found.")
+    return Path(spec.origin)
+
+
+def _configure_reload(directory: Path) -> Observer:
     """Configure and start a watchdog observer."""
-    if not Path(watch).is_dir():
-        raise NotADirectoryError(f"The provided path '{watch}' is not a directory")
+    if not directory.is_dir():
+        raise NotADirectoryError(f"The provided path '{str(directory)}' is not a directory")  # fmt: skip
 
     def restart_program() -> None:
         os.execv(sys.executable, [sys.executable] + sys.argv)
 
     observer = Observer()
     handler = RestartOnChangeHandler(restart_callback=restart_program)
-    observer.schedule(handler, path=watch, recursive=True)
+    observer.schedule(handler, path=str(directory), recursive=True)
     observer.start()
-    click.echo(f"Watching directory {watch} for changes...")
+    click.echo(f"Watching directory {directory} for changes...")
     return observer
 
 
 @click.command()
 @click.version_option(__version__)
-@click.argument("module", type=str)
+@click.argument("package", type=str)
 @click.option(
     "-qu",
     "--queues",
@@ -121,12 +130,13 @@ def _configure_watch(watch: str) -> Observer:
     help="Disable detailed logging.",
 )
 @click.option(
-    "--watch",
-    type=str,
-    help="Directory to monitor for changes. If changes are detected, the worker pool restarts.",
+    "-r",
+    "--reload",
+    is_flag=True,
+    help="Watch for changes and automatically reload if changes are detected.",
 )
 def main(
-    module: str,
+    package: str,
     queues: Optional[str],  # noqa
     task_specific_mode: bool,  # noqa
     max_threads: int,  # noqa
@@ -138,13 +148,13 @@ def main(
     consumer_backoff_ceiling: int,  # noqa
     debug: bool,  # noqa
     quiet: bool,  # noqa
-    watch: Optional[str],  # noqa
+    reload: bool,  # noqa
 ) -> None:
     """Start a pool of Alsek workers.
 
     Arguments:
 
-        module: module(s) to scan for task definitions
+        package: the package to scan for task definitions
 
     Examples:
 
@@ -159,16 +169,16 @@ def main(
 
     # Set up file watching, if a watch directory is provided
     observer = None
-    if watch:
+    if reload:
         try:
-            observer = _configure_watch(watch)
+            observer = _configure_reload(_package2path(package))
         except NotADirectoryError as error:
             click.echo(f"Error: {str(error)}")
             return
 
     try:
         WorkerPool(
-            tasks=collect_tasks(module),
+            tasks=collect_tasks(package),
             queues=[i.strip() for i in queues.split(",")] if queues else None,
             task_specific_mode=task_specific_mode,
             max_threads=max_threads,
