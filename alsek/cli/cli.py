@@ -56,8 +56,9 @@ def _package2path(package: str) -> Path:
     return path.parent if path.name == "__init__.py" else path
 
 
-def _configure_reload(directory: Path) -> Observer:
+def _configure_reload(package: str) -> Observer:
     """Configure and start a watchdog observer."""
+    directory = _package2path(package)
     if not directory.is_dir():
         raise NotADirectoryError(f"The provided path '{str(directory)}' is not a directory")  # fmt: skip
 
@@ -65,7 +66,9 @@ def _configure_reload(directory: Path) -> Observer:
         os.execv(sys.executable, [sys.executable] + sys.argv)
 
     observer = Observer()
-    handler = RestartOnChangeHandler(restart_callback=restart_program)
+    handler = RestartOnChangeHandler(
+        restart_callback=restart_program,
+    )
     observer.schedule(handler, path=str(directory), recursive=True)
     observer.start()
     return observer
@@ -188,7 +191,7 @@ def main(
     observer = None
     if reload:
         try:
-            observer = _configure_reload(_package2path(package))
+            observer = _configure_reload(package)
         except NotADirectoryError as error:
             click.echo(f"Error: {str(error)}")
             return
