@@ -33,10 +33,13 @@ class RestartOnChangeHandler(FileSystemEventHandler):
 
 def _package2path(package: str) -> Path:
     """Convert a Python package name into its corresponding filesystem path."""
+    sys.path.append(os.getcwd())
     spec = find_spec(package)
     if spec is None or spec.origin is None:
         raise ModuleNotFoundError(f"Package '{package}' not found.")
-    return Path(spec.origin)
+
+    path = Path(spec.origin)
+    return path.parent if path.name == "__init__.py" else path
 
 
 def _configure_reload(directory: Path) -> Observer:
@@ -51,7 +54,7 @@ def _configure_reload(directory: Path) -> Observer:
     handler = RestartOnChangeHandler(restart_callback=restart_program)
     observer.schedule(handler, path=str(directory), recursive=True)
     observer.start()
-    click.echo(f"Watching directory {directory} for changes...")
+    click.echo(f"Watching '{directory}' for changes...")
     return observer
 
 
