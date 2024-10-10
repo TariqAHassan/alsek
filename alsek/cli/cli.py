@@ -8,6 +8,7 @@ from typing import Optional, Callable
 import click
 import sys
 import os
+import ast
 from pathlib import Path
 from alsek import __version__
 from watchdog.observers import Observer
@@ -25,10 +26,26 @@ class RestartOnChangeHandler(FileSystemEventHandler):
     def __init__(self, restart_callback: Callable[[], None]) -> None:
         self.restart_callback = restart_callback
 
+    @staticmethod
+    def _has_valid_syntax(file_path: str) -> bool:
+        """Check if the modified Python file has valid syntax using the ast module."""
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                source = f.read()
+            # Parse the source code into an abstract syntax tree (AST)
+            ast.parse(source, filename=file_path)
+            return True  # No syntax errors
+        except SyntaxError as e:
+            click.echo(f"Syntax error detected in {file_path}: {e}")
+            return False
+
     def on_modified(self, event: FileSystemEvent) -> None:
         if not event.is_directory and event.src_path.endswith(WATCHED_FILE_EXTENSIONS):
-            click.echo(f"Detected changes in {event.src_path}. Restarting worker pool...")  # fmt: skip
-            self.restart_callback()
+            if self._has_valid_syntax(event.src_path):
+                click.echo(f"Detected changes in {event.src_path}. Restarting worker pool...")  # fmt: skip
+                self.restart_callback()
+            else:
+                click.echo(f"Skipping restart due to syntax errors in {event.src_path}...")  # fmt: skip
 
 
 def _package2path(package: str) -> Path:
