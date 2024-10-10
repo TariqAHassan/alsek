@@ -32,8 +32,7 @@ class RestartOnChangeHandler(FileSystemEventHandler):
             source = Path(file_path).open("r", encoding="utf-8").read()
             ast.parse(source, filename=file_path)
             return True  # No syntax errors
-        except SyntaxError as error:
-            click.echo(f"Syntax error detected in '{file_path}': {str(error)}")
+        except SyntaxError:
             return False
 
     def on_modified(self, event: FileSystemEvent) -> None:
