@@ -34,6 +34,7 @@ class RestartOnChangeHandler(FileSystemEventHandler):
 def _package2path(package: str) -> Path:
     """Convert a Python package name into its corresponding filesystem path."""
     sys.path.append(os.getcwd())
+
     spec = find_spec(package)
     if spec is None or spec.origin is None:
         raise ModuleNotFoundError(f"Package '{package}' not found.")
