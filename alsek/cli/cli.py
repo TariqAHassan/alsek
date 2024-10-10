@@ -27,14 +27,16 @@ class RestartOnChangeHandler(FileSystemEventHandler):
         self.restart_callback = restart_callback
 
     @staticmethod
-    def _has_valid_syntax(file_path: str) -> bool:
+    def _has_valid_syntax(file_path: str, suppress: bool = False) -> bool:
         try:
             source = Path(file_path).open("r", encoding="utf-8").read()
             ast.parse(source, filename=file_path)
             return True  # No syntax errors
-        except SyntaxError as e:
-            click.echo(f"Syntax error detected in '{file_path}': {str(e)}")
-            return False
+        except SyntaxError as error:
+            if suppress:
+                return False
+            else:
+                raise error
 
     def on_modified(self, event: FileSystemEvent) -> None:
         if not event.is_directory and event.src_path.endswith(WATCHED_FILE_EXTENSIONS):
