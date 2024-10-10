@@ -46,8 +46,6 @@ class RestartOnChangeHandler(FileSystemEventHandler):
 
 def _package2path(package: str) -> Path:
     """Convert a Python package name into its corresponding filesystem path."""
-    sys.path.append(os.getcwd())
-
     spec = find_spec(package)
     if spec is None or spec.origin is None:
         raise ModuleNotFoundError(f"Package '{package}' not found.")
@@ -57,7 +55,7 @@ def _package2path(package: str) -> Path:
 
 
 def _configure_reload(package: str) -> Observer:
-    """Configure and start a watchdog observer."""
+    sys.path.append(os.getcwd())
     directory = _package2path(package)
     if not directory.is_dir():
         raise NotADirectoryError(f"The provided path '{str(directory)}' is not a directory")  # fmt: skip
@@ -66,9 +64,7 @@ def _configure_reload(package: str) -> Observer:
         os.execv(sys.executable, [sys.executable] + sys.argv)
 
     observer = Observer()
-    handler = RestartOnChangeHandler(
-        restart_callback=restart_program,
-    )
+    handler = RestartOnChangeHandler(restart_callback=restart_program)
     observer.schedule(handler, path=str(directory), recursive=True)
     observer.start()
     return observer
