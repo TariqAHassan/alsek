@@ -31,7 +31,7 @@ class RestartOnChangeHandler(FileSystemEventHandler):
         try:
             source = Path(file_path).open("r", encoding="utf-8").read()
             ast.parse(source, filename=file_path)
-            return True  # No syntax errors
+            return True
         except SyntaxError:
             return False
 
