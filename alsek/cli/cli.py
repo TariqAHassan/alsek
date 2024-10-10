@@ -30,13 +30,11 @@ class RestartOnChangeHandler(FileSystemEventHandler):
     def _has_valid_syntax(file_path: str) -> bool:
         """Check if the modified Python file has valid syntax using the ast module."""
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                source = f.read()
-            # Parse the source code into an abstract syntax tree (AST)
+            source = Path(file_path).open("r", encoding="utf-8").read()
             ast.parse(source, filename=file_path)
             return True  # No syntax errors
         except SyntaxError as e:
-            click.echo(f"Syntax error detected in {file_path}: {e}")
+            click.echo(f"Syntax error detected in '{file_path}': {str(e)}")
             return False
 
     def on_modified(self, event: FileSystemEvent) -> None:
