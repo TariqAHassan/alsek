@@ -8,6 +8,7 @@ from typing import Optional, Callable
 import click
 import sys
 import os
+import ast
 from pathlib import Path
 from alsek import __version__
 from watchdog.observers import Observer
@@ -25,10 +26,22 @@ class RestartOnChangeHandler(FileSystemEventHandler):
     def __init__(self, restart_callback: Callable[[], None]) -> None:
         self.restart_callback = restart_callback
 
+    @staticmethod
+    def _has_valid_syntax(file_path: str) -> bool:
+        try:
+            source = Path(file_path).open("r", encoding="utf-8").read()
+            ast.parse(source, filename=file_path)
+            return True
+        except SyntaxError:
+            return False
+
     def on_modified(self, event: FileSystemEvent) -> None:
         if not event.is_directory and event.src_path.endswith(WATCHED_FILE_EXTENSIONS):
-            click.echo(f"Detected changes in {event.src_path}. Restarting worker pool...")  # fmt: skip
-            self.restart_callback()
+            if self._has_valid_syntax(event.src_path):
+                click.echo(f"Detected changes in {event.src_path}. Restarting worker pool...")  # fmt: skip
+                self.restart_callback()
+            else:
+                click.echo(f"Skipping restart due to syntax errors in {event.src_path}...")  # fmt: skip
 
 
 def _package2path(package: str) -> Path:
