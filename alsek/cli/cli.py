@@ -28,7 +28,6 @@ class RestartOnChangeHandler(FileSystemEventHandler):
 
     @staticmethod
     def _has_valid_syntax(file_path: str) -> bool:
-        """Check if the modified Python file has valid syntax using the ast module."""
         try:
             source = Path(file_path).open("r", encoding="utf-8").read()
             ast.parse(source, filename=file_path)
