@@ -4,20 +4,63 @@
 
 """
 
-from typing import Optional
-
+from typing import Optional, Callable
 import click
-
+import sys
+import os
+from pathlib import Path
 from alsek import __version__
+from watchdog.observers import Observer
 from alsek.core.backoff import LinearBackoff
 from alsek.core.worker import WorkerPool
 from alsek.utils.logging import setup_logging
+from importlib.util import find_spec
+from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from alsek.utils.scanning import collect_tasks, parse_logging_level
+
+WATCHED_FILE_EXTENSIONS = (".py",)
+
+
+class RestartOnChangeHandler(FileSystemEventHandler):
+    def __init__(self, restart_callback: Callable[[], None]) -> None:
+        self.restart_callback = restart_callback
+
+    def on_modified(self, event: FileSystemEvent) -> None:
+        if not event.is_directory and event.src_path.endswith(WATCHED_FILE_EXTENSIONS):
+            click.echo(f"Detected changes in {event.src_path}. Restarting worker pool...")  # fmt: skip
+            self.restart_callback()
+
+
+def _package2path(package: str) -> Path:
+    """Convert a Python package name into its corresponding filesystem path."""
+    sys.path.append(os.getcwd())
+
+    spec = find_spec(package)
+    if spec is None or spec.origin is None:
+        raise ModuleNotFoundError(f"Package '{package}' not found.")
+
+    path = Path(spec.origin)
+    return path.parent if path.name == "__init__.py" else path
+
+
+def _configure_reload(directory: Path) -> Observer:
+    """Configure and start a watchdog observer."""
+    if not directory.is_dir():
+        raise NotADirectoryError(f"The provided path '{str(directory)}' is not a directory")  # fmt: skip
+
+    def restart_program() -> None:
+        os.execv(sys.executable, [sys.executable] + sys.argv)
+
+    observer = Observer()
+    handler = RestartOnChangeHandler(restart_callback=restart_program)
+    observer.schedule(handler, path=str(directory), recursive=True)
+    observer.start()
+    return observer
 
 
 @click.command()
 @click.version_option(__version__)
-@click.argument("module", type=str)
+@click.argument("package", type=str)
 @click.option(
     "-qu",
     "--queues",
@@ -56,7 +99,7 @@ from alsek.utils.scanning import collect_tasks, parse_logging_level
     "--slot_wait_interval",
     type=int,
     default=100,
-    help="amount of time (in milliseconds) to wait between checks to "
+    help="Amount of time (in milliseconds) to wait between checks to "
     "determine if a process for task execution is available.",
 )
 @click.option(
@@ -85,9 +128,20 @@ from alsek.utils.scanning import collect_tasks, parse_logging_level
     is_flag=True,
     help="Enable debugging logging",
 )
-@click.option("-q", "--quiet", is_flag=True, help="Disable detailed logging.")
+@click.option(
+    "-q",
+    "--quiet",
+    is_flag=True,
+    help="Disable detailed logging.",
+)
+@click.option(
+    "-r",
+    "--reload",
+    is_flag=True,
+    help="Watch for changes and automatically reload if changes are detected.",
+)
 def main(
-    module: str,
+    package: str,
     queues: Optional[str],  # noqa
     task_specific_mode: bool,  # noqa
     max_threads: int,  # noqa
@@ -99,12 +153,13 @@ def main(
     consumer_backoff_ceiling: int,  # noqa
     debug: bool,  # noqa
     quiet: bool,  # noqa
+    reload: bool,  # noqa
 ) -> None:
     """Start a pool of Alsek workers.
 
     Arguments:
 
-        module: module(s) to scan for task definitions
+        package: the package to scan for task definitions
 
     Examples:
 
@@ -112,26 +167,39 @@ def main(
 
         * alsek my_package.tasks --processes 4
 
-        * alsek my_package.tasks --q queue_a,queue_b
+        * alsek my_package.tasks --qu queue_a,queue_b
 
     """
     setup_logging(parse_logging_level(debug, verbose=not quiet))
 
-    WorkerPool(
-        tasks=collect_tasks(module),
-        queues=[i.strip() for i in queues.split(",")] if queues else None,
-        task_specific_mode=task_specific_mode,
-        max_threads=max_threads,
-        max_processes=max_processes,
-        management_interval=management_interval,
-        slot_wait_interval=slot_wait_interval,
-        backoff=LinearBackoff(
-            factor=consumer_backoff_factor,
-            floor=consumer_backoff_floor,
-            ceiling=consumer_backoff_ceiling,
-            zero_override=False,
-        ),
-    ).run()
+    observer = None
+    if reload:
+        try:
+            observer = _configure_reload(_package2path(package))
+        except NotADirectoryError as error:
+            click.echo(f"Error: {str(error)}")
+            return
+
+    try:
+        WorkerPool(
+            tasks=collect_tasks(package),
+            queues=[i.strip() for i in queues.split(",")] if queues else None,
+            task_specific_mode=task_specific_mode,
+            max_threads=max_threads,
+            max_processes=max_processes,
+            management_interval=management_interval,
+            slot_wait_interval=slot_wait_interval,
+            backoff=LinearBackoff(
+                factor=consumer_backoff_factor,
+                floor=consumer_backoff_floor,
+                ceiling=consumer_backoff_ceiling,
+                zero_override=False,
+            ),
+        ).run()
+    finally:
+        if observer:
+            observer.stop()
+            observer.join()
 
 
 if __name__ == "__main__":

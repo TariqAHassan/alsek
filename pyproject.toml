@@ -3,3 +3,15 @@ profile = "black"
 
 [tool.pytest.ini_options]
 addopts = "-W ignore::DeprecationWarning"
+
+[tool.coverage.run]
+omit = [
+    "alsek/cli/*",
+    "*/tests/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "if __name__ == .__main__.:"
+]
