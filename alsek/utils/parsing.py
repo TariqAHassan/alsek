@@ -33,7 +33,7 @@ def parse_exception(error: Exception) -> ExceptionDetails:
         text=str(error),
         traceback="".join(
             traceback.format_exception(
-                etype=type(error),
+                type(error),
                 value=error,
                 tb=error.__traceback__,
             )

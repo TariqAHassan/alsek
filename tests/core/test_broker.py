@@ -221,8 +221,19 @@ def test_fail(dlq_ttl: Optional[int], rolling_broker: Broker) -> None:
 
     if dlq_ttl:
         # Check that the message has been moved to the dtq
-        dtq_name = rolling_broker._make_dlq_key_name(message)
+        dtq_name = rolling_broker.get_dlq_message_name(message)
         assert rolling_broker.backend.exists(dtq_name)
         # Check that the DTQ TTL was respected.
         sleeper(dlq_ttl)
         assert not rolling_broker.backend.exists(dtq_name)
+
+
+@pytest.mark.parametrize("fail", [False, True])
+def test_sync(fail: bool, rolling_broker: Broker) -> None:
+    message = Message("test")
+    rolling_broker.submit(message)
+    if fail:
+        rolling_broker.fail(message)
+
+    actual = rolling_broker.sync(message)
+    assert isinstance(actual, Message)

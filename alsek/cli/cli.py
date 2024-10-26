@@ -4,19 +4,21 @@
 
 """
 
-from typing import Optional, Callable
-import click
-import sys
-import os
 import ast
+import os
+import sys
+from importlib.util import find_spec
 from pathlib import Path
-from alsek import __version__
+from typing import Callable, Optional
+
+import click
+from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from watchdog.observers import Observer
+
+from alsek import __version__
 from alsek.core.backoff import LinearBackoff
 from alsek.core.worker import WorkerPool
 from alsek.utils.logging import setup_logging
-from importlib.util import find_spec
-from watchdog.events import FileSystemEvent, FileSystemEventHandler
 from alsek.utils.scanning import collect_tasks, parse_logging_level
 
 WATCHED_FILE_EXTENSIONS = (".py",)

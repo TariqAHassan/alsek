@@ -6,11 +6,12 @@
 
 import shutil
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Union, cast
+from typing import Any, Callable, Iterable, Optional, Type, Union, cast
 
 from alsek._defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.serialization import JsonSerializer, Serializer
+from alsek.types import Empty
 from alsek.utils.printing import auto_repr
 from alsek.utils.string import name_matcher
 
@@ -153,17 +154,23 @@ class DiskCacheBackend(Backend):
             expire=ttl if ttl is None else ttl / 1000,
         )
 
-    def get(self, name: str) -> Any:
+    def get(self, name: str, default: Optional[Union[Any, Type[Empty]]] = None) -> Any:
         """Get ``name`` from the disk backend.
 
         Args:
             name (str): name of the item
+            default (Any, Type[Empty], optional): default value for ``name``
 
         Returns:
             Any
 
         """
-        encoded = self.conn.get(self.full_name(name))
+        try:
+            encoded = self.conn.__getitem__(self.full_name(name))
+        except KeyError as error:
+            if default is Empty or isinstance(default, Empty):
+                raise error
+            encoded = default
         return self.serializer.reverse(encoded)
 
     def delete(self, name: str, missing_ok: bool = False) -> None:

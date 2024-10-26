@@ -12,6 +12,7 @@ from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsError
 from alsek.storage.backends import Backend
+from alsek.types import Empty
 from alsek.utils.logging import magic_logger
 from alsek.utils.printing import auto_repr
 
@@ -207,7 +208,16 @@ class Broker:
         """
         self._clear_lock(message)
 
-    def _make_dlq_key_name(self, message: Message) -> str:
+    def get_dlq_message_name(self, message: Message) -> str:
+        """Get the name for ``message`` in the backend's dead letter queue (DLQ).
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            dlq_name (str): message-specific name in the DLQ
+
+        """
         return f"dtq:{self.get_message_name(message)}"
 
     @magic_logger(
@@ -229,8 +239,28 @@ class Broker:
         self.ack(message)
         if self.dlq_ttl:
             self.backend.set(
-                self._make_dlq_key_name(message),
+                self.get_dlq_message_name(message),
                 value=message.data,
                 ttl=self.dlq_ttl,
             )
             log.debug("Added %s to DLQ.", message.summary)
+
+    @magic_logger(
+        before=lambda message: log.info("Syncing %s...", message.summary),
+        after=lambda input_: log.info("Synced %s.", input_["message"].summary),
+    )
+    def sync(self, message: Message) -> Message:
+        """Synchronize a message's internal data with that in the backend.
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            updated_message (Message): the updated message data
+
+        """
+        try:
+            data = self.backend.get(self.get_message_name(message), default=Empty)
+        except KeyError:
+            data = self.backend.get(self.get_dlq_message_name(message), default=Empty)
+        return Message(**data)
