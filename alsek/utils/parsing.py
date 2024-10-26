@@ -69,7 +69,7 @@ def parse_exception(error: BaseException) -> ExceptionDetails:
     """
     module, qualname = type(error).__module__, type(error).__qualname__
     return ExceptionDetails(
-        name=module if qualname == "builtins" else f"{qualname}.{module}",
+        name=qualname if module == "builtins" else f"{module}.{qualname}",
         text=str(error),
         traceback="".join(
             traceback.format_exception(
