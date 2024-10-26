@@ -6,7 +6,7 @@
 
 import traceback
 import builtins
-from typing import NamedTuple, Optional, Type
+from typing import NamedTuple, Optional, Type, Union
 from importlib import import_module
 
 
@@ -17,6 +17,21 @@ def _get_exception_class(name: str) -> Type[BaseException]:
     else:
         exec_class = getattr(builtins, name)
     return exec_class
+
+
+def get_exception_name(exception: Union[BaseException, Type[BaseException]]) -> str:
+    """Get the name of an exception as a string.
+
+    Args:
+        exception (BaseException, Type[BaseException]): Exception class
+
+    Returns:
+        name (str): the exception name
+
+    """
+    exception_type = exception if isinstance(exception, type) else type(exception)
+    module, qualname = exception_type.__module__, exception_type.__qualname__
+    return qualname if module == "builtins" else f"{module}.{qualname}"
 
 
 class ExceptionDetails(NamedTuple):
@@ -68,9 +83,8 @@ def parse_exception(error: BaseException) -> ExceptionDetails:
         details (ExceptionDetails): A named tuple containing the exception information
 
     """
-    module, qualname = type(error).__module__, type(error).__qualname__
     return ExceptionDetails(
-        name=qualname if module == "builtins" else f"{module}.{qualname}",
+        name=get_exception_name(error),
         text=str(error),
         traceback="".join(
             traceback.format_exception(
