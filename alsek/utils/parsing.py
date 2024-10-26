@@ -5,6 +5,7 @@
 """
 
 import traceback
+import builtins
 from typing import NamedTuple, Optional, Type
 from importlib import import_module
 
@@ -14,7 +15,7 @@ def _get_exception_class(name: str) -> Type[BaseException]:
         module_name, exception_name = name.rsplit(".", 1)
         exec_class = getattr(import_module(module_name), exception_name)
     else:
-        exec_class = getattr(__builtins__, name)
+        exec_class = getattr(builtins, name)
     return exec_class
 
 

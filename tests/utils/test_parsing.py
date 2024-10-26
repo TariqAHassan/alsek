@@ -41,3 +41,30 @@ def test_parse_exception(
     assert details.text == expected_text
     assert expected_text in details.traceback
     assert expected_name in details.traceback
+
+
+def test_parsed_exception_raising() -> None:
+    try:
+        raise ZeroDivisionError("division by zero")
+    except ZeroDivisionError as error:
+        details = parse_exception(error)
+
+    with pytest.raises(ZeroDivisionError):
+        details.raise_as_exception()
+
+
+def test_parsed_exception_raising_when_import_required() -> None:
+    details = ExceptionDetails(
+        name="tests.assets.exceptions.AlsekTestException",
+        text="<Message Here>",
+        traceback="",
+    )
+
+    try:
+        details.raise_as_exception()
+    except BaseException as error:
+        # Delay the import until after invocation of `raise_as_exception()`
+        from tests.assets.exceptions import AlsekTestException
+
+        with pytest.raises(AlsekTestException):
+            raise error
