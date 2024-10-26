@@ -4,10 +4,10 @@
 
 """
 
-import traceback
 import builtins
-from typing import NamedTuple, Optional, Type, Union
+import traceback
 from importlib import import_module
+from typing import NamedTuple, Optional, Type, Union
 
 
 def _get_exception_class(name: str) -> Type[BaseException]:

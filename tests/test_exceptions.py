@@ -4,9 +4,10 @@
 
 """
 
+from typing import Type
+
 import pytest
 
-from typing import Type
 from alsek.exceptions import AlsekError
 
 
