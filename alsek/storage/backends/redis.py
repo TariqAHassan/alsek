@@ -158,14 +158,10 @@ class RedisBackend(Backend):
             Any
 
         """
-        try:
-            encoded = self.conn.__getitem__(self.full_name(name))
-            return self.serializer.reverse(encoded)
-        except KeyError as error:
-            if default is Empty or isinstance(default, Empty):
-                raise error
-            else:
-                return default
+        return self._get_engine(
+            lambda: self.conn.__getitem__(self.full_name(name)),
+            default=default,
+        )
 
     def delete(self, name: str, missing_ok: bool = False) -> None:
         """Delete a ``name`` from the Redis backend.

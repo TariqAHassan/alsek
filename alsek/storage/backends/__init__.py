@@ -168,6 +168,18 @@ class Backend(ABC):
         """
         raise NotImplementedError()
 
+    def _get_engine(
+        self,
+        getter: Callable[[], Any],
+        default: Optional[Union[Any, Type[Empty]]],
+    ) -> Any:
+        try:
+            return self.serializer.reverse(getter())
+        except KeyError as error:
+            if default is Empty or isinstance(default, Empty):
+                raise error
+            return default
+
     @abstractmethod
     def get(self, name: str, default: Optional[Union[Any, Type[Empty]]] = None) -> Any:
         """Get ``name`` from the backend.
