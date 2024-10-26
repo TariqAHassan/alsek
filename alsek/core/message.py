@@ -14,6 +14,7 @@ from alsek._defaults import DEFAULT_MECHANISM, DEFAULT_QUEUE, DEFAULT_TASK_TIMEO
 from alsek.core.backoff import ExponentialBackoff, settings2backoff
 from alsek.core.concurrency import Lock
 from alsek.types import SupportedMechanismType
+from alsek.utils.parsing import ExceptionDetails
 from alsek.utils.printing import auto_repr
 from alsek.utils.temporal import fromtimestamp_ms, utcnow_timestamp_ms
 
@@ -44,8 +45,8 @@ class Message:
             the task's function during the execution of ``op()``
         metadata (dict, optional): a dictionary of user-defined message metadata.
             This can store any data types supported by the backend's serializer.
-        exception_details (dict, optional): a dictionary of information about exceptions
-            with ``name``, ``text`` and ``traceback`` information. See ``ExceptionDetails()``.
+        exception_details (dict, optional): information about any exception raised
+            while executing this message. See ``ExceptionDetails()``.
         result_ttl (int, optional): time to live (in milliseconds) for the
             result in the result store. If a result store is provided and
             this parameter is ``None``, the result will be persisted indefinitely.
@@ -89,7 +90,7 @@ class Message:
         args: Optional[Union[list[Any], tuple[Any, ...]]] = None,
         kwargs: Optional[dict[Any, Any]] = None,
         metadata: Optional[dict[Any, Any]] = None,
-        exception_details: Optional[dict[str, Any]] = None,
+        exception_details: Optional[Union[dict[str, Any], ExceptionDetails]] = None,
         result_ttl: Optional[int] = None,
         uuid: Optional[str] = None,
         progenitor_uuid: Optional[str] = None,
@@ -109,7 +110,7 @@ class Message:
         self.args = tuple(args) if args else tuple()
         self.kwargs = kwargs or dict()
         self.metadata = metadata
-        self.exception_details = exception_details
+        self._exception_details = exception_details
         self.result_ttl = result_ttl
         self.retries = retries
         self.timeout = timeout
@@ -132,6 +133,29 @@ class Message:
         self._lock: Optional[str] = None
 
     @property
+    def exception_details(self) -> Optional[ExceptionDetails]:
+        """information about any exception raised."""
+        if self._exception_details is None:
+            return None
+        elif isinstance(self._exception_details, ExceptionDetails):
+            return self._exception_details
+        elif isinstance(self._exception_details, dict):
+            return ExceptionDetails(**self._exception_details)
+        else:
+            raise ValueError("Unexpected `exception_details` type")
+
+    @exception_details.setter
+    def exception_details(
+        self,
+        value: Optional[Union[ExceptionDetails, dict[str, Any]]],
+    ) -> None:
+        """Set information about any exception raised."""
+        if isinstance(value, (ExceptionDetails, dict, type(None))):
+            self._exception_details = value
+        else:
+            raise TypeError("`exception_details` is invalid")
+
+    @property
     def data(self) -> dict[str, Any]:
         """Underlying message data."""
         return dict(
@@ -140,7 +164,11 @@ class Message:
             args=self.args,
             kwargs=self.kwargs,
             metadata=self.metadata,
-            exception_details=self.exception_details,
+            exception_details=(
+                None
+                if self.exception_details is None
+                else self.exception_details.as_dict()
+            ),
             result_ttl=self.result_ttl,
             uuid=self.uuid,
             progenitor_uuid=self.progenitor_uuid,

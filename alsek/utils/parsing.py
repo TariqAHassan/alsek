@@ -4,6 +4,7 @@
 
 """
 
+from __future__ import annotations
 import builtins
 import traceback
 from importlib import import_module
