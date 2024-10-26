@@ -237,7 +237,7 @@ class Broker:
             log.debug("Added %s to DLQ.", message.summary)
 
     def sync(self, message: Message) -> Message:
-        """Synchronize a message with the backend.
+        """Synchronize a message's internal data with that in the backend.
 
         Args:
             message (Message): an Alsek message
