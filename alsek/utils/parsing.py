@@ -49,6 +49,15 @@ class ExceptionDetails(NamedTuple):
         """
         return self._asdict()
 
+    @property
+    def exception_class(self) -> Type[BaseException]:
+        if "." in str(self.name):
+            module_name, exception_name = self.name.rsplit(".", 1)
+            exec_class = getattr(import_module(module_name), exception_name)
+        else:
+            exec_class = getattr(builtins, self.name)
+        return exec_class
+
     def raise_as_exception(self, strict: bool = True) -> None:
         """Raise the parsed exception information as a Python exception.
 
@@ -64,7 +73,7 @@ class ExceptionDetails(NamedTuple):
 
         """
         try:
-            exc, msg = _get_exception_class(self.name), self.text
+            exc, msg = self.exception_class, self.text
         except (ImportError, AttributeError) as error:
             if strict:
                 raise error
