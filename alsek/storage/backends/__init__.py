@@ -9,13 +9,13 @@ from __future__ import annotations
 import logging
 import re
 from abc import ABC, abstractmethod
-from alsek.types import Empty
-from typing import Any, Callable, Iterable, Optional, cast, Union
+from typing import Any, Callable, Iterable, Optional, Union, cast
 
 import dill
 
 from alsek._defaults import DEFAULT_NAMESPACE
 from alsek.storage.serialization import JsonSerializer, Serializer
+from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
 
