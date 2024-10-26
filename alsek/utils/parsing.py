@@ -5,9 +5,17 @@
 """
 
 import traceback
-from typing import NamedTuple, Optional
-from types import SimpleNamespace
+from typing import NamedTuple, Optional, Type
 from importlib import import_module
+
+
+def _get_exception_class(name: str) -> Type[BaseException]:
+    if "." in str(name):
+        module_name, exception_name = name.rsplit(".", 1)
+        exec_class = getattr(import_module(module_name), exception_name)
+    else:
+        exec_class = getattr(__builtins__, name)
+    return exec_class
 
 
 class ExceptionDetails(NamedTuple):
@@ -19,13 +27,7 @@ class ExceptionDetails(NamedTuple):
         return self._asdict()
 
     def raise_as_exception(self) -> None:
-        # Rather than Exception, let import the actual error with importlib
-        # if it's not builtin.
-        if "." in str(self.name):
-            module_name, exception_name = self.name.rsplit(".", 1)
-            exec_class = getattr(import_module(module_name), exception_name)
-        else:
-            exec_class = getattr(__builtins__, self.name)
+        exec_class = _get_exception_class(self.name)
         raise exec_class(self.text)
 
 
