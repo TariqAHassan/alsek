@@ -11,4 +11,4 @@ SupportedMechanismType = Literal["process", "thread"]
 
 
 class Empty:
-    """Empty sentinel"""
+    """Empty sentinel."""
