@@ -50,7 +50,7 @@ def test_parsed_exception_raising() -> None:
         details = parse_exception(error)
 
     with pytest.raises(ZeroDivisionError):
-        details.raise_as_exception()
+        raise details.as_exception()
 
 
 def test_parsed_exception_raising_when_import_required() -> None:
@@ -61,7 +61,7 @@ def test_parsed_exception_raising_when_import_required() -> None:
     )
 
     try:
-        details.raise_as_exception()
+        raise details.as_exception()
     except BaseException as error:
         # Delay the import until after invocation of `raise_as_exception()`
         from tests.assets.exceptions import AlsekTestException
