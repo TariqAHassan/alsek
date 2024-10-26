@@ -209,6 +209,15 @@ class Broker:
         self._clear_lock(message)
 
     def get_dlq_message_name(self, message: Message) -> str:
+        """Get the name for ``message`` in the backend's dead letter queue (DLQ).
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            dlq_name (str): message-specific name in the DLQ
+
+        """
         return f"dtq:{self.get_message_name(message)}"
 
     @magic_logger(
