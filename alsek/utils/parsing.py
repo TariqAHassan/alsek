@@ -67,7 +67,7 @@ def parse_exception(error: BaseException) -> ExceptionDetails:
         details (ExceptionDetails): A named tuple containing the exception information
 
     """
-    qualname, module = type(error).__module__, type(error).__qualname__
+    module, qualname = type(error).__module__, type(error).__qualname__
     return ExceptionDetails(
         name=module if qualname == "builtins" else f"{qualname}.{module}",
         text=str(error),
