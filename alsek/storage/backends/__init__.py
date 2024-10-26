@@ -174,7 +174,7 @@ class Backend(ABC):
 
         Args:
             name (str): name of the item
-            default (Optional[Any], optional): default value for ``name``
+            default (Any, Empty, optional): default value for ``name``
 
         Returns:
             Any
