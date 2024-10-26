@@ -161,7 +161,7 @@ class RedisBackend(Backend):
         try:
             encoded = self.conn.__getitem__(self.full_name(name))
         except KeyError as error:
-            if default is Empty:
+            if default is Empty or isinstance(default, Empty):
                 raise error
             encoded = default
         return self.serializer.reverse(encoded)
