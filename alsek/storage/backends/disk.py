@@ -167,11 +167,11 @@ class DiskCacheBackend(Backend):
         """
         try:
             encoded = self.conn.__getitem__(self.full_name(name))
+            return self.serializer.reverse(encoded)
         except KeyError as error:
             if default is Empty or isinstance(default, Empty):
                 raise error
-            encoded = default
-        return self.serializer.reverse(encoded)
+            return default
 
     def delete(self, name: str, missing_ok: bool = False) -> None:
         """Delete a ``name`` from the disk backend.
