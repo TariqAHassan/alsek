@@ -24,11 +24,36 @@ class ExceptionDetails(NamedTuple):
     traceback: Optional[str] = None
 
     def as_dict(self) -> dict[str, str]:
+        """Convert the NamedTuple to a dictionary
+
+        Returns:
+            dict
+
+        """
         return self._asdict()
 
-    def raise_as_exception(self) -> None:
-        exec_class = _get_exception_class(self.name)
-        raise exec_class(self.text)
+    def raise_as_exception(self, strict: bool = True) -> None:
+        """Raise the parsed exception information as a Python exception.
+
+        Args:
+            strict (bool): if ``True`` do no coerce failures to
+                import the correct error
+
+        Returns:
+            None
+
+        Warnings:
+            This will not include the original traceback.
+
+        """
+        try:
+            exc, msg = _get_exception_class(self.name), self.text
+        except (ImportError, AttributeError) as error:
+            if strict:
+                raise error
+            else:
+                exc, msg = Exception, f"{self.name}: {self.text}"
+        raise exc(msg)
 
 
 def parse_exception(error: BaseException) -> ExceptionDetails:
