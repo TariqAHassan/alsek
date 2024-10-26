@@ -12,6 +12,7 @@ from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsError
 from alsek.storage.backends import Backend
+from alsek.types import Empty
 from alsek.utils.logging import magic_logger
 from alsek.utils.printing import auto_repr
 
@@ -246,7 +247,7 @@ class Broker:
 
         """
         try:
-            data = self.backend.get(self.get_message_name(message))
+            data = self.backend.get(self.get_message_name(message), default=Empty)
         except KeyError:
-            data = self.backend.get(self.get_dlq_message_name(message))
+            data = self.backend.get(self.get_dlq_message_name(message), default=Empty)
         return Message(**data)

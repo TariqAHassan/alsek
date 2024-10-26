@@ -9,7 +9,8 @@ from __future__ import annotations
 import logging
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Iterable, Optional, cast
+from alsek.types import Empty
+from typing import Any, Callable, Iterable, Optional, cast, Union
 
 import dill
 
@@ -168,11 +169,12 @@ class Backend(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def get(self, name: str) -> Any:
+    def get(self, name: str, default: Optional[Union[Any, Empty]] = None) -> Any:
         """Get ``name`` from the backend.
 
         Args:
             name (str): name of the item
+            default (Optional[Any], optional): default value for ``name``
 
         Returns:
             Any

@@ -14,6 +14,7 @@ from redis import ConnectionPool, Redis
 from alsek._defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.serialization import JsonSerializer, Serializer
+from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
 
@@ -146,17 +147,23 @@ class RedisBackend(Backend):
         if nx and response is None:
             raise KeyError(f"Name '{name}' already exists")
 
-    def get(self, name: str) -> Any:
+    def get(self, name: str, default: Optional[Union[Any, Empty]] = None) -> Any:
         """Get ``name`` from the Redis backend.
 
         Args:
             name (str): name of the item
+            default (Optional[Any], optional): default value for ``name``
 
         Returns:
             Any
 
         """
-        encoded = self.conn.get(self.full_name(name))
+        try:
+            encoded = self.conn.__getitem__(self.full_name(name))
+        except KeyError as error:
+            if default is Empty:
+                raise error
+            encoded = default
         return self.serializer.reverse(encoded)
 
     def delete(self, name: str, missing_ok: bool = False) -> None:

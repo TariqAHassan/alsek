@@ -27,6 +27,7 @@ from alsek.storage.backends.disk import DiskCacheBackend
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.result import ResultStore
 from alsek.tools.iteration import ResultPool
+from alsek.types import Empty
 
 
 def _get_redis_path() -> str:
@@ -64,7 +65,7 @@ def base_backend() -> Backend:
         ) -> None:
             raise NotImplementedError()
 
-        def get(self, name: str) -> Any:
+        def get(self, name: str, default: Optional[Union[Any, Empty]] = None) -> Any:
             raise NotImplementedError()
 
         def pub(self, pattern: Optional[str] = None) -> Iterable[str]:

@@ -228,9 +228,12 @@ def test_fail(dlq_ttl: Optional[int], rolling_broker: Broker) -> None:
         assert not rolling_broker.backend.exists(dtq_name)
 
 
-def test_sync(rolling_broker: Broker) -> None:
+@pytest.mark.parametrize("fail", [False, True])
+def test_sync(fail: bool, rolling_broker: Broker) -> None:
     message = Message("test")
     rolling_broker.submit(message)
+    if fail:
+        rolling_broker.fail(message)
 
     actual = rolling_broker.sync(message)
     assert isinstance(actual, Message)
