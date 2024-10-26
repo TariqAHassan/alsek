@@ -207,7 +207,7 @@ class Broker:
         """
         self._clear_lock(message)
 
-    def get_dlq_key_name(self, message: Message) -> str:
+    def get_dlq_message_name(self, message: Message) -> str:
         return f"dtq:{self.get_message_name(message)}"
 
     @magic_logger(
@@ -229,7 +229,7 @@ class Broker:
         self.ack(message)
         if self.dlq_ttl:
             self.backend.set(
-                self.get_dlq_key_name(message),
+                self.get_dlq_message_name(message),
                 value=message.data,
                 ttl=self.dlq_ttl,
             )
@@ -248,5 +248,5 @@ class Broker:
         try:
             data = self.backend.get(self.get_message_name(message))
         except KeyError:
-            data = self.backend.get(self.get_dlq_key_name(message))
+            data = self.backend.get(self.get_dlq_message_name(message))
         return Message(**data)
