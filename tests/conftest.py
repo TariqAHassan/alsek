@@ -9,7 +9,7 @@ from __future__ import annotations
 from functools import partial
 from pathlib import Path
 from subprocess import PIPE, Popen
-from typing import Any, Iterable, Optional
+from typing import Any, Iterable, Optional, Type
 
 import pytest
 from _pytest.fixtures import SubRequest
@@ -65,7 +65,11 @@ def base_backend() -> Backend:
         ) -> None:
             raise NotImplementedError()
 
-        def get(self, name: str, default: Optional[Union[Any, Empty]] = None) -> Any:
+        def get(
+            self,
+            name: str,
+            default: Optional[Union[Any, Type[Empty]]] = None,
+        ) -> Any:
             raise NotImplementedError()
 
         def pub(self, pattern: Optional[str] = None) -> Iterable[str]:

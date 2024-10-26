@@ -6,7 +6,7 @@
 
 import shutil
 from pathlib import Path
-from typing import Any, Callable, Iterable, Optional, Union, cast
+from typing import Any, Callable, Iterable, Optional, Type, Union, cast
 
 from alsek._defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
@@ -154,12 +154,12 @@ class DiskCacheBackend(Backend):
             expire=ttl if ttl is None else ttl / 1000,
         )
 
-    def get(self, name: str, default: Optional[Union[Any, Empty]] = None) -> Any:
+    def get(self, name: str, default: Optional[Union[Any, Type[Empty]]] = None) -> Any:
         """Get ``name`` from the disk backend.
 
         Args:
             name (str): name of the item
-            default (Any, Empty, optional): default value for ``name``
+            default (Any, Type[Empty], optional): default value for ``name``
 
         Returns:
             Any

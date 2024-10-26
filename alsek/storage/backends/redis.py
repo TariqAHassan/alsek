@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Iterable, Optional, Union, cast
+from typing import Any, Iterable, Optional, Type, Union, cast
 
 import dill
 from redis import ConnectionPool, Redis
@@ -147,12 +147,12 @@ class RedisBackend(Backend):
         if nx and response is None:
             raise KeyError(f"Name '{name}' already exists")
 
-    def get(self, name: str, default: Optional[Union[Any, Empty]] = None) -> Any:
+    def get(self, name: str, default: Optional[Union[Any, Type[Empty]]] = None) -> Any:
         """Get ``name`` from the Redis backend.
 
         Args:
             name (str): name of the item
-            default (Any, Empty, optional): default value for ``name``
+            default (Any, Type[Empty], optional): default value for ``name``
 
         Returns:
             Any
