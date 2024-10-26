@@ -207,7 +207,7 @@ class Broker:
         """
         self._clear_lock(message)
 
-    def _make_dlq_key_name(self, message: Message) -> str:
+    def get_dlq_key_name(self, message: Message) -> str:
         return f"dtq:{self.get_message_name(message)}"
 
     @magic_logger(
@@ -229,8 +229,24 @@ class Broker:
         self.ack(message)
         if self.dlq_ttl:
             self.backend.set(
-                self._make_dlq_key_name(message),
+                self.get_dlq_key_name(message),
                 value=message.data,
                 ttl=self.dlq_ttl,
             )
             log.debug("Added %s to DLQ.", message.summary)
+
+    def sync(self, message: Message) -> Message:
+        """Synchronize a message with the backend.
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            updated_message (Message): the updated message data
+
+        """
+        try:
+            data = self.backend.get(self.get_message_name(message))
+        except KeyError:
+            data = self.backend.get(self.get_dlq_key_name(message))
+        return Message(**data)
