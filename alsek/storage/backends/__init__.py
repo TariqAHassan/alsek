@@ -46,7 +46,7 @@ class LazyClient:
         return self.client_func()
 
 
-class Backend(ABC):
+class BaseBackend(ABC):
     """Backend base class.
 
     Args:
@@ -173,18 +173,6 @@ class Backend(ABC):
         """
         raise NotImplementedError()
 
-    def _get_engine(
-        self,
-        getter: Callable[[], Any],
-        default: Optional[Union[Any, Type[Empty]]],
-    ) -> Any:
-        try:
-            return self.serializer.reverse(getter())
-        except KeyError as error:
-            if default is Empty or isinstance(default, Empty):
-                raise error
-            return default
-
     @abstractmethod
     def get(self, name: str, default: Optional[Union[Any, Type[Empty]]] = None) -> Any:
         """Get ``name`` from the backend.
@@ -217,9 +205,28 @@ class Backend(ABC):
         raise NotImplementedError()
 
     def pub(self, channel: str, value: Any) -> None:
+        """Publish to a channel.
+
+        Args:
+            channel (str): channel name
+            value (Any): value to publish
+
+        Returns:
+            None
+
+        """
         raise NotImplementedError()
 
     def sub(self, channel: str) -> Iterable[str | dict[str, Any]]:
+        """Subscribe to a channel.
+
+        Args:
+            channel (str): channel name
+
+        Returns:
+            Iterable[str | dict[str, Any]]
+
+        """
         raise NotImplementedError()
 
     @abstractmethod
@@ -235,6 +242,7 @@ class Backend(ABC):
         """
         raise NotImplementedError()
 
+    @abstractmethod
     def count(self, pattern: Optional[str] = None) -> int:
         """Count the number of items in the backend.
 
@@ -245,8 +253,9 @@ class Backend(ABC):
             count (int): number of matching names
 
         """
-        return sum(1 for _ in self.scan(pattern))
+        raise NotImplementedError()
 
+    @abstractmethod
     def clear_namespace(self, raise_on_error: bool = True) -> int:
         """Clear all items in backend under the current namespace.
 
@@ -260,10 +269,104 @@ class Backend(ABC):
             KeyError: if ``raise_on_error`` and a delete operation fails
 
         """
+        raise NotImplementedError()
+
+
+class Backend(BaseBackend, ABC):
+    IS_ASYNC: bool = False
+
+    def _get_engine(
+        self,
+        getter: Callable[[], Any],
+        default: Optional[Union[Any, Type[Empty]]],
+    ) -> Any:
+        try:
+            return self.serializer.reverse(getter())
+        except KeyError as error:
+            if default is Empty or isinstance(default, Empty):
+                raise error
+            return default
+
+    def count(self, pattern: Optional[str] = None) -> int:
+        return sum(1 for _ in self.scan(pattern))
+
+    def clear_namespace(self, raise_on_error: bool = True) -> int:
         count: int = 0
         for name in self.scan():
             try:
                 self.delete(name, missing_ok=False)
+                count += 1
+            except KeyError as error:
+                if raise_on_error:
+                    raise error
+                else:
+                    log.warning("Unable to delete %r", name)
+        return count
+
+
+class AsyncBackend(BaseBackend, ABC):
+    IS_ASYNC: bool = True
+
+    @abstractmethod
+    async def exists(self, name: str) -> bool:
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def set(
+        self,
+        name: str,
+        value: Any,
+        nx: bool = False,
+        ttl: Optional[int] = None,
+    ) -> None:
+        raise NotImplementedError()
+
+    async def _get_engine(
+        self,
+        getter: Callable[[], Any],
+        default: Optional[Union[Any, Type[Empty]]],
+    ) -> Any:
+        try:
+            value = await getter()
+            if value is None:
+                raise KeyError("Key not found")
+            return self.serializer.reverse(value)
+        except KeyError as error:
+            if default is Empty or isinstance(default, Empty):
+                raise error
+            return default
+
+    @abstractmethod
+    async def get(
+        self, name: str, default: Optional[Union[Any, Type[Empty]]] = None
+    ) -> Any:
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def delete(self, name: str, missing_ok: bool = False) -> None:
+        raise NotImplementedError()
+
+    async def pub(self, channel: str, value: Any) -> None:
+        raise NotImplementedError()
+
+    async def sub(self, channel: str) -> Iterable[str | dict[str, Any]]:
+        raise NotImplementedError()
+
+    @abstractmethod
+    async def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
+        raise NotImplementedError()
+
+    async def count(self, pattern: Optional[str] = None) -> int:
+        count = 0
+        async for _ in self.scan(pattern):
+            count += 1
+        return count
+
+    async def clear_namespace(self, raise_on_error: bool = True) -> int:
+        count = 0
+        async for name in self.scan():
+            try:
+                await self.delete(name, missing_ok=False)
                 count += 1
             except KeyError as error:
                 if raise_on_error:

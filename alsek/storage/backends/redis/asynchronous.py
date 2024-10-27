@@ -12,7 +12,7 @@ from redis.asyncio import Redis as AsyncRedis
 from redis.asyncio import ConnectionPool as AsyncConnectionPool
 
 import dill
-from alsek.storage.backends import LazyClient, Backend
+from alsek.storage.backends import LazyClient, AsyncBackend
 from alsek.storage.backends.redis.synchronous import parse_sub_data
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
@@ -21,7 +21,7 @@ from alsek.utils.printing import auto_repr
 log = logging.getLogger(__name__)
 
 
-class AsyncRedisBackend(Backend):
+class AsyncRedisBackend(AsyncBackend):
     """Asynchronous Redis Backend.
 
     This backend is powered by Redis and provides asynchronous support
@@ -248,43 +248,3 @@ class AsyncRedisBackend(Backend):
         match = self.full_name(pattern or "*")
         async for key in self.conn.scan_iter(match):
             yield self.short_name(key)
-
-    async def count(self, pattern: Optional[str] = None) -> int:
-        """Count the number of items in the backend asynchronously.
-
-        Args:
-            pattern (Optional[str], optional): Pattern to limit count to.
-
-        Returns:
-            int: Number of matching names.
-
-        """
-        count = 0
-        async for _ in self.scan(pattern):
-            count += 1
-        return count
-
-    async def clear_namespace(self, raise_on_error: bool = True) -> int:
-        """Clear all items in backend under the current namespace asynchronously.
-
-        Args:
-            raise_on_error (bool, optional): If `True`, raise an error if a delete operation fails.
-
-        Returns:
-            int: Number of items cleared.
-
-        Raises:
-            KeyError: If `raise_on_error` is `True` and a delete operation fails.
-
-        """
-        count = 0
-        async for name in self.scan():
-            try:
-                await self.delete(name, missing_ok=False)
-                count += 1
-            except KeyError as error:
-                if raise_on_error:
-                    raise error
-                else:
-                    log.warning("Unable to delete %r", name)
-        return count
