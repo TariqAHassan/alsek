@@ -9,7 +9,6 @@ from __future__ import annotations
 from typing import Any, Iterable, Optional, Type, Union, cast
 
 import dill
-from black.linegen import partial
 from redis import ConnectionPool, Redis
 
 from alsek._defaults import DEFAULT_NAMESPACE
