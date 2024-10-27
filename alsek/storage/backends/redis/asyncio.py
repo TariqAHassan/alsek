@@ -174,15 +174,10 @@ class AsyncRedisBackend(AsyncBackend):
             KeyError: If the key does not exist and no default is provided.
 
         """
-        try:
-            value = await self.conn.__getitem__(self.full_name(name))
-            if value is None:
-                raise KeyError("Key not found")
-            return self.serializer.reverse(value)
-        except KeyError as error:
-            if default is Empty or isinstance(default, Empty):
-                raise error
-            return default
+        return await self._get_engine(
+            lambda: self.conn.__getitem__(self.full_name(name)),
+            default=default,
+        )
 
     async def delete(self, name: str, missing_ok: bool = False) -> None:
         """Delete a key from the Redis backend asynchronously.
