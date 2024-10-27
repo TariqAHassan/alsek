@@ -57,6 +57,7 @@ class Backend(ABC):
 
     """
 
+    IS_ASYNC: bool = False
     SUPPORTS_PUBSUB: bool = False
 
     def __init__(
@@ -68,7 +69,11 @@ class Backend(ABC):
         self.serializer = serializer
 
     def __repr__(self) -> str:
-        return auto_repr(self, namespace=self.namespace, serializer=self.serializer)
+        return auto_repr(
+            self,
+            namespace=self.namespace,
+            serializer=self.serializer,
+        )
 
     def _encode(self) -> bytes:
         data = dict(backend=self.__class__, settings=gather_init_params(self))
