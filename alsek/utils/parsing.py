@@ -57,7 +57,7 @@ class ExceptionDetails(NamedTuple):
                 import the correct error
 
         Returns:
-            None
+            BaseException
 
         Warnings:
             This will not include the original traceback.
@@ -70,7 +70,7 @@ class ExceptionDetails(NamedTuple):
                 raise error
             else:
                 exc, msg = Exception, f"{self.name}: {self.text}"
-        raise exc(msg)
+        return exc(msg)
 
 
 def parse_exception(error: BaseException) -> ExceptionDetails:
