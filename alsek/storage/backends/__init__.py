@@ -338,7 +338,9 @@ class AsyncBackend(BaseBackend, ABC):
 
     @abstractmethod
     async def get(
-        self, name: str, default: Optional[Union[Any, Type[Empty]]] = None
+        self,
+        name: str,
+        default: Optional[Union[Any, Type[Empty]]] = None,
     ) -> Any:
         raise NotImplementedError()
 
