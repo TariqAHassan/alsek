@@ -8,7 +8,7 @@ from __future__ import annotations
 import logging
 from typing import Any, AsyncIterable, Optional, Type, Union
 
-from redis.asyncio import Redis as AsyncRedis
+from redis.asyncio import Redis as RedisAsync
 from redis.asyncio import ConnectionPool as AsyncConnectionPool
 
 import dill
@@ -21,7 +21,7 @@ from alsek.utils.printing import auto_repr
 log = logging.getLogger(__name__)
 
 
-class AsyncRedisBackend(AsyncBackend):
+class RedisAsyncBackend(AsyncBackend):
     """Asynchronous Redis Backend.
 
     This backend is powered by Redis and provides asynchronous support
@@ -39,7 +39,7 @@ class AsyncRedisBackend(AsyncBackend):
 
     def __init__(
         self,
-        conn: Optional[Union[str, AsyncRedis, LazyClient]] = None,
+        conn: Optional[Union[str, RedisAsync, LazyClient]] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
@@ -47,8 +47,8 @@ class AsyncRedisBackend(AsyncBackend):
 
     @staticmethod
     def _conn_parse(
-        conn: Optional[Union[str, AsyncRedis, LazyClient]]
-    ) -> Union[AsyncRedis, LazyClient]:
+        conn: Optional[Union[str, RedisAsync, LazyClient]]
+    ) -> Union[RedisAsync, LazyClient]:
         """Parse the connection parameter to obtain an AsyncRedis or LazyClient instance.
 
         Args:
@@ -64,16 +64,16 @@ class AsyncRedisBackend(AsyncBackend):
         if isinstance(conn, LazyClient):
             return conn
         elif conn is None:
-            return AsyncRedis(decode_responses=True)
-        elif isinstance(conn, AsyncRedis):
+            return RedisAsync(decode_responses=True)
+        elif isinstance(conn, RedisAsync):
             return conn
         elif isinstance(conn, str):
-            return AsyncRedis.from_url(conn, decode_responses=True)
+            return RedisAsync.from_url(conn, decode_responses=True)
         else:
             raise ValueError(f"Unsupported `conn` {conn}")
 
     @property
-    def conn(self) -> AsyncRedis:
+    def conn(self) -> RedisAsync:
         """Asynchronous Redis connection.
 
         Returns:
@@ -105,8 +105,8 @@ class AsyncRedisBackend(AsyncBackend):
         return dill.dumps(data)
 
     @classmethod
-    def _from_settings(cls, settings: dict[str, Any]) -> AsyncRedis:
-        settings["conn"] = AsyncRedis(
+    def _from_settings(cls, settings: dict[str, Any]) -> RedisAsync:
+        settings["conn"] = RedisAsync(
             connection_pool=AsyncConnectionPool(
                 connection_class=settings["conn"]["connection_class"],
                 max_connections=settings["conn"]["max_connections"],
