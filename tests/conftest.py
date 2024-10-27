@@ -9,7 +9,7 @@ from __future__ import annotations
 from functools import partial
 from pathlib import Path
 from subprocess import PIPE, Popen
-from typing import Any, Iterable, Optional, Type
+from typing import Any, Iterable, Optional, Type, Union
 
 import pytest
 from _pytest.fixtures import SubRequest
@@ -23,8 +23,8 @@ from alsek.core.status import StatusTracker
 from alsek.core.task import task
 from alsek.core.worker import WorkerPool
 from alsek.storage.backends import Backend
-from alsek.storage.backends.disk import DiskCacheBackend
-from alsek.storage.backends.redis import RedisBackend
+from alsek.storage.backends.disk.synchronous import DiskCacheBackend
+from alsek.storage.backends.redis.synchronous import RedisBackend
 from alsek.storage.result import ResultStore
 from alsek.tools.iteration import ResultPool
 from alsek.types import Empty
@@ -72,7 +72,7 @@ def base_backend() -> Backend:
         ) -> Any:
             raise NotImplementedError()
 
-        def pub(self, pattern: Optional[str] = None) -> Iterable[str]:
+        def pub(self, channel: str, value: Any) -> None:
             raise NotImplementedError()
 
         def sub(self, channel: str) -> Iterable[str | dict[str, Any]]:
