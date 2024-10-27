@@ -175,7 +175,7 @@ class AsyncRedisBackend(AsyncBackend):
 
         """
         return await self._get_engine(
-            lambda: self.conn.__getitem__(self.full_name(name)),
+            lambda: self.conn.get(self.full_name(name)),
             default=default,
         )
 
