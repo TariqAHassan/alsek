@@ -203,6 +203,7 @@ class RedisBackend(Backend):
                 pubsub.listen(),
             )
         finally:
+            pubsub.unsubscribe(channel)
             pubsub.close()
 
     def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
