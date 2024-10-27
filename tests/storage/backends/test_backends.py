@@ -15,8 +15,8 @@ from diskcache import Cache as DiskCache
 from redis import Redis
 
 from alsek.storage.backends import Backend, LazyClient
-from alsek.storage.backends.disk.synchronous import DiskCacheBackend
-from alsek.storage.backends.redis.synchronous import RedisBackend
+from alsek.storage.backends.disk.standard import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 
 
 class Delayed:

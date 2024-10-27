@@ -23,8 +23,8 @@ from alsek.core.status import StatusTracker
 from alsek.core.task import task
 from alsek.core.worker import WorkerPool
 from alsek.storage.backends import Backend
-from alsek.storage.backends.disk.synchronous import DiskCacheBackend
-from alsek.storage.backends.redis.synchronous import RedisBackend
+from alsek.storage.backends.disk.standard import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 from alsek.storage.result import ResultStore
 from alsek.tools.iteration import ResultPool
 from alsek.types import Empty

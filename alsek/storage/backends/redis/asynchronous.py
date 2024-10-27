@@ -13,7 +13,7 @@ from redis.asyncio import ConnectionPool as AsyncConnectionPool
 
 import dill
 from alsek.storage.backends import LazyClient, AsyncBackend
-from alsek.storage.backends.redis.synchronous import parse_sub_data
+from alsek.storage.backends.redis.standard import parse_sub_data
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
