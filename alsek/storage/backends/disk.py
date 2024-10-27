@@ -31,7 +31,7 @@ class DiskCacheBackend(Backend):
             or ``LazyClient``.
         name_match_func (callable, optional): a callable to determine if
             a name matches a specified pattern when scanning
-            the backend. If ``None``, one will selected automatically.
+            the backend. If ``None``, one will select automatically.
         namespace (str): prefix to use when inserting
             names in the backend
         serializer (Serializer): tool for encoding and decoding
