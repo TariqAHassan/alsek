@@ -198,10 +198,9 @@ class RedisBackend(Backend):
         pubsub = self.conn.pubsub()
         pubsub.subscribe(channel)
         try:
-            yield from map(
-                partial(parse_sub_data, serializer=self.serializer),
-                pubsub.listen(),
-            )
+            for message in pubsub.listen():
+                if message.get("type") == "message" and message.get("data"):
+                    yield parse_sub_data(message, serializer=self.serializer)
         finally:
             pubsub.unsubscribe(channel)
             pubsub.close()
