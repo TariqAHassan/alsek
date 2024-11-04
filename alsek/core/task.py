@@ -29,7 +29,7 @@ from alsek._defaults import (
 from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
 from alsek.core.broker import Broker
 from alsek.core.message import Message
-from alsek.core.status import StatusTracker, TaskStatus
+from alsek.core.status import StatusTracker, TaskStatus, TERMINAL_TASK_STATUSES
 from alsek.exceptions import RevokedError, SchedulingError, ValidationError
 from alsek.storage.result import ResultStore
 from alsek.types import SUPPORTED_MECHANISMS, SupportedMechanismType
@@ -443,6 +443,13 @@ class Task:
 
         """
         log.info("Revoking %s...", message.summary)
+        if (
+            self.status_tracker
+            and self.status_tracker.get(message).status in TERMINAL_TASK_STATUSES
+        ):
+            log.info("Message is already terminal: %s", message.summary)
+            return
+
         self.broker.backend.set(
             self._make_revoked_key_name(message),
             value=True,
