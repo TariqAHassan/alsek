@@ -19,6 +19,12 @@ from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
 
 
+def parse_sub_data(data: dict[str, Any], serializer: Serializer) -> dict[str, Any]:
+    if data.get("type", "").lower() == "message" and data.get("data") is not None:
+        data["data"] = serializer.reverse(data["data"])
+    return data
+
+
 class RedisBackend(Backend):
     """Redis Backend.
 
@@ -187,17 +193,15 @@ class RedisBackend(Backend):
             message=self.serializer.forward(value),
         )
 
-    def _parse_sub_data(self, data: dict[str, Any]) -> dict[str, Any]:
-        if data.get("type", "").lower() == "message" and data.get("data") is not None:
-            data["data"] = self.serializer.reverse(data["data"])
-        return data
-
     def sub(self, channel: str) -> Iterable[str | dict[str, Any]]:
         pubsub = self.conn.pubsub()
         pubsub.subscribe(channel)
         try:
-            yield from map(self._parse_sub_data, pubsub.listen())
+            for message in pubsub.listen():
+                if message.get("type") == "message" and message.get("data"):
+                    yield parse_sub_data(message, serializer=self.serializer)
         finally:
+            pubsub.unsubscribe(channel)
             pubsub.close()
 
     def scan(self, pattern: Optional[str] = None) -> Iterable[str]:

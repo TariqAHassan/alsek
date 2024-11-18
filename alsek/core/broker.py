@@ -34,6 +34,9 @@ class Broker:
         self.backend = backend
         self.dlq_ttl = dlq_ttl
 
+        if self.backend.IS_ASYNC:
+            raise AttributeError("Asynchronous backends are not yet supported")
+
     def __repr__(self) -> str:
         return auto_repr(
             self,
