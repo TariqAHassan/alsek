@@ -65,12 +65,14 @@ class ExceptionDetails(NamedTuple):
         """
         try:
             exc, msg = _get_exception_class(self.name), self.text
-        except (ImportError, AttributeError) as error:
+            output = exc(msg)
+        except (ImportError, AttributeError, TypeError) as error:
             if strict:
                 raise error
             else:
                 exc, msg = Exception, f"{self.name}: {self.text}"
-        return exc(msg)
+            output = exc(msg)
+        return output
 
 
 def parse_exception(error: BaseException) -> ExceptionDetails:
