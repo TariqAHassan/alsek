@@ -64,14 +64,14 @@ class ExceptionDetails(NamedTuple):
 
         """
         try:
-            exc, msg = _get_exception_class(self.name), self.text
-            output = exc(msg)
+            exc, text = _get_exception_class(self.name), self.text
+            output = exc(text)
         except (ImportError, AttributeError, TypeError) as error:
             if strict:
                 raise error
             else:
-                exc, msg = Exception, f"{self.name}: {self.text}"
-            output = exc(msg)
+                exc, text = Exception, f"{self.name}: {self.text}"
+            output = exc(text)
         return output
 
 
