@@ -72,12 +72,12 @@ def _retry_future_handler(
         return None
 
     if task.do_retry(message, exception=exception):
-        task._update_status(message, status=TaskStatus.RETRYING)
         task.broker.retry(message)
+        task._update_status(message, status=TaskStatus.RETRYING)
     else:
         log.error("Retries exhausted for %s.", message.summary)
-        task._update_status(message, status=TaskStatus.FAILED)
         task.broker.fail(message)
+        task._update_status(message, status=TaskStatus.FAILED)
 
 
 def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
@@ -95,8 +95,8 @@ def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
                 previous_message_uuid=message.uuid,
             )
         )
-    task._update_status(message, status=TaskStatus.SUCCEEDED)
     task.broker.ack(message)
+    task._update_status(message, status=TaskStatus.SUCCEEDED)
 
 
 class TaskFuture(ABC):
