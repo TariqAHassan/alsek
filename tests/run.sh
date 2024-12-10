@@ -4,4 +4,5 @@ pytest --strict-markers \
        --cov-fail-under 80 \
        --no-flaky-report \
        --showlocals \
+       --timeout=250 \
        -vv
