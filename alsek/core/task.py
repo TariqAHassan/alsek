@@ -458,7 +458,7 @@ class Task:
         message.update(
             exception_details=ExceptionDetails(
                 name=RevokedError.__name__,
-                text="task revoked",
+                text="Task Revoked",
                 traceback=None,
             ).as_dict()
         )
