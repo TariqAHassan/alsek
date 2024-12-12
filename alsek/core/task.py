@@ -35,7 +35,7 @@ from alsek.storage.result import ResultStore
 from alsek.types import SUPPORTED_MECHANISMS, SupportedMechanismType
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.logging import magic_logger
-from alsek.utils.parsing import ExceptionDetails
+from alsek.utils.parsing import ExceptionDetails, get_exception_name
 from alsek.utils.printing import auto_repr
 
 log = logging.getLogger(__name__)
@@ -457,7 +457,7 @@ class Task:
         )
         message.update(
             exception_details=ExceptionDetails(
-                name=RevokedError.__name__,
+                name=get_exception_name(RevokedError),
                 text="Task Revoked",
                 traceback=None,
             ).as_dict()
