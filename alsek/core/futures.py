@@ -151,6 +151,7 @@ class TaskFuture(ABC):
         while not self.complete and not self._revocation_stop_event.is_set():
             if self.task.is_revoked(self.message):
                 self.stop(RevokedError)
+                log.info("Evicting '%s' due to task revocation...", self.message.summary)
                 break
             self._revocation_stop_event.wait(check_interval)
 
