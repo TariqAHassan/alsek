@@ -640,7 +640,7 @@ def task(
     queue: Optional[str] = None,
     priority: int = 0,
     timeout: int = DEFAULT_TASK_TIMEOUT,
-    max_retries: int = DEFAULT_MAX_RETRIES,
+    max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
     backoff: Optional[Backoff] = ExponentialBackoff(),
     trigger: Optional[Union[CronTrigger, DateTrigger, IntervalTrigger]] = None,
     result_store: Optional[ResultStore] = None,
