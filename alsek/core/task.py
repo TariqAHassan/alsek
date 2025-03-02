@@ -711,7 +711,7 @@ def task(
             status_tracker=status_tracker,
             **(  # noqa (handled above)
                 dict(trigger=trigger)
-                if trigger in base_task_signature.parameters
+                if "trigger" in base_task_signature.parameters
                 else dict()
             ),
         )
