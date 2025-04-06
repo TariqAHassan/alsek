@@ -381,6 +381,64 @@ class Task:
 
         """
 
+    def on_revoked(self, message: Message, exception: Optional[BaseException], result: Any) -> None:
+        """Handles the event when a message is revoked and logs the associated exception.
+
+        Args:
+            message: The message instance that was revoked.
+            exception: The exception instance that represents the reason for the
+                revocation.
+            result (Any): The result of the revoked operation. This is only provided
+                if the task succeeds
+
+        Returns:
+            None
+
+        """
+
+    def on_retry(self, message: Message, exception: BaseException) -> None:
+        """Handles the retry logic when a processing failure occurs.
+
+        Args:
+            message: The message object that failed during processing and is
+                subject to a retry attempt.
+            exception: The exception instance that was raised during the
+                failure of processing the message.
+
+        Returns:
+            None
+
+        """
+
+    def on_failure(self, message: Message, exception: BaseException) -> None:
+        """
+        Handles the actions to be performed when an operation fails.
+
+        Args:
+            message: The message object containing the details of the failed
+                operation.
+            exception: The exception object associated with the failure, providing
+                additional context or details about what caused the failure.
+
+        Returns:
+            None
+
+        """
+
+    def on_success(self, message: Message, result: Any) -> None:
+        """Handles successful outcomes of an operation by processing the given message
+        and corresponding result.
+
+        Args:
+            message: An instance of the Message class that contains relevant information
+                about the operation.
+            result: The result of the completed operation, which can be of any type.
+
+        Returns:
+            None
+
+        """
+
     def execute(self, message: Message) -> Any:
         """Execute the task against a message.
 

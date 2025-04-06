@@ -69,19 +69,23 @@ def _retry_future_handler(
     exception: BaseException,
 ) -> None:
     if task.is_revoked(message):
+        task.on_revoked(message, exception=exception, result=None)
         return None
 
     if task.do_retry(message, exception=exception):
+        task.on_retry(message, exception=exception)
         task.broker.retry(message)
         task._update_status(message, status=TaskStatus.RETRYING)
     else:
         log.error("Retries exhausted for %s.", message.summary)
         task.broker.fail(message)
         task._update_status(message, status=TaskStatus.FAILED)
+        task.on_failure(message, exception=exception)
 
 
 def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
     if task.is_revoked(message):
+        task.on_revoked(message, exception=None, result=result)
         return None
 
     if task.result_store:
@@ -97,6 +101,7 @@ def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
         )
     task.broker.ack(message)
     task._update_status(message, status=TaskStatus.SUCCEEDED)
+    task.on_success(message, result=result)
 
 
 class TaskFuture(ABC):
