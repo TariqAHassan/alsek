@@ -204,9 +204,9 @@ class ThreadTaskFuture(TaskFuture):
         log.info("Received %s...", self.message.summary)
         self.task._update_status(self.message, status=TaskStatus.RUNNING)
 
-        self.task.pre_op(self.message)
         result, exception = None, None
         try:
+            self.task.pre_op(self.message)
             result = self.task.execute(self.message)
             if self.task.is_revoked(self.message):
                 log.info(
@@ -315,9 +315,9 @@ class ProcessTaskFuture(TaskFuture):
         log.info("Received %s...", message.summary)
         task._update_status(message, status=TaskStatus.RUNNING)
 
-        task.pre_op(message)
         result, exception = None, None
         try:
+            task.pre_op(message)
             result = task.execute(message)
             if task.is_revoked(message):
                 log.info(
