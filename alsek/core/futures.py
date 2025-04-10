@@ -69,7 +69,7 @@ def _retry_future_handler(
     exception: BaseException,
 ) -> None:
     if task.is_revoked(message):
-        task.on_revoked(message, exception=exception, result=None)
+        task.on_revocation(message, exception=exception, result=None)
         return None
 
     if task.do_retry(message, exception=exception):
@@ -85,7 +85,7 @@ def _retry_future_handler(
 
 def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
     if task.is_revoked(message):
-        task.on_revoked(message, exception=None, result=result)
+        task.on_revocation(message, exception=None, result=result)
         return None
 
     if task.result_store:
