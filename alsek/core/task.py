@@ -146,6 +146,7 @@ class Task:
         result_store: Optional[ResultStore] = None,
         status_tracker: Optional[StatusTracker] = None,
         mechanism: SupportedMechanismType = DEFAULT_MECHANISM,
+        no_positional_args: bool = False,
     ) -> None:
         self.function = function
         self.broker = broker
@@ -163,6 +164,7 @@ class Task:
         self.result_store = result_store
         self.status_tracker = status_tracker
         self.mechanism = mechanism
+        self.no_positional_args = no_positional_args
 
         if priority < 0:
             raise ValueError("`priority` must be greater than or equal to zero")
@@ -311,6 +313,8 @@ class Task:
         """
         if result_ttl and not self.result_store:
             raise ValidationError(f"`result_ttl` invalid. No result store set.")
+        elif args and self.no_positional_args:
+            raise ValidationError(f"Task does not accept positional arguments.")
 
         message = Message(
             task_name=self.name,
