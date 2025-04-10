@@ -122,6 +122,7 @@ class Task:
         status_tracker (StatusTracker, optional): store for persisting task statuses
         mechanism (SupportedMechanismType): mechanism for executing the task. Must
             be either "process" or "thread".
+        no_positional_args (bool): if ``True``, the task will not accept positional arguments.
 
     Notes:
         * ``do_retry()`` can be overridden in cases where ``max_retries``
@@ -566,6 +567,7 @@ class TriggerTask(Task):
         status_tracker (StatusTracker, optional): store for persisting task statuses
         mechanism (SupportedMechanismType): mechanism for executing the task. Must
             be either "process" or "thread".
+        no_positional_args (bool): if ``True``, the task will not accept positional arguments.
 
     Warnings:
         * The signature of ``function`` cannot contain parameters
@@ -590,6 +592,7 @@ class TriggerTask(Task):
         result_store: Optional[ResultStore] = None,
         status_tracker: Optional[StatusTracker] = None,
         mechanism: SupportedMechanismType = DEFAULT_MECHANISM,
+        no_positional_args: bool = False,
     ) -> None:
         if inspect.signature(function).parameters:
             raise SchedulingError("Function signature cannot includes parameters")
@@ -605,6 +608,7 @@ class TriggerTask(Task):
             result_store=result_store,
             status_tracker=status_tracker,
             mechanism=mechanism,
+            no_positional_args=no_positional_args,
         )
         self.trigger = trigger
 
@@ -708,6 +712,7 @@ def task(
     result_store: Optional[ResultStore] = None,
     status_tracker: Optional[StatusTracker] = None,
     mechanism: SupportedMechanismType = DEFAULT_MECHANISM,
+    no_positional_args: bool = False,
     base_task: Optional[Type[Task]] = None,
 ) -> Callable[..., Task]:
     """Wrapper for task construction.
@@ -731,6 +736,7 @@ def task(
         status_tracker (StatusTracker, optional): store for persisting task statuses
         mechanism (SupportedMechanismType): mechanism for executing the task. Must
             be either "process" or "thread".
+        no_positional_args (bool): if ``True``, the task will not accept positional arguments.
         base_task (Type[Task]): base to use for task constuction.
             If ``None``, a base task will be selected automatically.
 
@@ -769,6 +775,7 @@ def task(
             max_retries=max_retries,
             backoff=backoff,
             mechanism=mechanism,
+            no_positional_args=no_positional_args,
             result_store=result_store,
             status_tracker=status_tracker,
             **(  # noqa (handled above)
