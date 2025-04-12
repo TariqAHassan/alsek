@@ -252,6 +252,19 @@ class Task:
         self._deferred = False
         return self
 
+    def on_submit(self, message: Message) -> None:
+        """Handles the action to be performed when a message is submitted.
+        This method processes  the provided message and executes the required
+        behavior upon submission.
+
+        Args:
+            message (Message): The message object submitted for processing.
+
+        Returns:
+            None
+
+        """
+
     def _submit(self, message: Message, **options: Any) -> None:
         self.broker.submit(message, **options)
 
@@ -335,6 +348,7 @@ class Task:
         if self._deferred:
             self.cancel_defer()
         elif submit:
+            self.on_submit(message)
             self._submit(message, **options)
             self._update_status(message, status=TaskStatus.SUBMITTED)
         return message
