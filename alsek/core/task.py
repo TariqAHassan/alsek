@@ -76,11 +76,13 @@ class _MultiSubmit:
         self,
         message: Message,
         broker: Broker,
+        on_submit: Optional[Callable[[Message], None]] = None,
         callback_op: Optional[Callable[[Message], None]] = None,
         options: Optional[dict[str, Any]] = None,
     ) -> None:
         self.message = message
         self.broker = broker
+        self.on_submit = on_submit
         self.callback_op = callback_op
         self.options = options
 
@@ -95,6 +97,8 @@ class _MultiSubmit:
 
     def __call__(self) -> None:
         message = self._get_message()
+        if self.on_submit:
+            self.on_submit(message)
         self.broker.submit(message, **(self.options or dict()))
         self.first = False
         if self.callback_op:
@@ -646,6 +650,7 @@ class TriggerTask(Task):
             _MultiSubmit(
                 message=message,
                 broker=self.broker,
+                on_submit=self.on_submit,
                 callback_op=partial(self._update_status, status=TaskStatus.SUBMITTED),
                 options=options,
             ),
