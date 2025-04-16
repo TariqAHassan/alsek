@@ -231,7 +231,7 @@ class DiskCacheBackend(Backend):
             key (str): The name of the sorted set.
 
         Returns:
-            str | None: The member with the highest priority, or None if empty.
+            top key (str, optional): The member with the highest priority, or None if empty.
 
         """
         top_key = None
