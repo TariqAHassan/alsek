@@ -7,8 +7,9 @@ from typing import Optional
 
 from alsek.core.message import Message
 
-MESSAGES_NAMESPACE = "messages"
-PRIORITY_NAMESPACE = "priority"
+MESSAGES_NAMESPACE: str = "messages"
+PRIORITY_NAMESPACE: str = "priority"
+
 
 def get_subnamespace(
     queue: Optional[str] = None,
