@@ -37,6 +37,20 @@ def get_subnamespace(
         return "queues"
 
 
+def get_messages_namespace(message: Message) -> str:
+    """Get the namespace for a message.
+
+    Args:
+        message (Message): an Alsek message
+
+    Returns:
+        namespace (str): the namespace for the message
+
+    """
+    subnamespace = get_subnamespace(message.queue, message.task_name)
+    return f"{subnamespace}:messages"
+
+
 def get_message_name(message: Message) -> str:
     """Get the name for ``message`` in the backend.
 
@@ -47,8 +61,8 @@ def get_message_name(message: Message) -> str:
         name (str): message-specific name
 
     """
-    subnamespace = get_subnamespace(message.queue, message.task_name)
-    return f"{subnamespace}:messages:{message.uuid}"
+    subnamespace = get_messages_namespace(message)
+    return f"{subnamespace}:{message.uuid}"
 
 
 def get_priority_namespace(message: Message) -> str:
