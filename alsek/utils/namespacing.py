@@ -7,6 +7,8 @@ from typing import Optional
 
 from alsek.core.message import Message
 
+MESSAGES_NAMESPACE = "messages"
+PRIORITY_NAMESPACE = "priority"
 
 def get_subnamespace(
     queue: Optional[str] = None,
@@ -48,7 +50,7 @@ def get_messages_namespace(message: Message) -> str:
 
     """
     subnamespace = get_subnamespace(message.queue, message.task_name)
-    return f"{subnamespace}:messages"
+    return f"{subnamespace}:{MESSAGES_NAMESPACE}"
 
 
 def get_message_name(message: Message) -> str:
@@ -75,7 +77,7 @@ def get_priority_namespace(message: Message) -> str:
         str: the fully qualified priority queue name
     """
     subnamespace = get_subnamespace(message.queue, message.task_name)
-    return f"{subnamespace}:priority"
+    return f"{subnamespace}:{PRIORITY_NAMESPACE}"
 
 
 def get_dlq_message_name(message: Message) -> str:
