@@ -5,7 +5,7 @@
 """
 from typing import Optional
 
-from alsek import Message
+from alsek.core.message import Message
 
 
 def get_subnamespace(
