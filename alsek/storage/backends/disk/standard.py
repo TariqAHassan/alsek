@@ -61,7 +61,7 @@ class DiskCacheBackend(Backend):
     @staticmethod
     def _conn_parse(
         conn: Optional[Union[str, Path, DiskCache, LazyClient]]
-    ) -> Union[DiskCache, Callable[[], DiskCache]]:
+    ) -> Union[DiskCache, LazyClient, Callable[[], DiskCache]]:
         if isinstance(conn, LazyClient):
             return conn
 
