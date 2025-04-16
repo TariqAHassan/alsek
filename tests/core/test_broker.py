@@ -13,60 +13,12 @@ from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.exceptions import MessageDoesNotExistsError
+from alsek.utils.namespacing import get_message_name, get_dlq_message_name
 from tests._helpers import sleeper
 
 
 def test_repr(rolling_broker: Broker) -> None:
     assert isinstance(repr(rolling_broker), str)
-
-
-@pytest.mark.parametrize(
-    "queue,task_name,expected",
-    [
-        # No Queue & Task
-        (None, "task", ValueError),
-        # Queue & task
-        ("queue", "task", "queues:queue:tasks:task"),
-        # Queue only
-        ("queue", None, "queues:queue"),
-        # No queue & no task
-        (None, None, "queues"),
-    ],
-)
-def test_get_subnamespace(
-    queue: Optional[str],
-    task_name: Optional[str],
-    expected: Union[BaseException, str],
-    rolling_broker: Broker,
-) -> None:
-    if isinstance(expected, str):
-        actual = rolling_broker.get_subnamespace(queue, task_name=task_name)
-        assert actual == expected
-    else:
-        with pytest.raises(expected):
-            rolling_broker.get_subnamespace(queue, task_name=task_name)
-
-
-@pytest.mark.parametrize(
-    "message,expected",
-    [
-        (
-            Message("task-a", queue="queue-a", uuid="uuid-a"),
-            "queues:queue-a:tasks:task-a:messages:uuid-a",
-        ),
-        (
-            Message("task-b", queue="queue-b", uuid="uuid-b"),
-            "queues:queue-b:tasks:task-b:messages:uuid-b",
-        ),
-    ],
-)
-def test_get_message_name(
-    message: Message,
-    expected: Union[BaseException, str],
-    rolling_broker: Broker,
-) -> None:
-    actual = rolling_broker.get_message_name(message)
-    assert actual == expected
 
 
 @pytest.mark.parametrize(
@@ -123,7 +75,7 @@ def test_retry(
         rolling_broker.submit(message)
         rolling_broker.retry(message)
         recovered_message = Message(
-            **rolling_broker.backend.get(rolling_broker.get_message_name(message))
+            **rolling_broker.backend.get(get_message_name(message))
         )
         assert recovered_message.retries == 1
     else:
@@ -221,7 +173,7 @@ def test_fail(dlq_ttl: Optional[int], rolling_broker: Broker) -> None:
 
     if dlq_ttl:
         # Check that the message has been moved to the dtq
-        dtq_name = rolling_broker.get_dlq_message_name(message)
+        dtq_name = get_dlq_message_name(message)
         assert rolling_broker.backend.exists(dtq_name)
         # Check that the DTQ TTL was respected.
         sleeper(dlq_ttl)

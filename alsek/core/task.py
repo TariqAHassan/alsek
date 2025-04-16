@@ -35,6 +35,7 @@ from alsek.storage.result import ResultStore
 from alsek.types import SUPPORTED_MECHANISMS, SupportedMechanismType
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.logging import magic_logger
+from alsek.utils.namespacing import get_message_name
 from alsek.utils.parsing import ExceptionDetails, get_exception_name
 from alsek.utils.printing import auto_repr
 
@@ -512,8 +513,9 @@ class Task:
         """
         return True
 
-    def _make_revoked_key_name(self, message: Message) -> str:
-        return f"revoked:{self.broker.get_message_name(message)}"
+    @staticmethod
+    def _make_revoked_key_name(message: Message) -> str:
+        return f"revoked:{get_message_name(message)}"
 
     @magic_logger(
         before=lambda message: log.info("Revoking %s...", message.summary),

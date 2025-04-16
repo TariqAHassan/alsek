@@ -11,6 +11,7 @@ from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
+from alsek.utils.namespacing import get_subnamespace
 from alsek.utils.system import StopSignalListener
 
 
@@ -85,12 +86,12 @@ class Consumer:
 
     def _scan_subnamespaces(self) -> Iterable[str]:
         if not self.subset:
-            subnamespaces = [self.broker.get_subnamespace(None)]
+            subnamespaces = [get_subnamespace(None)]
         elif isinstance(self.subset, list):
-            subnamespaces = [self.broker.get_subnamespace(q) for q in self.subset]
+            subnamespaces = [get_subnamespace(q) for q in self.subset]
         else:
             subnamespaces = [
-                self.broker.get_subnamespace(q, task_name=t)
+                get_subnamespace(q, task_name=t)
                 for (q, tasks) in self.subset.items()
                 for t in tasks
             ]

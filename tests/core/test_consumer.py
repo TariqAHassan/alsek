@@ -12,6 +12,7 @@ from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.consumer import Consumer, Message, _ConsumptionMutex
 from alsek.storage.backends import Backend
+from alsek.utils.namespacing import get_message_name
 
 
 def test_consumption_mutex_acquisition(rolling_backend: Backend) -> None:
@@ -61,7 +62,7 @@ def test_scan_subnamespaces(
     actual = set(consumer._scan_subnamespaces())
 
     # Validate that the expected messages were recovered
-    expected = {rolling_broker.get_message_name(m) for m in target_messages}
+    expected = {get_message_name(m) for m in target_messages}
     assert actual == expected
 
 
