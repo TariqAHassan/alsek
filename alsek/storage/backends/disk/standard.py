@@ -205,3 +205,36 @@ class DiskCacheBackend(Backend):
             short_name = self.short_name(name)
             if self.name_match_func(pattern, short_name):
                 yield short_name
+
+    def priority_add(self, key: str, member: str, priority: int | float) -> None:
+        """Add an item to a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+            member (str): The item's identifier or value.
+            priority (float): The numeric priority score (decide if lower or higher means higher priority).
+
+        Returns:
+            None
+
+        """
+        self.set(
+            f"{key}:{member}",
+            value=priority,
+            nx=False,  # i.e., overwrite any existing priority
+        )
+
+    def priority_get(self, key: str) -> Optional[str]:
+        """Get (peek) the highest-priority item without removing it.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Returns:
+            str | None: The member with the highest priority, or None if empty.
+
+        """
+        top_key = None
+        if options := [(k, self.get(k)) for k in self.scan(f"{key}:*")]:
+            (top_key, *_) = min(options, key=lambda x: x[1])
+        return top_key
