@@ -84,7 +84,7 @@ class Broker:
 
         self.backend.priority_add(
             get_priority_namespace(message),
-            member=message.uuid,
+            unique_id=message.uuid,
             priority=message.priority,
         )
 

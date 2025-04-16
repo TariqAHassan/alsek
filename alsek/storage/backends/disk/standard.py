@@ -206,12 +206,12 @@ class DiskCacheBackend(Backend):
             if self.name_match_func(pattern, short_name):
                 yield short_name
 
-    def priority_add(self, key: str, member: str, priority: int | float) -> None:
+    def priority_add(self, key: str, unique_id: str, priority: int | float) -> None:
         """Add an item to a priority-sorted set.
 
         Args:
             key (str): The name of the sorted set.
-            member (str): The item's identifier or value.
+            unique_id (str): The item's (Message's) unique identifier
             priority (float): The numeric priority score (decide if lower or higher means higher priority).
 
         Returns:
@@ -219,7 +219,7 @@ class DiskCacheBackend(Backend):
 
         """
         self.set(
-            f"{key}:{member}",
+            f"{key}:{unique_id}",
             value=priority,
             nx=False,  # i.e., overwrite any existing priority
         )

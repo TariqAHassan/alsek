@@ -72,7 +72,7 @@ def base_backend() -> Backend:
         ) -> Any:
             raise NotImplementedError()
 
-        def priority_add(self, key: str, member: str, priority: int | float) -> None:
+        def priority_add(self, key: str, unique_id: str, priority: int | float) -> None:
             raise NotImplementedError()
 
         def priority_get(self, key: str) -> Optional[str]:
