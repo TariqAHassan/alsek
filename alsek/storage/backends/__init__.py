@@ -204,6 +204,31 @@ class BaseBackend(ABC):
         """
         raise NotImplementedError()
 
+    @abstractmethod
+    def priority_add(self, key: str, member: str, priority: int | float) -> None:
+        """Add an item to a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+            member (str): The item's identifier or value.
+            priority (float): The numeric priority score (decide if lower or higher means higher priority).
+
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def priority_get(self, key: str) -> Optional[str]:
+        """
+        Get (peek) the highest-priority item without removing it.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Returns:
+            str | None: The member with the highest priority, or None if empty.
+        """
+        raise NotImplementedError()
+
     def pub(self, channel: str, value: Any) -> None:
         """Publish to a channel.
 

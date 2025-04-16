@@ -86,6 +86,18 @@ class Broker:
         subnamespace = self.get_subnamespace(message.queue, message.task_name)
         return f"{subnamespace}:messages:{message.uuid}"
 
+    def get_priority_name(self, message: Message) -> str:
+        """Get the priority queue name for a message's queue.
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            str: the fully qualified priority queue name
+        """
+        subnamespace = self.get_subnamespace(message.queue, message.task_name)
+        return f"{subnamespace}:priority"
+
     def exists(self, message: Message) -> bool:
         """Determine if the message exists in the backend.
 
@@ -122,6 +134,12 @@ class Broker:
             self.backend.set(name, value=message.data, nx=True, ttl=ttl)
         except KeyError:
             raise MessageAlreadyExistsError(f"'{name}' found in backend")
+
+        self.backend.priority_add(
+            self.get_priority_name(message),
+            member=message.uuid,
+            priority=message.priority,
+        )
 
     @magic_logger(
         before=lambda message: log.debug("Retrying %s...", message.summary),

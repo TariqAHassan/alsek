@@ -187,6 +187,22 @@ class RedisBackend(Backend):
         if not missing_ok and not found:
             raise KeyError(f"No name '{name}' found")
 
+    def priority_add(self, key: str, member: str, priority: int | float) -> None:
+        """Add an item to a priority-sorted set."""
+        self.conn.zadd(
+            self.full_name(key),
+            mapping={member: priority},
+        )
+
+    def priority_get(self, key: str) -> Optional[str]:
+        """Get (peek) the highest-priority item without removing it."""
+        results: list[str] = self.conn.zrange(
+            self.full_name(key),
+            start=0,
+            end=0,
+        )
+        return results[0] if results else None
+
     def pub(self, channel: str, value: Any) -> None:
         self.conn.publish(
             channel=channel,
