@@ -276,6 +276,7 @@ class Task:
         self,
         args: Optional[Union[list[Any], tuple[Any, ...]]] = None,
         kwargs: Optional[dict[Any, Any]] = None,
+        priority: int = 0,
         metadata: Optional[dict[Any, Any]] = None,
         result_ttl: Optional[int] = None,
         uuid: Optional[str] = None,
@@ -295,6 +296,10 @@ class Task:
         Args:
             args (list, tuple, optional): positional arguments to pass to ``function``
             kwargs (dict, optional): keyword arguments to pass to ``function``
+            priority (int): priority of the message within the task.
+                Messages with lower values will be executed before messages with higher values.
+                Note that messages belonging to tasks with higher priority (lower value) will be
+                executed before messages belong to tasks with lower priority (higher value).
             metadata (dict, optional): a dictionary of user-defined message metadata.
                 This can store any data types supported by the backend's serializer.
             result_ttl (int, optional): time to live (in milliseconds) for the
@@ -339,6 +344,7 @@ class Task:
             queue=queue or self.queue,
             args=args,
             kwargs=kwargs,
+            priority=priority,
             metadata=metadata,
             result_ttl=result_ttl,
             uuid=uuid,
