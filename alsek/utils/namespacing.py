@@ -51,7 +51,7 @@ def get_message_name(message: Message) -> str:
     return f"{subnamespace}:messages:{message.uuid}"
 
 
-def get_priority_name(message: Message) -> str:
+def get_priority_namespace(message: Message) -> str:
     """Get the priority queue name for a message's queue.
 
     Args:
