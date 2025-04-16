@@ -4,7 +4,7 @@
 
 """
 
-from typing import Optional, Union
+from typing import Optional
 
 import pytest
 
@@ -142,7 +142,7 @@ def test_nack(rolling_broker: Broker) -> None:
     # Now nack it
     rolling_broker.nack(message)
 
-    # Check that the broker did not removed the message
+    # Check that the broker did not remove the message
     assert rolling_broker.exists(message)
 
     # Check that the lock has been fully released.
