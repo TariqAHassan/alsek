@@ -9,6 +9,7 @@ from alsek.core.message import Message
 
 MESSAGES_NAMESPACE_KEY: str = "messages"
 PRIORITY_NAMESPACE_KEY: str = "priority"
+DLQ_NAMESPACE_KEY: str = "dlq"
 
 
 def get_subnamespace(
@@ -91,4 +92,4 @@ def get_dlq_message_name(message: Message) -> str:
         dlq_name (str): message-specific name in the DLQ
 
     """
-    return f"dtq:{get_message_name(message)}"
+    return f"{DLQ_NAMESPACE_KEY}:{get_message_name(message)}"
