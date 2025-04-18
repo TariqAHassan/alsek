@@ -55,7 +55,7 @@ def _derive_consumer_subset(
         return queues
 
     subset: DefaultDict[str, list[str]] = defaultdict(list)
-    for t in sorted(tasks, key=lambda i: i.priority):
+    for t in tasks:
         if queues is None or t.queue in queues:
             subset[t.queue].append(t.name)
 

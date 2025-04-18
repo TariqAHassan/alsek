@@ -178,3 +178,56 @@ def test_clear_namespace(to_add: int, rolling_backend: Backend) -> None:
         rolling_backend.set(f"key-{i}", value=1)
     rolling_backend.clear_namespace()
     assert rolling_backend.count() == 0
+
+
+def test_priority_add_and_get(rolling_backend: Backend) -> None:
+    key = "priority:test"
+    id_low = "msg-low"
+    id_high = "msg-high"
+
+    rolling_backend.priority_add(key, unique_id=id_low, priority=10)
+    rolling_backend.priority_add(key, unique_id=id_high, priority=1)
+
+    # Expect the lowest priority score to be returned
+    assert rolling_backend.priority_get(key) == id_high
+
+
+def test_priority_iter_order(rolling_backend: Backend) -> None:
+    key = "priority:ordered"
+    items = [("x", 5), ("y", 1), ("z", 3)]
+
+    for uid, score in items:
+        rolling_backend.priority_add(key, unique_id=uid, priority=score)
+
+    result = list(rolling_backend.priority_iter(key))
+    assert result == ["y", "z", "x"]  # sorted by priority
+
+
+def test_priority_remove(rolling_backend: Backend) -> None:
+    key = "priority:removal"
+    uid = "remove-me"
+
+    rolling_backend.priority_add(key, unique_id=uid, priority=99)
+    assert rolling_backend.priority_get(key) == uid
+
+    rolling_backend.priority_remove(key, uid)
+    assert rolling_backend.priority_get(key) is None
+
+
+def test_priority_get_empty(rolling_backend: Backend) -> None:
+    key = "priority:empty"
+    assert rolling_backend.priority_get(key) is None
+
+
+def test_priority_add_overwrite(rolling_backend: Backend) -> None:
+    key = "priority:overwrite"
+    uid = "dup"
+
+    rolling_backend.priority_add(key, unique_id=uid, priority=10)
+    rolling_backend.priority_add(key, unique_id=uid, priority=1)
+
+    assert rolling_backend.priority_get(key) == uid
+
+    # Should now reflect the new priority order
+    items = list(rolling_backend.priority_iter(key))
+    assert items == [uid]

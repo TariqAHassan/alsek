@@ -72,6 +72,18 @@ def base_backend() -> Backend:
         ) -> Any:
             raise NotImplementedError()
 
+        def priority_add(self, key: str, unique_id: str, priority: int | float) -> None:
+            raise NotImplementedError()
+
+        def priority_get(self, key: str) -> Optional[str]:
+            raise NotImplementedError()
+
+        def priority_iter(self, key: str) -> Iterable[str]:
+            raise NotImplementedError()
+
+        def priority_remove(self, key: str) -> None:
+            raise NotImplementedError()
+
         def pub(self, channel: str, value: Any) -> None:
             raise NotImplementedError()
 
