@@ -14,7 +14,7 @@ from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsErro
 from alsek.storage.backends import Backend
 from alsek.types import Empty
 from alsek.utils.logging import magic_logger
-from alsek.utils.namespacing import get_message_name, get_priority_namespace, get_dlq_message_name
+from alsek.utils.namespacing import get_message_name, get_priority_namespace_from_message, get_dlq_message_name
 from alsek.utils.printing import auto_repr
 
 log = logging.getLogger(__name__)
@@ -83,8 +83,8 @@ class Broker:
             raise MessageAlreadyExistsError(f"'{name}' found in backend")
 
         self.backend.priority_add(
-            get_priority_namespace(message),
-            unique_id=message.uuid,
+            get_priority_namespace_from_message(message),
+            unique_id=name,
             priority=message.priority,
         )
 
@@ -137,6 +137,10 @@ class Broker:
             None
 
         """
+        self.backend.priority_remove(
+            key=get_priority_namespace_from_message(message),
+            unique_id=get_message_name(message),
+        )
         self.backend.delete(get_message_name(message), missing_ok=True)
         self._clear_lock(message)
 
