@@ -221,8 +221,7 @@ class StatusTracker:
             status (StatusUpdate): the status of ``message``
 
         """
-        value = self._backend.get(self.get_storage_name(message))
-        if value:
+        if value := self._backend.get(self.get_storage_name(message)):
             return StatusUpdate(
                 status=TaskStatus[value["status"]],  # noqa
                 details=value["details"],
