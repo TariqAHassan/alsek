@@ -228,7 +228,20 @@ class BaseBackend(ABC):
             key (str): The name of the sorted set.
 
         Returns:
-            str | None: The member with the highest priority, or None if empty.
+            item (str, optional): The member with the highest priority, or None if empty.
+
+        """
+        raise NotImplementedError()
+
+    def priority_iter(self, key: str) -> Iterable[str]:
+        """Iterate over the items in a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Returns:
+            priority (Iterable[str]): An iterable of members in the sorted set, sorted by priority.
+
         """
         raise NotImplementedError()
 

@@ -239,6 +239,20 @@ class DiskCacheBackend(Backend):
             (top_key, *_) = min(options, key=lambda x: x[1])
         return top_key
 
+    def priority_iter(self, key: str) -> Iterable[str]:
+        """Iterate over the items in a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Returns:
+            priority (Iterable[str]): An iterable of members in the sorted set, sorted by priority.
+
+        """
+        entries = [(k, self.get(k)) for k in self.scan(f"{key}:*")]
+        for k, _ in sorted(entries, key=lambda x: x[1]):
+            yield k
+
     def priority_remove(self, key: str, unique_id: str) -> None:
         """Remove an item from a priority-sorted set.
 

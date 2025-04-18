@@ -221,6 +221,18 @@ class RedisBackend(Backend):
         )
         return results[0] if results else None
 
+    def priority_iter(self, key: str) -> Iterable[str]:
+        """Iterate over the items in a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Returns:
+            priority (Iterable[str]): An iterable of members in the sorted set, sorted by priority.
+
+        """
+        yield from self.conn.zrange(self.full_name(key), 0, -1)
+
     def priority_remove(self, key: str, unique_id: str) -> None:
         """Remove an item from a priority-sorted set.
 
