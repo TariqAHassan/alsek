@@ -45,8 +45,6 @@ class Message:
             the task's function during the execution of ``op()``
         priority (int): priority of the message within the task.
             Messages with lower values will be executed before messages with higher values.
-            Note that messages belonging to tasks with higher priority (lower value) will be
-            executed before messages belong to tasks with lower priority (higher value).
         metadata (dict, optional): a dictionary of user-defined message metadata.
             This can store any data types supported by the backend's serializer.
         exception_details (dict, optional): information about any exception raised

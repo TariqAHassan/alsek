@@ -110,3 +110,14 @@ def test_stream(messages_to_add: int, rolling_broker: Broker) -> None:
         count += 1
         if count >= len(messages):
             break
+
+
+if __name__ == "__main__":
+    from alsek.storage.backends.redis import RedisBackend
+    from alsek.storage.backends.disk import DiskCacheBackend
+
+    messages_to_add = 2
+    subset = None
+    rolling_broker = Broker(DiskCacheBackend())
+    rolling_broker.backend.clear_namespace()
+    sorted(rolling_broker.backend.scan("queues:*"))

@@ -14,7 +14,7 @@ capable while remaining very lightweight. Current functionality includes:
 
   * Multiprocess and multi-thread task execution
   * Automatic retries, with customizable backoff procedures
-  * Prioritization of queues, tasks and messages
+  * Prioritization of queues and messages
   * Result storage
   * Status Tracking and Publishing
   * Interactive Result Iteration

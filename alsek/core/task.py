@@ -116,8 +116,6 @@ class Task:
             the class name will be used.
         queue (str, optional): the name of the queue to generate the task on.
             If ``None``, the default queue will be used.
-        priority (int): priority of the task. Tasks with lower values
-            will be executed before tasks with higher values.
         timeout (int): the maximum amount of time (in milliseconds)
             this task is permitted to run.
         max_retries (int, optional): maximum number of allowed retries
@@ -145,7 +143,6 @@ class Task:
         broker: Broker,
         name: Optional[str] = None,
         queue: Optional[str] = None,
-        priority: int = 0,
         timeout: int = DEFAULT_TASK_TIMEOUT,
         max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
         backoff: Optional[Backoff] = ExponentialBackoff(),
@@ -157,7 +154,6 @@ class Task:
         self.function = function
         self.broker = broker
         self.queue = queue or DEFAULT_QUEUE
-        self.priority = priority
         self.timeout = timeout
         self._name = name
         self.max_retries = max_retries
@@ -172,9 +168,7 @@ class Task:
         self.mechanism = mechanism
         self.no_positional_args = no_positional_args
 
-        if priority < 0:
-            raise ValueError("`priority` must be greater than or equal to zero")
-        elif mechanism not in SUPPORTED_MECHANISMS:
+        if mechanism not in SUPPORTED_MECHANISMS:
             raise ValueError(f"Unsupported mechanism '{mechanism}'")
 
         self._deferred: bool = False
@@ -210,7 +204,6 @@ class Task:
             broker=self.broker,
             name=self.name,
             queue=self.queue,
-            priority=self.priority,
             max_retries=self.max_retries,
             backoff=self.backoff,
             mechanism=self.mechanism,
@@ -299,8 +292,6 @@ class Task:
             kwargs (dict, optional): keyword arguments to pass to ``function``
             priority (int): priority of the message within the task.
                 Messages with lower values will be executed before messages with higher values.
-                Note that messages belonging to tasks with higher priority (lower value) will be
-                executed before messages belong to tasks with lower priority (higher value).
             metadata (dict, optional): a dictionary of user-defined message metadata.
                 This can store any data types supported by the backend's serializer.
             result_ttl (int, optional): time to live (in milliseconds) for the
@@ -339,6 +330,8 @@ class Task:
             raise ValidationError(f"`result_ttl` invalid. No result store set.")
         elif args and self.no_positional_args:
             raise ValidationError(f"Task does not accept positional arguments.")
+        elif not isinstance(priority, int) or priority < 0:
+            raise ValueError("`priority` must be an int greater than or equal to zero")
 
         message = Message(
             task_name=self.name,
@@ -582,8 +575,6 @@ class TriggerTask(Task):
             the class name will be used.
         queue (str, optional): the name of the queue to generate the task on.
             If ``None``, the default queue will be used.
-        priority (int): priority of the task. Tasks with lower values
-            will be executed before tasks with higher values.
         timeout (int): the maximum amount of time (in milliseconds)
             this task is permitted to run.
         max_retries (int, optional): maximum number of allowed retries
@@ -611,7 +602,6 @@ class TriggerTask(Task):
         broker: Broker,
         name: Optional[str] = None,
         queue: Optional[str] = None,
-        priority: int = 0,
         timeout: int = DEFAULT_TASK_TIMEOUT,
         max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
         backoff: Optional[Backoff] = ExponentialBackoff(),
@@ -627,7 +617,6 @@ class TriggerTask(Task):
             broker=broker,
             name=name,
             queue=queue,
-            priority=priority,
             timeout=timeout,
             max_retries=max_retries,
             backoff=backoff,
@@ -797,7 +786,6 @@ def task(
             name=name,
             broker=broker,
             queue=queue,
-            priority=priority,
             timeout=timeout,
             max_retries=max_retries,
             backoff=backoff,
