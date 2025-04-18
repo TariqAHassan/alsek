@@ -121,7 +121,7 @@ def rolling_backend(
     if request.param == "redis":
         return RedisBackend(custom_redisdb)
     elif request.param == "diskcache":
-        return RedisBackend(custom_redisdb)
+        return DiskCacheBackend(tmp_path)
     else:
         raise ValueError(f"Unknown backend '{request.param}'")
 
