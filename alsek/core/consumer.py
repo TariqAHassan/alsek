@@ -11,7 +11,7 @@ from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
-from alsek.utils.namespacing import get_subnamespace
+from alsek.utils.namespacing import get_subnamespace, get_priority_namespace
 from alsek.utils.system import StopSignalListener
 
 
@@ -97,22 +97,23 @@ class Consumer:
             ]
 
         for s in subnamespaces:
-            yield from self.broker.backend.scan(f"{s}*")
+            yield from self.broker.backend.scan(f"{get_priority_namespace(s)}*")
 
     def _poll(self) -> list[Message]:
         output: list[Message] = list()
-        for name in self._scan_subnamespaces():
-            message_data = self.broker.backend.get(name)
-            if message_data is None:
-                # Message data can be None if it is deleted (e.g., by
-                # a TTL or worker) between the scan() and get() operations.
-                continue
+        for s in self._scan_subnamespaces():
+            for name in self.broker.backend.priority_iter(s):
+                message_data = self.broker.backend.get(name)
+                if message_data is None:
+                    # Message data can be None if it has been deleted (by a TTL or
+                    # another worker) between the `priority_get()` and `get()` operations.
+                    continue
 
-            message = Message(**message_data)
-            if message.ready:
-                with _ConsumptionMutex(message, self.broker.backend) as lock:
-                    if lock.acquire(strict=False):
-                        output.append(message._link_lock(lock, override=True))
+                message = Message(**message_data)
+                if message.ready:
+                    with _ConsumptionMutex(message, self.broker.backend) as lock:
+                        if lock.acquire(strict=False):
+                            output.append(message._link_lock(lock, override=True))
 
         self._empty_passes = 0 if output else self._empty_passes + 1
         return _dedup_messages(output)
