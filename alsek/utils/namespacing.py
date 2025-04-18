@@ -7,6 +7,8 @@ from typing import Optional
 
 from alsek.core.message import Message
 
+QUEUES_NAMESPACE_KEY: str = "queues"
+TASK_NAMESPACE_KEY: str = "tasks"
 MESSAGES_NAMESPACE_KEY: str = "messages"
 PRIORITY_NAMESPACE_KEY: str = "priority"
 DLQ_NAMESPACE_KEY: str = "dlq"
@@ -34,11 +36,11 @@ def get_subnamespace(
         raise ValueError("`queue` must be provided if `task_name` is not None")
 
     if queue and task_name:
-        return f"queues:{queue}:tasks:{task_name}"
+        return f"{QUEUES_NAMESPACE_KEY}:{queue}:{TASK_NAMESPACE_KEY}:{task_name}"
     elif queue:
-        return f"queues:{queue}"
+        return f"{QUEUES_NAMESPACE_KEY}:{queue}"
     else:
-        return "queues"
+        return f"{QUEUES_NAMESPACE_KEY}"
 
 
 def get_messages_namespace(message: Message) -> str:
@@ -69,7 +71,20 @@ def get_message_name(message: Message) -> str:
     return f"{subnamespace}:{message.uuid}"
 
 
-def get_priority_namespace(message: Message) -> str:
+def get_priority_namespace(subnamespace: str) -> str:
+    """Get the namespace for a message's priority information.
+
+    Args:
+        subnamespace (str): the namespace for the message
+
+    Returns:
+        priority_namespace (str): the namespace for priority information
+
+    """
+    return f"{PRIORITY_NAMESPACE_KEY}:{subnamespace}"
+
+
+def get_priority_namespace_from_message(message: Message) -> str:
     """Get the namespace for message's priority information.
 
     Args:
@@ -77,9 +92,10 @@ def get_priority_namespace(message: Message) -> str:
 
     Returns:
         str: the fully qualified priority queue name
+
     """
-    subnamespace = get_subnamespace(message.queue, message.task_name)
-    return f"{subnamespace}:{PRIORITY_NAMESPACE_KEY}"
+    subnamespace = get_subnamespace(message.queue)
+    return f"{get_priority_namespace(subnamespace)}:{TASK_NAMESPACE_KEY}:{message.task_name}"
 
 
 def get_dlq_message_name(message: Message) -> str:
