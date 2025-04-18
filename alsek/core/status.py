@@ -178,8 +178,8 @@ class StatusTracker:
         for i in self.broker.backend.sub(self.get_pubsub_name(message)):
             if i.get("type", "").lower() == "message":
                 update = StatusUpdate(
-                    status=TaskStatus[i["data"]["status"]],
-                    details=i["data"]["details"],
+                    status=TaskStatus[i["data"]["status"]],  # noqa
+                    details=i["data"]["details"],  # noqa
                 )
                 yield update
                 if auto_exit and update.status in TERMINAL_TASK_STATUSES:
@@ -222,10 +222,13 @@ class StatusTracker:
 
         """
         value = self._backend.get(self.get_storage_name(message))
-        return StatusUpdate(
-            status=TaskStatus[value["status"]],
-            details=value["details"],
-        )
+        if value:
+            return StatusUpdate(
+                status=TaskStatus[value["status"]],  # noqa
+                details=value["details"],
+            )
+        else:
+            raise KeyError(f"No status found for message '{message.summary}'")
 
     def delete(self, message: Message, check: bool = True) -> None:
         """Delete the status of ``message``.
