@@ -133,7 +133,7 @@ class WorkerPool(Consumer):
         self._pool_manager = BackgroundScheduler()
         self._pool_manager.add_job(
             self._manage_futures,
-            trigger=IntervalTrigger(seconds=self.management_interval / 1000),
+            trigger=IntervalTrigger(seconds=round(self.management_interval / 1000)),
         )
 
         if self.max_processes:
