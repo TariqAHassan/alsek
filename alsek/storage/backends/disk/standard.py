@@ -8,6 +8,7 @@ import shutil
 from pathlib import Path
 from typing import Any, Callable, Iterable, Optional, Type, Union, cast
 
+from alsek import Lock
 from alsek._defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.serialization import JsonSerializer, Serializer
@@ -39,9 +40,10 @@ class DiskCacheBackend(Backend):
 
     Warning:
         ``DiskCache`` persists data to a local (Sqlite) database and does
-        not implement 'server-side' "if not exist" on `SET` (`nx`) support. For
-        these reasons, ``DiskCacheBackend()`` is recommended for development
-        and testing purposes only.
+        not implement 'server-side' "if not exist" on `SET` (`nx`) support or
+        true priority capabilies. For these reasons, ``DiskCacheBackend()`` is
+        recommended for development and testing purposes only. (Mulit-worker setups
+        in particular should not be used with this backend.)
 
     """
 
@@ -218,11 +220,13 @@ class DiskCacheBackend(Backend):
             None
 
         """
-        self.set(
-            f"{key}:{unique_id}",
-            value=priority,
-            nx=False,  # i.e., overwrite any existing priority
-        )
+        with Lock(f"mutex_{key}", backend=self) as lock:
+            if lock.acquire(strict=False):
+                queue = self.get(key, default=[])
+                queue.append((unique_id, priority))
+                self.set(key, value=queue, nx=False)
+            else:
+                raise RuntimeError("Could not acquire lock")
 
     def priority_get(self, key: str) -> Optional[str]:
         """Get (peek) the highest-priority item without removing it.
@@ -234,10 +238,11 @@ class DiskCacheBackend(Backend):
             top key (str, optional): The member with the highest priority, or None if empty.
 
         """
-        top_key = None
-        if options := [(k, self.get(k)) for k in self.scan(f"{key}:*")]:
-            (top_key, *_) = min(options, key=lambda x: x[1])
-        return top_key
+        if queue := self.get(key):
+            (unique_id, _) = min(queue, key=lambda x: (x[-1]))
+            return unique_id
+        else:
+            return None
 
     def priority_iter(self, key: str) -> Iterable[str]:
         """Iterate over the items in a priority-sorted set.
@@ -249,8 +254,8 @@ class DiskCacheBackend(Backend):
             priority (Iterable[str]): An iterable of members in the sorted set, sorted by priority.
 
         """
-        entries = [(k, self.get(k)) for k in self.scan(f"{key}:*")]
-        for k, _ in sorted(entries, key=lambda x: x[1]):
+        queue = self.get(key, default=list())
+        for k, _ in sorted(queue, key=lambda x: x[-1]):
             yield k
 
     def priority_remove(self, key: str, unique_id: str) -> None:
@@ -264,7 +269,13 @@ class DiskCacheBackend(Backend):
             None
 
         """
-        self.delete(
-            f"{key}:{unique_id}",
-            missing_ok=True,
-        )
+        with Lock(f"mutex_{key}", backend=self) as lock:
+            if lock.acquire(strict=False):
+                queue = self.get(key, default=[])
+                self.set(
+                    key,
+                    value=[(u, p) for (u, p) in queue if u != unique_id],
+                    nx=False,
+                )
+            else:
+                raise RuntimeError("Could not acquire lock")
