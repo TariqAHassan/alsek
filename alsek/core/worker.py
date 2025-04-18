@@ -48,7 +48,7 @@ def _derive_consumer_subset(
     tasks: Collection[Task],
     queues: Optional[list[str]],
     task_specific_mode: bool,
-) -> dict[str, list[str]]:
+) -> dict[str, list[str]] | list[str]:
     if queues and has_duplicates(queues):
         raise ValueError(f"Duplicates in provided queues: {queues}")
     elif queues and not task_specific_mode:
