@@ -188,14 +188,32 @@ class RedisBackend(Backend):
             raise KeyError(f"No name '{name}' found")
 
     def priority_add(self, key: str, unique_id: str, priority: int | float) -> None:
-        """Add an item to a priority-sorted set."""
+        """Add an item to a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+            unique_id (str): The item's (Message's) unique identifier
+            priority (float): The numeric priority score (decide if lower or higher means higher priority).
+
+        Returns:
+            None
+
+        """
         self.conn.zadd(
             self.full_name(key),
             mapping={unique_id: priority},
         )
 
     def priority_get(self, key: str) -> Optional[str]:
-        """Get (peek) the highest-priority item without removing it."""
+        """Get (peek) the highest-priority item without removing it.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Returns:
+            item (str, optional): The member with the highest priority, or None if empty.
+
+        """
         results: list[str] = self.conn.zrange(
             self.full_name(key),
             start=0,
@@ -204,7 +222,16 @@ class RedisBackend(Backend):
         return results[0] if results else None
 
     def priority_remove(self, key: str, unique_id: str) -> None:
-        """Remove an item from a priority-sorted-set"""
+        """Remove an item from a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+            unique_id (str): The item's (Message's) unique identifier
+
+        Returns:
+            None
+
+        """
         self.conn.zrem(
             self.full_name(key),
             unique_id,
