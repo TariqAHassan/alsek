@@ -78,6 +78,9 @@ def base_backend() -> Backend:
         def priority_get(self, key: str) -> Optional[str]:
             raise NotImplementedError()
 
+        def priority_delete(self, key: str) -> None:
+            raise NotImplementedError()
+
         def pub(self, channel: str, value: Any) -> None:
             raise NotImplementedError()
 
