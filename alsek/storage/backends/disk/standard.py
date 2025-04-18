@@ -238,3 +238,19 @@ class DiskCacheBackend(Backend):
         if options := [(k, self.get(k)) for k in self.scan(f"{key}:*")]:
             (top_key, *_) = min(options, key=lambda x: x[1])
         return top_key
+
+    def priority_remove(self, key: str, unique_id: str) -> None:
+        """Remove an item from a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+            unique_id (str): The item's (Message's) unique identifier
+
+        Returns:
+            None
+
+        """
+        self.delete(
+            f"{key}:{unique_id}",
+            missing_ok=True,
+        )

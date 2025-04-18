@@ -203,6 +203,13 @@ class RedisBackend(Backend):
         )
         return results[0] if results else None
 
+    def priority_remove(self, key: str, unique_id: str) -> None:
+        """Remove an item from a priority-sorted-set"""
+        self.conn.zrem(
+            self.full_name(key),
+            unique_id,
+        )
+
     def pub(self, channel: str, value: Any) -> None:
         self.conn.publish(
             channel=channel,

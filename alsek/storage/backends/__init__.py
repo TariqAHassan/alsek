@@ -229,6 +229,20 @@ class BaseBackend(ABC):
         """
         raise NotImplementedError()
 
+    @abstractmethod
+    def priority_remove(self, key: str, unique_id: str) -> None:
+        """Remove an item from a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+            unique_id (str): The item's (Message's) unique identifier
+
+        Returns:
+            None
+
+        """
+        raise NotImplementedError()
+
     def pub(self, channel: str, value: Any) -> None:
         """Publish to a channel.
 
