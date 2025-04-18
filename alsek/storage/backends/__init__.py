@@ -213,6 +213,9 @@ class BaseBackend(ABC):
             unique_id (str): The item's (Message's) unique identifier
             priority (float): The numeric priority score (decide if lower or higher means higher priority).
 
+        Returns:
+            None
+
         """
         raise NotImplementedError()
 
