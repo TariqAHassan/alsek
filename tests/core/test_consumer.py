@@ -4,7 +4,7 @@
 
 """
 
-from typing import Optional, Union
+from typing import Optional, Union, Iterable, Any
 
 import pytest
 
@@ -12,7 +12,10 @@ from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.consumer import Consumer, Message, _ConsumptionMutex
 from alsek.storage.backends import Backend
-from alsek.utils.namespacing import get_message_name
+from alsek.utils.namespacing import (
+    get_message_name,
+    get_priority_namespace_from_message,
+)
 
 
 def test_consumption_mutex_acquisition(rolling_backend: Backend) -> None:
@@ -34,10 +37,10 @@ def test_consumption_mutex_settings(rolling_backend: Backend) -> None:
     [
         None,
         ["queue-a", "queue-b", "queue-c"],
-        ({"queue-a": ["task-a", "task-b"]}),
+        {"queue-a": ["task-a", "task-b"]},
     ],
 )
-def test_scan_subnamespaces(
+def test_poll_queue_and_task(
     subset: Optional[Union[list[str], dict[str, list[str]]]],
     rolling_broker: Broker,
 ) -> None:
@@ -59,7 +62,7 @@ def test_scan_subnamespaces(
         rolling_broker.submit(i)
 
     # Scan the subnamespace(s)
-    actual = set(consumer._scan_subnamespaces())
+    actual = {get_message_name(m) for m in consumer._poll()}
 
     # Validate that the expected messages were recovered
     expected = {get_message_name(m) for m in target_messages}
@@ -75,9 +78,9 @@ def test_poll(messages_to_add: int, rolling_broker: Broker) -> None:
         rolling_broker.submit(i)
 
     actual = set()
-    for j in consumer._poll():
-        assert Lock(j._lock, backend=rolling_broker.backend).held
-        actual.add(j.uuid)
+    for msg in consumer._poll():
+        assert Lock(msg._lock, backend=rolling_broker.backend).held
+        actual.add(msg.uuid)
 
     expected = {m.uuid for m in messages}
     assert actual == expected
