@@ -223,8 +223,13 @@ class DiskCacheBackend(Backend):
         with Lock(f"mutex_{key}", backend=self) as lock:
             if lock.acquire(strict=False):
                 queue = self.get(key, default=[])
-                queue.append((unique_id, priority))
-                self.set(key, value=queue, nx=False)
+                queue = {unique_id: priority for (unique_id, priority) in queue}
+                queue[unique_id] = priority
+                self.set(
+                    key,
+                    value=sorted(queue.items(), key=lambda x: x[-1]),
+                    nx=False,
+                )
             else:
                 raise RuntimeError("Could not acquire lock")
 
@@ -255,7 +260,8 @@ class DiskCacheBackend(Backend):
 
         """
         queue = self.get(key, default=list())
-        for k, _ in sorted(queue, key=lambda x: x[-1]):
+        queue_unique = set(map(tuple, queue))  # ensure unique
+        for k, _ in sorted(queue_unique, key=lambda x: x[-1]):
             yield k
 
     def priority_remove(self, key: str, unique_id: str) -> None:
