@@ -78,7 +78,10 @@ def base_backend() -> Backend:
         def priority_get(self, key: str) -> Optional[str]:
             raise NotImplementedError()
 
-        def priority_delete(self, key: str) -> None:
+        def priority_iter(self, key: str) -> Iterable[str]:
+            raise NotImplementedError()
+
+        def priority_remove(self, key: str) -> None:
             raise NotImplementedError()
 
         def pub(self, channel: str, value: Any) -> None:
@@ -118,7 +121,7 @@ def rolling_backend(
     if request.param == "redis":
         return RedisBackend(custom_redisdb)
     elif request.param == "diskcache":
-        return DiskCacheBackend(tmp_path)
+        return RedisBackend(custom_redisdb)
     else:
         raise ValueError(f"Unknown backend '{request.param}'")
 
