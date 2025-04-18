@@ -106,7 +106,7 @@ class Consumer:
                 message_data = self.broker.backend.get(name)
                 if message_data is None:
                     # Message data can be None if it has been deleted (by a TTL or
-                    # another worker) between the `priority_get()` and `get()` operations.
+                    # another worker) between the `priority_iter()` and `get()` operations.
                     continue
 
                 message = Message(**message_data)
