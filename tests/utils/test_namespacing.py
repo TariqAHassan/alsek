@@ -13,7 +13,8 @@ from alsek.utils.namespacing import (
     get_priority_namespace,
     get_priority_namespace_from_message,
     get_dlq_message_name,
-    get_message_name, get_subnamespace,
+    get_message_name,
+    get_subnamespace,
 )
 
 
