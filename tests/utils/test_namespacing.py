@@ -39,7 +39,7 @@ def test_get_subnamespace(
         actual = get_subnamespace(queue, task_name=task_name)
         assert actual == expected
     else:
-        with pytest.raises(expected):
+        with pytest.raises(expected):  # noqa
             get_subnamespace(queue, task_name=task_name)
 
 
