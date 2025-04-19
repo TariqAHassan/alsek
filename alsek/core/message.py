@@ -105,7 +105,7 @@ class Message:
         previous_result: Optional[Any] = None,
         previous_message_uuid: Optional[str] = None,
         callback_message_data: Optional[dict[str, Any]] = None,
-        backoff_settings: Optional[dict[str, int]] = None,
+        backoff_settings: Optional[dict[str, Any]] = None,
         mechanism: SupportedMechanismType = DEFAULT_MECHANISM,
     ) -> None:
         self.task_name = task_name
