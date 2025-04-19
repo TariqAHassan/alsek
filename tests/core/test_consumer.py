@@ -40,6 +40,7 @@ def test_consumption_mutex_settings(rolling_backend: Backend) -> None:
         {"queue-a": ["task-a", "task-b"]},
     ],
 )
+@pytest.mark.timeout(10)
 def test_poll_queue_and_task(
     subset: Optional[Union[list[str], dict[str, list[str]]]],
     rolling_broker: Broker,
