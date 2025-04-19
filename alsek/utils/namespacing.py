@@ -91,7 +91,7 @@ def get_priority_namespace_from_message(message: Message) -> str:
         message (Message): an Alsek message
 
     Returns:
-        str: the fully qualified priority queue name
+        namespace (str): the fully-qualified priority queue name
 
     """
     subnamespace = get_subnamespace(message.queue, message.task_name)
