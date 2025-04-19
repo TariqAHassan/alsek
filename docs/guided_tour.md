@@ -278,8 +278,7 @@ message_2 = task_a.generate(priority=0)
 ```
 
 In Alsek, `priority` is inverted. That is, lower integers correspond to higher priority.
-Thus, in the example above, `message_2` will take priority over 
-instances of `message_1`.
+Thus, in the example above, `message_2` will take priority over `message_1`.
 
 !!! note
     Alsek implements _intra-queue_ message priority. In other words, priority 
