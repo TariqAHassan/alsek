@@ -3,11 +3,18 @@
     Test Namespacing
 
 """
+
 import pytest
 from typing import Optional, Union
 
 from alsek import Message
-from alsek.utils.namespacing import get_subnamespace, get_message_name
+from alsek.utils.namespacing import (
+    get_messages_namespace,
+    get_priority_namespace,
+    get_priority_namespace_from_message,
+    get_dlq_message_name,
+    get_message_name, get_subnamespace,
+)
 
 
 @pytest.mark.parametrize(
@@ -57,4 +64,63 @@ def test_get_message_name(
     assert actual == expected
 
 
+@pytest.mark.parametrize(
+    "message,expected",
+    [
+        (
+            Message("task-x", queue="queue-x", uuid="uuid-x"),
+            "queues:queue-x:tasks:task-x:messages",
+        ),
+        (
+            Message("task-y", queue="queue-y", uuid="uuid-y"),
+            "queues:queue-y:tasks:task-y:messages",
+        ),
+    ],
+)
+def test_get_messages_namespace(message: Message, expected: str) -> None:
+    assert get_messages_namespace(message) == expected
 
+
+@pytest.mark.parametrize(
+    "subnamespace,expected",
+    [
+        ("queues:q1:tasks:t1", "priority:queues:q1:tasks:t1"),
+        ("queues:q2", "priority:queues:q2"),
+    ],
+)
+def test_get_priority_namespace(subnamespace: str, expected: str) -> None:
+    assert get_priority_namespace(subnamespace) == expected
+
+
+@pytest.mark.parametrize(
+    "message,expected",
+    [
+        (
+            Message("task-a", queue="queue-a", uuid="uuid-a"),
+            "priority:queues:queue-a:tasks:task-a",
+        ),
+        (
+            Message("task-b", queue="queue-b", uuid="uuid-b"),
+            "priority:queues:queue-b:tasks:task-b",
+        ),
+    ],
+)
+def test_get_priority_namespace_from_message(message: Message, expected: str) -> None:
+    assert get_priority_namespace_from_message(message) == expected
+
+
+@pytest.mark.parametrize(
+    "message,expected",
+    [
+        (
+            Message("task-a", queue="queue-a", uuid="uuid-a"),
+            "dlq:queues:queue-a:tasks:task-a:messages:uuid-a",
+        ),
+        (
+            Message("task-b", queue="queue-b", uuid="uuid-b"),
+            "dlq:queues:queue-b:tasks:task-b:messages:uuid-b",
+        ),
+    ],
+)
+def test_get_dlq_message_name(message: Message, expected: str) -> None:
+    assert get_dlq_message_name(message) == expected
