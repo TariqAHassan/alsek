@@ -204,6 +204,61 @@ class BaseBackend(ABC):
         """
         raise NotImplementedError()
 
+    @abstractmethod
+    def priority_add(self, key: str, unique_id: str, priority: int | float) -> None:
+        """Add an item to a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+            unique_id (str): The item's (Message's) unique identifier
+            priority (float): The numeric priority score (decide if lower or higher means higher priority).
+
+        Returns:
+            None
+
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def priority_get(self, key: str) -> Optional[str]:
+        """
+        Get (peek) the highest-priority item without removing it.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Returns:
+            item (str, optional): The member with the highest priority, or None if empty.
+
+        """
+        raise NotImplementedError()
+
+    def priority_iter(self, key: str) -> Iterable[str]:
+        """Iterate over the items in a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Returns:
+            priority (Iterable[str]): An iterable of members in the sorted set, sorted by priority.
+
+        """
+        raise NotImplementedError()
+
+    @abstractmethod
+    def priority_remove(self, key: str, unique_id: str) -> None:
+        """Remove an item from a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+            unique_id (str): The item's (Message's) unique identifier
+
+        Returns:
+            None
+
+        """
+        raise NotImplementedError()
+
     def pub(self, channel: str, value: Any) -> None:
         """Publish to a channel.
 

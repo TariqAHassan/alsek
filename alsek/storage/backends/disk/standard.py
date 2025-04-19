@@ -4,10 +4,13 @@
 
 """
 
+from __future__ import annotations
+
 import shutil
 from pathlib import Path
 from typing import Any, Callable, Iterable, Optional, Type, Union, cast
 
+from alsek import Lock
 from alsek._defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.serialization import JsonSerializer, Serializer
@@ -39,9 +42,10 @@ class DiskCacheBackend(Backend):
 
     Warning:
         ``DiskCache`` persists data to a local (Sqlite) database and does
-        not implement 'server-side' "if not exist" on `SET` (`nx`) support. For
-        these reasons, ``DiskCacheBackend()`` is recommended for development
-        and testing purposes only.
+        not implement 'server-side' "if not exist" on `SET` (`nx`) support or
+        true priority capabilities. For these reasons, ``DiskCacheBackend()`` is
+        recommended for development and testing purposes only. (Multi-worker setups
+        in particular should not be used with this backend.)
 
     """
 
@@ -61,7 +65,7 @@ class DiskCacheBackend(Backend):
     @staticmethod
     def _conn_parse(
         conn: Optional[Union[str, Path, DiskCache, LazyClient]]
-    ) -> Union[DiskCache, Callable[[], DiskCache]]:
+    ) -> Union[DiskCache, LazyClient, Callable[[], DiskCache]]:
         if isinstance(conn, LazyClient):
             return conn
 
@@ -205,3 +209,81 @@ class DiskCacheBackend(Backend):
             short_name = self.short_name(name)
             if self.name_match_func(pattern, short_name):
                 yield short_name
+
+    def priority_add(self, key: str, unique_id: str, priority: int | float) -> None:
+        """Add an item to a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+            unique_id (str): The item's (Message's) unique identifier
+            priority (float): The numeric priority score (decide if lower or higher means higher priority).
+
+        Returns:
+            None
+
+        """
+        with Lock(f"mutex_{key}", backend=self) as lock:
+            if lock.acquire(strict=False):
+                queue = self.get(key, default=[])
+                queue = {unique_id: priority for (unique_id, priority) in queue}
+                queue[unique_id] = priority
+                self.set(
+                    key,
+                    value=sorted(queue.items(), key=lambda x: x[-1]),
+                    nx=False,
+                )
+            else:
+                raise RuntimeError("Could not acquire lock")
+
+    def priority_get(self, key: str) -> Optional[str]:
+        """Get (peek) the highest-priority item without removing it.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Returns:
+            top key (str, optional): The member with the highest priority, or None if empty.
+
+        """
+        if queue := self.get(key):
+            (unique_id, _) = min(queue, key=lambda x: (x[-1]))
+            return unique_id
+        else:
+            return None
+
+    def priority_iter(self, key: str) -> Iterable[str]:
+        """Iterate over the items in a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Returns:
+            priority (Iterable[str]): An iterable of members in the sorted set, sorted by priority.
+
+        """
+        queue = self.get(key, default=list())
+        queue_unique = set(map(tuple, queue))  # ensure unique
+        for k, _ in sorted(queue_unique, key=lambda x: x[-1]):
+            yield k
+
+    def priority_remove(self, key: str, unique_id: str) -> None:
+        """Remove an item from a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+            unique_id (str): The item's (Message's) unique identifier
+
+        Returns:
+            None
+
+        """
+        with Lock(f"mutex_{key}", backend=self) as lock:
+            if lock.acquire(strict=False):
+                queue = self.get(key, default=[])
+                self.set(
+                    key,
+                    value=[(u, p) for (u, p) in queue if u != unique_id],
+                    nx=False,
+                )
+            else:
+                raise RuntimeError("Could not acquire lock")

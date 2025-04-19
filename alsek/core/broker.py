@@ -14,6 +14,11 @@ from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsErro
 from alsek.storage.backends import Backend
 from alsek.types import Empty
 from alsek.utils.logging import magic_logger
+from alsek.utils.namespacing import (
+    get_dlq_message_name,
+    get_message_name,
+    get_priority_namespace_from_message,
+)
 from alsek.utils.printing import auto_repr
 
 log = logging.getLogger(__name__)
@@ -44,48 +49,6 @@ class Broker:
             dlq_ttl=self.dlq_ttl,
         )
 
-    @staticmethod
-    def get_subnamespace(
-        queue: Optional[str] = None,
-        task_name: Optional[str] = None,
-    ) -> str:
-        """Get the subnamespace for a given ``queue``
-        and (optionally) ``task_name``.
-
-        Args:
-            queue (str, optional): the name of the queue
-            task_name (str): name of the task
-
-        Returns:
-            subnamespace (str): queue-specific namespace
-
-        Raises:
-            ValueError: if ``task_name`` is provided and ``queue`` is not.
-
-        """
-        if queue is None and task_name is not None:
-            raise ValueError("`queue` must be provided if `task_name` is not None")
-
-        if queue and task_name:
-            return f"queues:{queue}:tasks:{task_name}"
-        elif queue:
-            return f"queues:{queue}"
-        else:
-            return "queues"
-
-    def get_message_name(self, message: Message) -> str:
-        """Get the name for ``message`` in the backend.
-
-        Args:
-            message (Message): an Alsek message
-
-        Returns:
-            name (str): message-specific name
-
-        """
-        subnamespace = self.get_subnamespace(message.queue, message.task_name)
-        return f"{subnamespace}:messages:{message.uuid}"
-
     def exists(self, message: Message) -> bool:
         """Determine if the message exists in the backend.
 
@@ -96,7 +59,7 @@ class Broker:
             exists (bool): whether the message exists.
 
         """
-        name = self.get_message_name(message)
+        name = get_message_name(message)
         return self.backend.exists(name)
 
     @magic_logger(
@@ -117,11 +80,17 @@ class Broker:
             MessageAlreadyExistsError: if the message already exists
 
         """
-        name = self.get_message_name(message)
+        name = get_message_name(message)
         try:
             self.backend.set(name, value=message.data, nx=True, ttl=ttl)
         except KeyError:
             raise MessageAlreadyExistsError(f"'{name}' found in backend")
+
+        self.backend.priority_add(
+            get_priority_namespace_from_message(message),
+            unique_id=name,
+            priority=message.priority,
+        )
 
     @magic_logger(
         before=lambda message: log.debug("Retrying %s...", message.summary),
@@ -145,7 +114,7 @@ class Broker:
             )
 
         message.increment()
-        self.backend.set(self.get_message_name(message), value=message.data)
+        self.backend.set(get_message_name(message), value=message.data)
         self.nack(message)
         log.info(
             "Retrying %s in %s ms...",
@@ -172,7 +141,11 @@ class Broker:
             None
 
         """
-        self.backend.delete(self.get_message_name(message), missing_ok=True)
+        self.backend.priority_remove(
+            key=get_priority_namespace_from_message(message),
+            unique_id=get_message_name(message),
+        )
+        self.backend.delete(get_message_name(message), missing_ok=True)
         self._clear_lock(message)
 
     @magic_logger(
@@ -211,18 +184,6 @@ class Broker:
         """
         self._clear_lock(message)
 
-    def get_dlq_message_name(self, message: Message) -> str:
-        """Get the name for ``message`` in the backend's dead letter queue (DLQ).
-
-        Args:
-            message (Message): an Alsek message
-
-        Returns:
-            dlq_name (str): message-specific name in the DLQ
-
-        """
-        return f"dtq:{self.get_message_name(message)}"
-
     @magic_logger(
         before=lambda message: log.info("Failing %s...", message.summary),
         after=lambda input_: log.info("Failed %s.", input_["message"].summary),
@@ -242,7 +203,7 @@ class Broker:
         self.ack(message)
         if self.dlq_ttl:
             self.backend.set(
-                self.get_dlq_message_name(message),
+                get_dlq_message_name(message),
                 value=message.data,
                 ttl=self.dlq_ttl,
             )
@@ -263,7 +224,7 @@ class Broker:
 
         """
         try:
-            data = self.backend.get(self.get_message_name(message), default=Empty)
+            data = self.backend.get(get_message_name(message), default=Empty)
         except KeyError:
-            data = self.backend.get(self.get_dlq_message_name(message), default=Empty)
+            data = self.backend.get(get_dlq_message_name(message), default=Empty)
         return Message(**data)

@@ -4,6 +4,8 @@
 
 """
 
+from __future__ import annotations
+
 import logging
 from collections import defaultdict
 from typing import Any, Collection, DefaultDict, Optional
@@ -55,7 +57,7 @@ def _derive_consumer_subset(
         return queues
 
     subset: DefaultDict[str, list[str]] = defaultdict(list)
-    for t in sorted(tasks, key=lambda i: i.priority):
+    for t in tasks:
         if queues is None or t.queue in queues:
             subset[t.queue].append(t.name)
 
@@ -224,7 +226,7 @@ class WorkerPool(Consumer):
         log.info(
             "Monitoring %s %s.",
             len(self.tasks) if self.task_specific_mode else len(self.queues),
-            "tasks" if self.task_specific_mode else "queues",
+            "task(s)" if self.task_specific_mode else "queue(s)",
         )
         log.info("Worker pool online.")
 

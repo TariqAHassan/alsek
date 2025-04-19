@@ -43,6 +43,8 @@ class Message:
             the task's function during the execution of ``op()``
         kwargs (dict, optional): keyword arguments to pass to
             the task's function during the execution of ``op()``
+        priority (int): priority of the message within the task.
+            Messages with lower values will be executed before messages with higher values.
         metadata (dict, optional): a dictionary of user-defined message metadata.
             This can store any data types supported by the backend's serializer.
         exception_details (dict, optional): information about any exception raised
@@ -89,6 +91,7 @@ class Message:
         queue: Optional[str] = None,
         args: Optional[Union[list[Any], tuple[Any, ...]]] = None,
         kwargs: Optional[dict[Any, Any]] = None,
+        priority: int = 0,
         metadata: Optional[dict[Any, Any]] = None,
         exception_details: Optional[Union[dict[str, Any], ExceptionDetails]] = None,
         result_ttl: Optional[int] = None,
@@ -102,13 +105,14 @@ class Message:
         previous_result: Optional[Any] = None,
         previous_message_uuid: Optional[str] = None,
         callback_message_data: Optional[dict[str, Any]] = None,
-        backoff_settings: Optional[dict[str, int]] = None,
+        backoff_settings: Optional[dict[str, Any]] = None,
         mechanism: SupportedMechanismType = DEFAULT_MECHANISM,
     ) -> None:
         self.task_name = task_name
         self.queue = queue or DEFAULT_QUEUE
         self.args = tuple(args) if args else tuple()
         self.kwargs = kwargs or dict()
+        self.priority = priority
         self.metadata = metadata
         self._exception_details = exception_details
         self.result_ttl = result_ttl
@@ -163,6 +167,7 @@ class Message:
             queue=self.queue,
             args=self.args,
             kwargs=self.kwargs,
+            priority=self.priority,
             metadata=self.metadata,
             exception_details=(
                 None

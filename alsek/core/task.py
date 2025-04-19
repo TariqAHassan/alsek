@@ -29,12 +29,13 @@ from alsek._defaults import (
 from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
 from alsek.core.broker import Broker
 from alsek.core.message import Message
-from alsek.core.status import StatusTracker, TaskStatus, TERMINAL_TASK_STATUSES
+from alsek.core.status import TERMINAL_TASK_STATUSES, StatusTracker, TaskStatus
 from alsek.exceptions import RevokedError, SchedulingError, ValidationError
 from alsek.storage.result import ResultStore
 from alsek.types import SUPPORTED_MECHANISMS, SupportedMechanismType
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.logging import magic_logger
+from alsek.utils.namespacing import get_message_name
 from alsek.utils.parsing import ExceptionDetails, get_exception_name
 from alsek.utils.printing import auto_repr
 
@@ -115,8 +116,6 @@ class Task:
             the class name will be used.
         queue (str, optional): the name of the queue to generate the task on.
             If ``None``, the default queue will be used.
-        priority (int): priority of the task. Tasks with lower values
-            will be executed before tasks with higher values.
         timeout (int): the maximum amount of time (in milliseconds)
             this task is permitted to run.
         max_retries (int, optional): maximum number of allowed retries
@@ -144,7 +143,6 @@ class Task:
         broker: Broker,
         name: Optional[str] = None,
         queue: Optional[str] = None,
-        priority: int = 0,
         timeout: int = DEFAULT_TASK_TIMEOUT,
         max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
         backoff: Optional[Backoff] = ExponentialBackoff(),
@@ -156,7 +154,6 @@ class Task:
         self.function = function
         self.broker = broker
         self.queue = queue or DEFAULT_QUEUE
-        self.priority = priority
         self.timeout = timeout
         self._name = name
         self.max_retries = max_retries
@@ -171,9 +168,7 @@ class Task:
         self.mechanism = mechanism
         self.no_positional_args = no_positional_args
 
-        if priority < 0:
-            raise ValueError("`priority` must be greater than or equal to zero")
-        elif mechanism not in SUPPORTED_MECHANISMS:
+        if mechanism not in SUPPORTED_MECHANISMS:
             raise ValueError(f"Unsupported mechanism '{mechanism}'")
 
         self._deferred: bool = False
@@ -209,7 +204,6 @@ class Task:
             broker=self.broker,
             name=self.name,
             queue=self.queue,
-            priority=self.priority,
             max_retries=self.max_retries,
             backoff=self.backoff,
             mechanism=self.mechanism,
@@ -276,6 +270,7 @@ class Task:
         self,
         args: Optional[Union[list[Any], tuple[Any, ...]]] = None,
         kwargs: Optional[dict[Any, Any]] = None,
+        priority: int = 0,
         metadata: Optional[dict[Any, Any]] = None,
         result_ttl: Optional[int] = None,
         uuid: Optional[str] = None,
@@ -295,6 +290,8 @@ class Task:
         Args:
             args (list, tuple, optional): positional arguments to pass to ``function``
             kwargs (dict, optional): keyword arguments to pass to ``function``
+            priority (int): priority of the message within the task.
+                Messages with lower values will be executed before messages with higher values.
             metadata (dict, optional): a dictionary of user-defined message metadata.
                 This can store any data types supported by the backend's serializer.
             result_ttl (int, optional): time to live (in milliseconds) for the
@@ -333,12 +330,15 @@ class Task:
             raise ValidationError(f"`result_ttl` invalid. No result store set.")
         elif args and self.no_positional_args:
             raise ValidationError(f"Task does not accept positional arguments.")
+        elif not isinstance(priority, int) or priority < 0:
+            raise ValueError("`priority` must be an int greater than or equal to zero")
 
         message = Message(
             task_name=self.name,
             queue=queue or self.queue,
             args=args,
             kwargs=kwargs,
+            priority=priority,
             metadata=metadata,
             result_ttl=result_ttl,
             uuid=uuid,
@@ -404,7 +404,9 @@ class Task:
 
         """
 
-    def on_revocation(self, message: Message, exception: Optional[BaseException], result: Any) -> None:
+    def on_revocation(
+        self, message: Message, exception: Optional[BaseException], result: Any
+    ) -> None:
         """Handles the event when a message is revoked and logs the associated exception.
 
         Args:
@@ -506,8 +508,9 @@ class Task:
         """
         return True
 
-    def _make_revoked_key_name(self, message: Message) -> str:
-        return f"revoked:{self.broker.get_message_name(message)}"
+    @staticmethod
+    def _make_revoked_key_name(message: Message) -> str:
+        return f"revoked:{get_message_name(message)}"
 
     @magic_logger(
         before=lambda message: log.info("Revoking %s...", message.summary),
@@ -574,8 +577,6 @@ class TriggerTask(Task):
             the class name will be used.
         queue (str, optional): the name of the queue to generate the task on.
             If ``None``, the default queue will be used.
-        priority (int): priority of the task. Tasks with lower values
-            will be executed before tasks with higher values.
         timeout (int): the maximum amount of time (in milliseconds)
             this task is permitted to run.
         max_retries (int, optional): maximum number of allowed retries
@@ -603,7 +604,6 @@ class TriggerTask(Task):
         broker: Broker,
         name: Optional[str] = None,
         queue: Optional[str] = None,
-        priority: int = 0,
         timeout: int = DEFAULT_TASK_TIMEOUT,
         max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
         backoff: Optional[Backoff] = ExponentialBackoff(),
@@ -619,7 +619,6 @@ class TriggerTask(Task):
             broker=broker,
             name=name,
             queue=queue,
-            priority=priority,
             timeout=timeout,
             max_retries=max_retries,
             backoff=backoff,
@@ -723,7 +722,6 @@ def task(
     broker: Broker,
     name: Optional[str] = None,
     queue: Optional[str] = None,
-    priority: int = 0,
     timeout: int = DEFAULT_TASK_TIMEOUT,
     max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
     backoff: Optional[Backoff] = ExponentialBackoff(),
@@ -742,8 +740,6 @@ def task(
             the class name will be used.
         queue (str, optional): the name of the queue to generate the task on.
             If ``None``, the default queue will be used.
-        priority (int): priority of the task. Tasks with lower values
-            will be executed before tasks with higher values.
         timeout (int): the maximum amount of time (in milliseconds)
             this task is permitted to run.
         max_retries (int, optional): maximum number of allowed retries
@@ -789,7 +785,6 @@ def task(
             name=name,
             broker=broker,
             queue=queue,
-            priority=priority,
             timeout=timeout,
             max_retries=max_retries,
             backoff=backoff,

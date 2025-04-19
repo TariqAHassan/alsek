@@ -11,6 +11,7 @@ from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
+from alsek.utils.namespacing import get_priority_namespace, get_subnamespace
 from alsek.utils.system import StopSignalListener
 
 
@@ -85,33 +86,40 @@ class Consumer:
 
     def _scan_subnamespaces(self) -> Iterable[str]:
         if not self.subset:
-            subnamespaces = [self.broker.get_subnamespace(None)]
+            subnamespaces = [get_subnamespace(None)]
         elif isinstance(self.subset, list):
-            subnamespaces = [self.broker.get_subnamespace(q) for q in self.subset]
+            subnamespaces = [get_subnamespace(q) for q in self.subset]
         else:
             subnamespaces = [
-                self.broker.get_subnamespace(q, task_name=t)
+                get_subnamespace(q, task_name=t)
                 for (q, tasks) in self.subset.items()
                 for t in tasks
             ]
 
         for s in subnamespaces:
-            yield from self.broker.backend.scan(f"{s}*")
+            yield from self.broker.backend.scan(f"{get_priority_namespace(s)}*")
 
     def _poll(self) -> list[Message]:
+        # NOTE: with this approach, we 'drain' / exhaust queues in
+        #       the order they're privided, and then drain the next.
+        #       So if we had queues A,B,C we'd drain A, then drain B
+        #       and, finally, drain C.
+        # ToDo: implement a 'flat' option that moves to the next queue
+        #       So, A then B then C, round and round.
         output: list[Message] = list()
-        for name in self._scan_subnamespaces():
-            message_data = self.broker.backend.get(name)
-            if message_data is None:
-                # Message data can be None if it is deleted (e.g., by
-                # a TTL or worker) between the scan() and get() operations.
-                continue
+        for s in self._scan_subnamespaces():
+            for name in self.broker.backend.priority_iter(s):
+                message_data = self.broker.backend.get(name)
+                if message_data is None:
+                    # Message data can be None if it has been deleted (by a TTL or
+                    # another worker) between the `priority_iter()` and `get()` operations.
+                    continue
 
-            message = Message(**message_data)
-            if message.ready:
-                with _ConsumptionMutex(message, self.broker.backend) as lock:
-                    if lock.acquire(strict=False):
-                        output.append(message._link_lock(lock, override=True))
+                message = Message(**message_data)
+                if message.ready:
+                    with _ConsumptionMutex(message, self.broker.backend) as lock:
+                        if lock.acquire(strict=False):
+                            output.append(message._link_lock(lock, override=True))
 
         self._empty_passes = 0 if output else self._empty_passes + 1
         return _dedup_messages(output)

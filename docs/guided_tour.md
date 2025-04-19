@@ -27,9 +27,11 @@ backend = DiskCacheBackend()
 ```
 
 !!! warning
-    ``DiskCache`` persists data to a local (Sqlite) database and does not 
-    implement server-side "if not exist" (`nx`) on `SET` support. For these reasons, 
-    ``DiskCacheBackend()`` is recommended for development and testing purposes only.
+    ``DiskCache`` persists data to a local (Sqlite) database and does
+    not implement 'server-side' "if not exist" on `SET` (`nx`) support or
+    true priority capabilities. For these reasons, ``DiskCacheBackend()`` is
+    recommended for development and testing purposes only. (Multi-worker setups
+    in particular should not be used with this backend.)
 
 ### Lazy Initialization
 
@@ -260,28 +262,28 @@ def my_task() -> int:
 
 ### Priority
 
-As with timeouts, priority values can be set for each task.
-
-Alsek implements _intra-queue_ task priority. In other words, task priority 
-is enforced within, but not between, queues (which themselves can be prioritized).
+As with timeouts, priority values can be set for each message.
 
 Let's take a look at an example.
 
 ```python
 from alsek import task
 
-@task(..., queue="my_queue", priority=0)
+@task(..., queue="my_queue")
 def task_a() -> str:
     return "A!"
 
-@task(..., queue="my_queue", priority=1)
-def task_b() -> str:
-    return "B!"
+message_1 = task_a.generate(priority=1)
+message_2 = task_a.generate(priority=0)
 ```
 
 In Alsek, `priority` is inverted. That is, lower integers correspond to higher priority.
-Thus, in the example above, instances of `task_a()` will _always_ take priority over 
-instances of `task_b()`.
+Thus, in the example above, `message_2` will take priority over 
+instances of `message_1`.
+
+!!! note
+    Alsek implements _intra-queue_ message priority. In other words, priority 
+    is enforced within, but not between, queues (which themselves can be prioritized).
 
 ### Triggers
 
