@@ -94,8 +94,8 @@ def get_priority_namespace_from_message(message: Message) -> str:
         str: the fully qualified priority queue name
 
     """
-    subnamespace = get_subnamespace(message.queue)
-    return f"{get_priority_namespace(subnamespace)}:{TASK_NAMESPACE_KEY}:{message.task_name}"
+    subnamespace = get_subnamespace(message.queue, message.task_name)
+    return get_priority_namespace(subnamespace)
 
 
 def get_dlq_message_name(message: Message) -> str:
