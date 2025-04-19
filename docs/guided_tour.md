@@ -260,10 +260,7 @@ def my_task() -> int:
 
 ### Priority
 
-As with timeouts, priority values can be set for each task.
-
-Alsek implements _intra-queue_ message priority. In other words, priority 
-is enforced within, but not between, queues (which themselves can be prioritized).
+As with timeouts, priority values can be set for each message.
 
 Let's take a look at an example.
 
@@ -281,6 +278,10 @@ message_2 = task_a.generate(priority=0)
 In Alsek, `priority` is inverted. That is, lower integers correspond to higher priority.
 Thus, in the example above, `message_2` will take priority over 
 instances of `message_1`.
+
+!!! note
+    Alsek implements _intra-queue_ message priority. In other words, priority 
+    is enforced within, but not between, queues (which themselves can be prioritized).
 
 ### Triggers
 
