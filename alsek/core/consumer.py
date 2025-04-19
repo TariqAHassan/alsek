@@ -100,6 +100,12 @@ class Consumer:
             yield from self.broker.backend.scan(f"{get_priority_namespace(s)}*")
 
     def _poll(self) -> list[Message]:
+        # NOTE: with this approach, we 'drain' / exhaust queues in
+        #       the order they're privided, and then drain the next.
+        #       So if we had queues A,B,C we'd drain A, then drain B
+        #       and, finally, drain C.
+        # ToDo: implement a 'flat' option that moves to the next queue
+        #       So, A then B then C, round and round.
         output: list[Message] = list()
         for s in self._scan_subnamespaces():
             for name in self.broker.backend.priority_iter(s):
