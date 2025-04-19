@@ -47,6 +47,7 @@ def test_poll_queue_and_task(
     consumer = Consumer(rolling_broker, subset=subset)
 
     # Define messages
+    # Note: these initial messages are decoys when `subset != None`.
     messages = [Message("task") for _ in range(3)]
     if isinstance(subset, list):
         target_messages = [Message("task", queue=q) for q in subset]
