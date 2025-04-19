@@ -27,7 +27,7 @@ nav:
   - 'tips_and_tricks.md'
   - 'reference.md'
 
-copyright: Copyright &copy; 2021 - 2024 Tariq Hassan
+copyright: Copyright &copy; 2021 - 2025 Tariq Hassan
 
 plugins:
   - search
@@ -35,9 +35,8 @@ plugins:
       default_handler: python
       handlers:
         python:
-          rendering:
+          options:
             show_source: true
-      custom_templates: templates
       watch:
         - alsek/
 
