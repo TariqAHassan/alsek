@@ -4,16 +4,17 @@
 
 """
 
-import pytest
 from typing import Optional, Union
+
+import pytest
 
 from alsek import Message
 from alsek.utils.namespacing import (
+    get_dlq_message_name,
+    get_message_name,
     get_messages_namespace,
     get_priority_namespace,
     get_priority_namespace_from_message,
-    get_dlq_message_name,
-    get_message_name,
     get_subnamespace,
 )
 

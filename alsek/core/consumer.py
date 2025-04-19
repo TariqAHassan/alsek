@@ -11,7 +11,7 @@ from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
-from alsek.utils.namespacing import get_subnamespace, get_priority_namespace
+from alsek.utils.namespacing import get_priority_namespace, get_subnamespace
 from alsek.utils.system import StopSignalListener
 
 

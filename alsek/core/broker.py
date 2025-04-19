@@ -14,7 +14,11 @@ from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsErro
 from alsek.storage.backends import Backend
 from alsek.types import Empty
 from alsek.utils.logging import magic_logger
-from alsek.utils.namespacing import get_message_name, get_priority_namespace_from_message, get_dlq_message_name
+from alsek.utils.namespacing import (
+    get_dlq_message_name,
+    get_message_name,
+    get_priority_namespace_from_message,
+)
 from alsek.utils.printing import auto_repr
 
 log = logging.getLogger(__name__)

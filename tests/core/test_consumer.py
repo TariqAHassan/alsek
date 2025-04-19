@@ -4,7 +4,7 @@
 
 """
 
-from typing import Optional, Union, Iterable, Any
+from typing import Any, Iterable, Optional, Union
 
 import pytest
 
@@ -115,8 +115,8 @@ def test_stream(messages_to_add: int, rolling_broker: Broker) -> None:
 
 
 if __name__ == "__main__":
-    from alsek.storage.backends.redis import RedisBackend
     from alsek.storage.backends.disk import DiskCacheBackend
+    from alsek.storage.backends.redis import RedisBackend
 
     messages_to_add = 2
     subset = None

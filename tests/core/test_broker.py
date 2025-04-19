@@ -13,7 +13,7 @@ from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.exceptions import MessageDoesNotExistsError
-from alsek.utils.namespacing import get_message_name, get_dlq_message_name
+from alsek.utils.namespacing import get_dlq_message_name, get_message_name
 from tests._helpers import sleeper
 
 

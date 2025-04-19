@@ -29,7 +29,7 @@ from alsek._defaults import (
 from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
 from alsek.core.broker import Broker
 from alsek.core.message import Message
-from alsek.core.status import StatusTracker, TaskStatus, TERMINAL_TASK_STATUSES
+from alsek.core.status import TERMINAL_TASK_STATUSES, StatusTracker, TaskStatus
 from alsek.exceptions import RevokedError, SchedulingError, ValidationError
 from alsek.storage.result import ResultStore
 from alsek.types import SUPPORTED_MECHANISMS, SupportedMechanismType
@@ -404,7 +404,9 @@ class Task:
 
         """
 
-    def on_revocation(self, message: Message, exception: Optional[BaseException], result: Any) -> None:
+    def on_revocation(
+        self, message: Message, exception: Optional[BaseException], result: Any
+    ) -> None:
         """Handles the event when a message is revoked and logs the associated exception.
 
         Args:

@@ -3,6 +3,7 @@
     Namespacing
 
 """
+
 from typing import Optional
 
 from alsek.core.message import Message

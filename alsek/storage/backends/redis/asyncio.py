@@ -5,14 +5,15 @@
 """
 
 from __future__ import annotations
+
 import logging
 from typing import Any, AsyncIterable, Optional, Type, Union
 
-from redis.asyncio import Redis as RedisAsync
-from redis.asyncio import ConnectionPool as AsyncConnectionPool
-
 import dill
-from alsek.storage.backends import LazyClient, AsyncBackend
+from redis.asyncio import ConnectionPool as AsyncConnectionPool
+from redis.asyncio import Redis as RedisAsync
+
+from alsek.storage.backends import AsyncBackend, LazyClient
 from alsek.storage.backends.redis.standard import parse_sub_data
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
