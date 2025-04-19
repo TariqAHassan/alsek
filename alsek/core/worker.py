@@ -224,7 +224,7 @@ class WorkerPool(Consumer):
         log.info(
             "Monitoring %s %s.",
             len(self.tasks) if self.task_specific_mode else len(self.queues),
-            "tasks" if self.task_specific_mode else "queues",
+            "task(s)" if self.task_specific_mode else "queue(s)",
         )
         log.info("Worker pool online.")
 
