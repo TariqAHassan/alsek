@@ -720,7 +720,6 @@ def task(
     broker: Broker,
     name: Optional[str] = None,
     queue: Optional[str] = None,
-    priority: int = 0,
     timeout: int = DEFAULT_TASK_TIMEOUT,
     max_retries: Optional[int] = DEFAULT_MAX_RETRIES,
     backoff: Optional[Backoff] = ExponentialBackoff(),
@@ -739,8 +738,6 @@ def task(
             the class name will be used.
         queue (str, optional): the name of the queue to generate the task on.
             If ``None``, the default queue will be used.
-        priority (int): priority of the task. Tasks with lower values
-            will be executed before tasks with higher values.
         timeout (int): the maximum amount of time (in milliseconds)
             this task is permitted to run.
         max_retries (int, optional): maximum number of allowed retries
