@@ -294,6 +294,9 @@ class RedisAsyncBackend(AsyncBackend):
             item (str): Member of the sorted set, in priority order.
 
         """
+        # ToDo: switch to this for better async:
+        #   async for item in self.conn.zscan_iter(self.full_name(key)):
+        #       yield item[0]  # item is a (member, score) tuple
         for item in await self.conn.zrange(self.full_name(key), 0, -1):
             yield item
 
