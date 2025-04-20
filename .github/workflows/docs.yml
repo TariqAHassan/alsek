@@ -27,4 +27,4 @@ jobs:
           pip install -e .
           
       - name: Deploy documentation
-        run: mkdocs gh-deploy --force 
+        run: mkdocs gh-deploy --force
