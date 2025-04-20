@@ -35,6 +35,7 @@ plugins:
       default_handler: python
       handlers:
         python:
+          paths: [alsek]
           options:
             show_source: true
       watch:
