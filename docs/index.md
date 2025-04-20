@@ -7,7 +7,7 @@ capable while remaining very lightweight. Current functionality includes:
 
   * Multiprocess and multi-thread task execution
   * Automatic retries, with customizable backoff procedures
-  * Prioritization of queues and tasks
+  * Prioritization of queues and messages
   * Result storage
   * Status Tracking and Publishing
   * Interactive Result Iteration
@@ -108,10 +108,14 @@ alsek my_tasks
 Now, detailed information about the workers will be logged to the console, which we can see below.
 
 ```shell
-[2021-04-06 10:00:30.250] [MainProcess] [MainThread] [INFO] alsek.core.worker: Alsek v0.0.1 worker pool booting up...
-[2021-04-06 10:00:30.251] [MainProcess] [MainThread] [INFO] alsek.core.worker: Worker pool online.
-[2021-04-06 10:00:30.260] [Process-1] [MainThread] [INFO] alsek.core.worker: Received Message(uuid='e49806be-96ad-11eb-9216-acde48001122', queue='math_ops', task='add')...
-[2021-04-06 10:00:30.261] [Process-1] [MainThread] [INFO] alsek.core.worker: Successfully processed Message(uuid='e49806be-96ad-11eb-9216-acde48001122', queue='math_ops', task='add').
+[2025-04-19 18:30:39.522] [MainProcess] [MainThread] [INFO] alsek.core.worker: Alsek v0.8.0 worker pool booting up...
+[2025-04-19 18:30:39.522] [MainProcess] [MainThread] [INFO] alsek.core.worker: Starting worker pool with 8 max thread(s) and 11 max process(es)...
+[2025-04-19 18:30:39.523] [MainProcess] [MainThread] [INFO] alsek.core.worker: Monitoring 1 queue(s).
+[2025-04-19 18:30:39.523] [MainProcess] [MainThread] [INFO] alsek.core.worker: Worker pool online.
+[2025-04-19 18:30:39.524] [MainProcess] [Thread-2 (_wrapper)] [INFO] alsek.core.futures: Received Message(uuid='bf90af06-1d6d-11f0-affc-4af50920870b', queue='math_ops', task='add')...
+[2025-04-19 18:30:39.524] [MainProcess] [Thread-2 (_wrapper)] [INFO] alsek.core.futures: Successfully processed Message(uuid='bf90af06-1d6d-11f0-affc-4af50920870b', queue='math_ops', task='add').
+[2025-04-19 18:30:39.524] [MainProcess] [Thread-2 (_wrapper)] [INFO] alsek.core.broker: Removing Message(uuid='bf90af06-1d6d-11f0-affc-4af50920870b', queue='math_ops', task='add')...
+[2025-04-19 18:30:39.525] [MainProcess] [Thread-2 (_wrapper)] [INFO] alsek.core.broker: Removed Message(uuid='bf90af06-1d6d-11f0-affc-4af50920870b', queue='math_ops', task='add').
 ```
 
 Above we can see that once the worker pool booted up, a worker consumed the 
