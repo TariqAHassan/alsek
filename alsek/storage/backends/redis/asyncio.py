@@ -244,3 +244,71 @@ class RedisAsyncBackend(AsyncBackend):
         match = self.full_name(pattern or "*")
         async for key in self.conn.scan_iter(match):
             yield self.short_name(key)
+
+    async def priority_add(
+        self,
+        key: str,
+        unique_id: str,
+        priority: int | float,
+    ) -> None:
+        """Add an item to a priority-sorted set asynchronously.
+
+        Args:
+            key (str): The name of the sorted set.
+            unique_id (str): The item's unique identifier.
+            priority (int | float): The numeric priority score.
+
+        Returns:
+            None
+
+        """
+        await self.conn.zadd(
+            self.full_name(key),
+            mapping={unique_id: priority},
+        )
+
+    async def priority_get(self, key: str) -> Optional[str]:
+        """Peek the highest-priority item in a sorted set asynchronously.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Returns:
+            item (str, optional): The ID of the highest-priority item, or None if empty.
+
+        """
+        results: list[str] = await self.conn.zrange(
+            self.full_name(key),
+            start=0,
+            end=0,
+        )
+        return results[0] if results else None
+
+    async def priority_iter(self, key: str) -> AsyncIterable[str]:
+        """Iterate over all items in a priority-sorted set asynchronously.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Yields:
+            item (str): Member of the sorted set, in priority order.
+
+        """
+        for item in await self.conn.zrange(self.full_name(key), 0, -1):
+            yield item
+
+    async def priority_remove(self, key: str, unique_id: str) -> None:
+        """Remove an item from a priority-sorted set asynchronously.
+
+        Args:
+            key (str): The name of the sorted set.
+            unique_id (str): The ID of the item to remove.
+
+        Returns:
+            None
+
+        """
+        await self.conn.zrem(
+            self.full_name(key),
+            unique_id,
+        )
