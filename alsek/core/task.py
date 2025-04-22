@@ -352,9 +352,9 @@ class Task:
         if self._deferred:
             self.cancel_defer()
         elif submit:
-            self.on_submit(message)
             self._submit(message, **options)
             self._update_status(message, status=TaskStatus.SUBMITTED)
+            self.on_submit(message)
         return message
 
     def pre_op(self, message: Message) -> None:
