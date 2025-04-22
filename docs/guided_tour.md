@@ -162,7 +162,7 @@ message.ready
 ## Brokers
 
 A message broker is responsible for adding and managing tasks on the backend.
-In Alsek, the `Broker` class provides the following methods:
+In Alsek, the `Broker` class provides the following main methods:
 
   * `exists()`: whether a message exists on the backend
   * `sumbit()`: submit a message to a queue
@@ -170,12 +170,8 @@ In Alsek, the `Broker` class provides the following methods:
   * `remove()`: remove a message from the backend
   * `fail()`: remove a message, and move it to the Dead Letter Queue (DQL), if enabled
 
-Additionally, `Broker` also exposes:
+Notably, `Broker` also exposes:
 
- * `get_subnamespace()`: computes the "subnamespace" in which a message exists.
-    Practically, this is simply a prefix composed of `queue` name and `task` name
- * `get_message_name()`: computes the 'full' name of a message. Practically, this
-    is simply its `subnamespace` plus its `uuid`.
  * `ack()`: acknowledge the message. (This is a convenience method and is 
     functionally the same as `remove()`.)
  * `nack()`: do not acknowledge the message and render it eligible
