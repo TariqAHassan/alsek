@@ -304,7 +304,7 @@ class Task:
             set maximum amount of time (in milliseconds)
                 this message is permitted to run. This will override the default
                 for the task.
-            delay (int, optional): delay before message is ready
+            delay (int, optional): delay before message is ready (in milliseconds)
             previous_result (Any): result of a previous task.
             callback (Message, tuple[Message, ...], optional): one or more messages
                 to be submitted to the broker after the proceeding message has been

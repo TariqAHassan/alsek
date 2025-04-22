@@ -64,7 +64,7 @@ class Message:
             when the message was created
         updated_at (int): UTC timestamp (in milliseconds) for
             when the message was last updated
-        delay (int): delay before the message becomes ready
+        delay (int): delay before the message becomes ready (in milliseconds).
         previous_result (any, optional): the output of any
             previously executed task. (This will only be non-null
             in cases where callbacks are used.)
