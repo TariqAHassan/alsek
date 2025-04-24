@@ -516,11 +516,13 @@ class Task:
         before=lambda message: log.info("Revoking %s...", message.summary),
         after=lambda input_: log.debug("Revoked %s.", input_["message"].summary),
     )
-    def revoke(self, message: Message) -> None:
+    def revoke(self, message: Message, skip_if_running: bool = False) -> None:
         """Revoke the task.
 
         Args:
             message (Message): message to revoke
+            skip_if_running (bool): if ``True``, skip revoking the task if it is currently RUNNING.
+                Notes: requires ``status_tracker`` to be set.
 
         Returns:
             None
@@ -532,6 +534,17 @@ class Task:
             and self.status_tracker.get(message).status in TERMINAL_TASK_STATUSES
         ):
             log.info("Message is already terminal: %s", message.summary)
+            return
+
+        if (
+            skip_if_running
+            and self.status_tracker
+            and (
+                (status_update := self.status_tracker.get(message))
+                and status_update.status == TaskStatus.RUNNING
+            )
+        ):
+            log.info("Message is currently running: %s", message.summary)
             return
 
         self.broker.backend.set(
