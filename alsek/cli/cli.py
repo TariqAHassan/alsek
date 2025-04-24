@@ -117,6 +117,12 @@ def _configure_reload(package: str) -> Observer:
     "determine if a process for task execution is available.",
 )
 @click.option(
+    "--complete_only_on_thread_exit",
+    is_flag=True,
+    help="Only mark thread futures as complete when the thread exits. "
+         "More rigorous, but may hang if the thread doesn't terminate cleanly.",
+)
+@click.option(
     "--consumer_backoff_factor",
     type=int,
     default=1 * 1000,
@@ -162,6 +168,7 @@ def main(
     max_processes: Optional[int],  # noqa
     management_interval: int,  # noqa
     slot_wait_interval: int,  # noqa
+    complete_only_on_thread_exit: bool,  # noqa
     consumer_backoff_factor: int,  # noqa
     consumer_backoff_floor: int,  # noqa
     consumer_backoff_ceiling: int,  # noqa
@@ -203,6 +210,7 @@ def main(
             max_processes=max_processes,
             management_interval=management_interval,
             slot_wait_interval=slot_wait_interval,
+            complete_only_on_thread_exit=complete_only_on_thread_exit,
             backoff=LinearBackoff(
                 factor=consumer_backoff_factor,
                 floor=consumer_backoff_floor,
