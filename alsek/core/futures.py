@@ -183,11 +183,25 @@ class ThreadTaskFuture(TaskFuture):
     Args:
         task (Task): a task to perform
         message (Message): a message to run ``task`` against
+        complete_only_on_thread_exit (bool): if ``True``, only mark the future
+            as complete when the thread formally exits (i.e., is not alive).
+            Pro: more rigorous — avoids marking the task complete until the thread fully terminates.
+            Useful when you need strict control over thread lifecycle (e.g., for resource management).
+            Con: may lead to hanging if the thread doesn’t terminate quickly (e.g., when using
+            `thread_raise()` during revocation). Can also temporarily result in more than the
+            allotted number of threads running, since a future is only removed from the pool
+            after the thread is confirmed dead.
 
     """
 
-    def __init__(self, task: Task, message: Message) -> None:
+    def __init__(
+        self,
+        task: Task,
+        message: Message,
+        complete_only_on_thread_exit: bool = False,
+    ) -> None:
         super().__init__(task, message=message)
+        self.complete_only_on_thread_exit = complete_only_on_thread_exit
 
         self._wrapper_exit: bool = False
         self._thread = Thread(target=self._wrapper, daemon=True)
@@ -200,7 +214,14 @@ class ThreadTaskFuture(TaskFuture):
     @property
     def complete(self) -> bool:
         """Whether the task has finished."""
-        return not self._thread.is_alive()
+        thread_alive = self._thread.is_alive()
+        if self.complete_only_on_thread_exit:
+            return not thread_alive
+        else:
+            # If _wrapper_exit is True, consider the task complete even if the thread is still running
+            # This ensures the future gets removed from the worker pool's _futures list
+            # and new tasks can be polled even if a revoked task's thread is still running
+            return self._wrapper_exit or not thread_alive
 
     def _wrapper(self) -> None:
         log.info("Received %s...", self.message.summary)

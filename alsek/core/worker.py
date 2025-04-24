@@ -91,6 +91,14 @@ class WorkerPool(Consumer):
             maintenance scans of background task execution.
         slot_wait_interval (int): amount of time (in milliseconds) to wait
             between checks to determine worker availability for pending tasks.
+        complete_only_on_thread_exit (bool): if ``True``, only mark the future
+            as complete when the thread formally exits (i.e., is not alive).
+            Pro: more rigorous — avoids marking the task complete until the thread fully terminates.
+            Useful when you need strict control over thread lifecycle (e.g., for resource management).
+            Con: may lead to hanging if the thread doesn’t terminate quickly (e.g., when using
+            `thread_raise()` during revocation). Can also temporarily result in more than the
+            allotted number of threads running, since a future is only removed from the pool
+            after the thread is confirmed dead.
         **kwargs (Keyword Args): Keyword arguments to pass to ``Consumer()``.
 
     Raises:
@@ -108,8 +116,9 @@ class WorkerPool(Consumer):
         task_specific_mode: bool = False,
         max_threads: int = 8,
         max_processes: Optional[int] = None,
-        management_interval: int = 100,
+        management_interval: int = 75,
         slot_wait_interval: int = 100,
+        complete_only_on_thread_exit: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(
@@ -128,6 +137,7 @@ class WorkerPool(Consumer):
         self.max_processes = max_processes or smart_cpu_count()
         self.management_interval = management_interval
         self.slot_wait_interval = slot_wait_interval
+        self.complete_only_on_thread_exit = complete_only_on_thread_exit
 
         self._task_map = {t.name: t for t in tasks}
         self._futures: dict[str, list[TaskFuture]] = dict(thread=list(), process=list())
@@ -182,7 +192,11 @@ class WorkerPool(Consumer):
     def _make_future(self, message: Message) -> TaskFuture:
         task = self._task_map[message.task_name]
         if message.mechanism == "thread":
-            return ThreadTaskFuture(task, message=message)
+            return ThreadTaskFuture(
+                task=task,
+                message=message,
+                complete_only_on_thread_exit=self.complete_only_on_thread_exit,
+            )
         elif message.mechanism == "process":
             return ProcessTaskFuture(task, message=message)
         else:
