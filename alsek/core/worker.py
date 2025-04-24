@@ -108,7 +108,7 @@ class WorkerPool(Consumer):
         task_specific_mode: bool = False,
         max_threads: int = 8,
         max_processes: Optional[int] = None,
-        management_interval: int = 100,
+        management_interval: int = 75,
         slot_wait_interval: int = 100,
         **kwargs: Any,
     ) -> None:
