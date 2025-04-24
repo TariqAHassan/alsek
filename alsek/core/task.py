@@ -535,14 +535,11 @@ class Task:
         ):
             log.info("Message is already terminal: %s", message.summary)
             return
-
-        if (
-            skip_if_running
-            and self.status_tracker
-            and (
-                (status_update := self.status_tracker.get(message))
-                and status_update.status == TaskStatus.RUNNING
-            )
+        elif skip_if_running and not self.status_tracker:
+            raise AttributeError("`skip_if_running` requires `status_tracker` to be set")
+        elif skip_if_running and (
+            (status_update := self.status_tracker.get(message))
+            and status_update.status == TaskStatus.RUNNING
         ):
             log.info("Message is currently running: %s", message.summary)
             return
