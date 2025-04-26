@@ -248,7 +248,7 @@ def test_thread_in_process_group_prune_behavior() -> None:
     finished = _FakeFuture(complete=True, tlex=False)
     timed_out = _FakeFuture(complete=False, tlex=True)
 
-    tig._live = [live, finished, timed_out]
+    tig._live = [live, finished, timed_out]  # noqa
     tig._prune()
 
     # finished & timed-out should be gone; live remains
