@@ -13,6 +13,7 @@ from uuid import uuid1
 from alsek._defaults import DEFAULT_MECHANISM, DEFAULT_QUEUE, DEFAULT_TASK_TIMEOUT
 from alsek.core.backoff import ExponentialBackoff, settings2backoff
 from alsek.core.concurrency import Lock
+from alsek.storage.backends import Backend
 from alsek.types import SupportedMechanismType
 from alsek.utils.parsing import ExceptionDetails
 from alsek.utils.printing import auto_repr
@@ -242,7 +243,7 @@ class Message:
         else:
             return None
 
-    def _link_lock(self, lock: Lock, override: bool = False) -> Message:
+    def link_lock(self, lock: Lock, override: bool = False) -> Message:
         """Link a lock to the current message.
 
         Links are formed against the ``long_name`` of ``lock``.
@@ -265,12 +266,17 @@ class Message:
             self.lock_long_name = lock.long_name
         return self
 
-    def _unlink_lock(self, missing_ok: bool = False) -> Optional[str]:
+    def unlink_lock(
+        self,
+        missing_ok: bool = False,
+        target_backend: Optional[Backend] = None,
+    ) -> Optional[str]:
         """Clear the lock linked to the message.
 
         Args:
             missing_ok (bool): if ``True`` do not raise
                 if no lock is found
+            target_backend (Backend): a backend to purge the lock from.
 
         Returns:
             lock (str, optional): the name of the lock which was cleared
@@ -282,6 +288,8 @@ class Message:
         """
         if self.lock_long_name:
             lock = self.lock_long_name
+            if target_backend:
+                Lock(self.lock_long_name, backend=target_backend).release()
             self.lock_long_name = None
             return lock
         elif missing_ok:

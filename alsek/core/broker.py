@@ -123,7 +123,7 @@ class Broker:
         )
 
     def _clear_lock(self, message: Message) -> None:
-        lock_name = message._unlink_lock(missing_ok=True)
+        lock_name = message.unlink_lock(missing_ok=True)
         if lock_name:
             Lock(lock_name, backend=self.backend).release()
 

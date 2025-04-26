@@ -119,7 +119,7 @@ class Consumer:
                 if message.ready:
                     with _ConsumptionMutex(message, self.broker.backend) as lock:
                         if lock.acquire(strict=False):
-                            output.append(message._link_lock(lock, override=True))
+                            output.append(message.link_lock(lock, override=True))
 
         self._empty_passes = 0 if output else self._empty_passes + 1
         return _dedup_messages(output)

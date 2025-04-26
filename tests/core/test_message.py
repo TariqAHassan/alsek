@@ -124,17 +124,17 @@ def test_ttr(message: Message, ready_now: bool) -> None:
 
 def test_link_lock(rolling_backend: Backend) -> None:
     lock = Lock("lock", rolling_backend)
-    msg = Message("task")._link_lock(lock)
+    msg = Message("task").link_lock(lock)
 
     assert msg.lock_long_name == lock.long_name
 
 
 def test_release_lock(rolling_backend: Backend) -> None:
     lock = Lock("lock", rolling_backend)
-    msg = Message("task")._link_lock(lock)
+    msg = Message("task").link_lock(lock)
 
     assert msg.lock_long_name == lock.long_name
-    msg._unlink_lock(missing_ok=False)
+    msg.unlink_lock(missing_ok=False)
     assert msg.lock_long_name is None
 
 

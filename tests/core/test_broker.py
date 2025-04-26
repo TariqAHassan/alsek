@@ -90,7 +90,7 @@ def test_clear_lock(rolling_broker: Broker) -> None:
     assert lock.held
 
     # Link to a message
-    message = Message("task")._link_lock(lock)
+    message = Message("task").link_lock(lock)
     assert message.lock_long_name is not None
 
     # Clear the lock
@@ -114,7 +114,7 @@ def test_clear_lock(rolling_broker: Broker) -> None:
 )
 def test_removal(method: str, rolling_broker: Broker) -> None:
     lock = Lock("lock", backend=rolling_broker.backend)
-    message = Message("task")._link_lock(lock)
+    message = Message("task").link_lock(lock)
 
     # Add the message via the broker
     rolling_broker.submit(message)
@@ -133,7 +133,7 @@ def test_removal(method: str, rolling_broker: Broker) -> None:
 
 def test_nack(rolling_broker: Broker) -> None:
     lock = Lock("lock", backend=rolling_broker.backend)
-    message = Message("task")._link_lock(lock)
+    message = Message("task").link_lock(lock)
 
     # Add the message via the broker
     rolling_broker.submit(message)
@@ -154,7 +154,7 @@ def test_nack(rolling_broker: Broker) -> None:
 @pytest.mark.flaky(max_runs=3)
 def test_fail(dlq_ttl: Optional[int], rolling_broker: Broker) -> None:
     lock = Lock("lock", backend=rolling_broker.backend)
-    message = Message("task")._link_lock(lock)
+    message = Message("task").link_lock(lock)
 
     # Add the message via the broker
     rolling_broker.submit(message)
