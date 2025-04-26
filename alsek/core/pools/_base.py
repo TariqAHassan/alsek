@@ -1,0 +1,140 @@
+"""
+
+    Base Worker Pool
+
+"""
+
+from __future__ import annotations
+
+from collections import defaultdict
+from typing import Any, Collection, DefaultDict, Optional
+
+from alsek.core.broker import Broker
+from alsek.core.consumer import Consumer
+from alsek.core.task import Task
+from alsek.exceptions import MultipleBrokersError, NoTasksFoundError
+from alsek.types import SupportedMechanismType
+from alsek.utils.checks import has_duplicates
+from alsek.utils.sorting import dict_sort
+from abc import ABC, abstractmethod
+import logging
+
+
+log = logging.getLogger(__name__)
+
+
+def _extract_broker(tasks: Collection[Task]) -> Broker:
+    if not tasks:
+        raise NoTasksFoundError("No tasks found")
+
+    brokers = {t.broker for t in tasks}
+    if len(brokers) > 1:
+        raise MultipleBrokersError("Multiple brokers used")
+    else:
+        (broker,) = brokers
+        return broker
+
+
+def _derive_consumer_subset(
+    tasks: Collection[Task],
+    queues: Optional[list[str]],
+    task_specific_mode: bool,
+) -> dict[str, list[str]] | list[str]:
+    if queues and has_duplicates(queues):
+        raise ValueError(f"Duplicates in provided queues: {queues}")
+    elif queues and not task_specific_mode:
+        return queues
+
+    subset: DefaultDict[str, list[str]] = defaultdict(list)
+    for t in tasks:
+        if queues is None or t.queue in queues:
+            subset[t.queue].append(t.name)
+
+    if task_specific_mode:
+        return dict_sort(subset, key=queues.index if queues else None)
+    else:
+        return sorted(subset.keys())
+
+
+class BaseWorkerPool(Consumer, ABC):
+    """Pool of Alsek workers.
+
+    Generate a pool of workers to service ``tasks``.
+    The reference broker is extracted from ``tasks`` and
+    therefore must be common among all tasks.
+
+    Args:
+        mechanism (SupportedMechanismType): the mechanism to use (thread or process).
+        tasks (Collection[Task]): one or more tasks to handle. This
+            must include all tasks the worker may encounter by listening
+            to ``queues``.
+        queues (list[str], optional): the names of one or more queues
+            consume messages from. If ``None``, all queues will be consumed.
+        task_specific_mode (bool, optional): when defining queues to monitor, include
+            tasks names. Otherwise, consider queues broadly.
+        **kwargs (Keyword Args): Keyword arguments to pass to ``Consumer()``.
+
+    Raises:
+        NoTasksFoundError: if no tasks are provided
+
+        MultipleBrokersError: if multiple brokers are
+           used by the collected tasks.
+
+    """
+
+    def __init__(
+        self,
+        *,
+        mechanism: SupportedMechanismType,
+        tasks: Collection[Task],
+        queues: Optional[list[str]] = None,
+        task_specific_mode: bool = False,
+        **kwargs: Any,
+    ) -> None:
+        tasks = [t for t in tasks if t.mechanism == mechanism]
+        if not tasks:
+            raise NoTasksFoundError(f"No tasks found with mechanism '{mechanism}'.")
+        super().__init__(
+            broker=_extract_broker(tasks),
+            subset=_derive_consumer_subset(
+                tasks=tasks,
+                queues=queues,
+                task_specific_mode=task_specific_mode,
+            ),
+            **kwargs,
+        )
+        self.tasks = tasks
+        self.queues = queues or sorted(self.subset)
+        self.task_specific_mode = task_specific_mode
+
+        self._task_map = {t.name: t for t in tasks}
+
+    def log_on_boot(self) -> None:
+        log.info(
+            "Monitoring %s %s.",
+            len(self.tasks) if self.task_specific_mode else len(self.queues),
+            "task(s)" if self.task_specific_mode else "queue(s)",
+        )
+        log.info("Worker pool online.")
+
+    @abstractmethod
+    def engine(self) -> None:
+        """Main engine loop."""
+        raise NotImplementedError()
+
+    def stop_all_futures(self) -> None:
+        """Stop all active futures."""
+        raise NotImplementedError()
+
+    def _on_shutdown(self) -> None:
+        self.stop_all_futures()
+
+    def run(self) -> None:
+        """Run the worker pool."""
+        self.log_on_boot()
+
+        try:
+            self.engine()
+        finally:
+            log.info("Worker pool shutting down...")
+            self._on_shutdown()
