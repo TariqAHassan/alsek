@@ -49,9 +49,9 @@ class ProcessWorkerPool(BaseWorkerPool):
 
     def stop_all_futures(self) -> None:
         """Terminate everything that is still alive."""
-        for fut in self._futures:
-            fut.stop(TerminationError)
-            fut.clean_up(ignore_errors=True)
+        for f in self._futures:
+            f.stop(TerminationError)
+            f.clean_up(ignore_errors=True)
         self._futures.clear()
 
     def submit_message(self, message: Message) -> bool:
