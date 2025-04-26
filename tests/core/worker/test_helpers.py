@@ -11,7 +11,7 @@ import pytest
 from alsek.defaults import DEFAULT_QUEUE
 from alsek.core.broker import Broker
 from alsek.core.task import Task, task
-from alsek.core.worker import _derive_consumer_subset, _extract_broker
+from alsek.core.worker import _derive_consumer_subset, _extract_broker  # noqa
 from alsek.exceptions import MultipleBrokersError, NoTasksFoundError
 from alsek.storage.backends import Backend
 
