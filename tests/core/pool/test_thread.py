@@ -6,28 +6,23 @@
 
 from __future__ import annotations
 
+import multiprocessing as mp
 import queue as _q
+import threading
 import time
-from multiprocessing import Event, Queue as MPQueue
+from multiprocessing import Event
+from multiprocessing import Queue as MPQueue
+from pathlib import Path
 from queue import Queue
 from typing import Any
 
 import pytest
 
-from alsek import Message, Broker, StatusTracker
-from alsek.core.pools.thread import (
-    ThreadWorkerPool,
-    ProcessGroup,
-    ThreadInProcessGroup,
-)
-from alsek.core.status import TaskStatus, TERMINAL_TASK_STATUSES
+from alsek import Broker, Message, StatusTracker
+from alsek.core.pools.thread import ProcessGroup, ThreadInProcessGroup, ThreadWorkerPool
+from alsek.core.status import TERMINAL_TASK_STATUSES, TaskStatus
 from alsek.core.task import task
-import multiprocessing as mp
-import threading
-from pathlib import Path
-
 from alsek.storage.result import ResultStore
-
 
 # ------------------------------------------------------------------ #
 # Helpers

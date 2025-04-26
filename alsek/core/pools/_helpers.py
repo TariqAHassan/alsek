@@ -3,14 +3,15 @@
     Helpers
 
 """
+
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Optional, DefaultDict
+from typing import DefaultDict, Optional
 
 from alsek import Broker
 from alsek.core.task import Task
-from alsek.exceptions import NoTasksFoundError, MultipleBrokersError
+from alsek.exceptions import MultipleBrokersError, NoTasksFoundError
 from alsek.types import SupportedMechanismType
 from alsek.utils.checks import has_duplicates
 from alsek.utils.sorting import dict_sort

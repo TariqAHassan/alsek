@@ -7,9 +7,9 @@
 import logging
 from typing import Optional
 
-from alsek.defaults import DEFAULT_TTL
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
+from alsek.defaults import DEFAULT_TTL
 from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsError
 from alsek.storage.backends import Backend
 from alsek.types import Empty

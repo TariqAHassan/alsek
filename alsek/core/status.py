@@ -8,17 +8,17 @@ from __future__ import annotations
 
 import time
 from enum import Enum
-import dill
 from typing import Any, Iterable, NamedTuple, Optional, Union
 
+import dill
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from alsek.defaults import DEFAULT_TTL
 from alsek.core.broker import Broker
 from alsek.core.message import Message
+from alsek.defaults import DEFAULT_TTL
 from alsek.exceptions import ValidationError
 from alsek.storage.backends import Backend
 

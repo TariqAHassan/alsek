@@ -19,6 +19,10 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
+from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
+from alsek.core.broker import Broker
+from alsek.core.message import Message
+from alsek.core.status import TERMINAL_TASK_STATUSES, StatusTracker, TaskStatus
 from alsek.defaults import (
     DEFAULT_MAX_RETRIES,
     DEFAULT_MECHANISM,
@@ -26,10 +30,6 @@ from alsek.defaults import (
     DEFAULT_TASK_TIMEOUT,
     DEFAULT_TTL,
 )
-from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
-from alsek.core.broker import Broker
-from alsek.core.message import Message
-from alsek.core.status import TERMINAL_TASK_STATUSES, StatusTracker, TaskStatus
 from alsek.exceptions import RevokedError, SchedulingError, ValidationError
 from alsek.storage.result import ResultStore
 from alsek.types import SUPPORTED_MECHANISMS, SupportedMechanismType
@@ -207,7 +207,9 @@ class Task:
 
             # Result Store
             if result_store_settings := settings.get("result_store"):
-                settings["result_store"] = ResultStore.deserialize(result_store_settings)
+                settings["result_store"] = ResultStore.deserialize(
+                    result_store_settings
+                )
 
             return settings
 

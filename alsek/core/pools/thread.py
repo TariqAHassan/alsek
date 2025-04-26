@@ -6,17 +6,19 @@
 
 from __future__ import annotations
 
-import dill, logging
-from typing import List, Optional, Any
-
+import logging
 import queue
+from builtins import TimeoutError
+from typing import Any, List, Optional
+
+import dill
+
 from alsek import Message
-from alsek.core.futures import ThreadTaskFuture, Queue, Event, Process
+from alsek.core.futures import Event, Process, Queue, ThreadTaskFuture
 from alsek.core.pools._base import BaseWorkerPool
 from alsek.core.task import Task
 from alsek.exceptions import TerminationError
 from alsek.utils.system import smart_cpu_count
-from builtins import TimeoutError
 
 log = logging.getLogger(__name__)
 

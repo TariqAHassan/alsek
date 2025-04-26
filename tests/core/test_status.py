@@ -11,9 +11,9 @@ from alsek.core.message import Message
 from alsek.core.status import (
     TERMINAL_TASK_STATUSES,
     StatusTracker,
+    StatusTrackerIntegryScanner,
     TaskStatus,
     _name2message,
-    StatusTrackerIntegryScanner,
 )
 from alsek.exceptions import ValidationError
 

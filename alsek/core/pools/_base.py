@@ -6,20 +6,19 @@
 
 from __future__ import annotations
 
+import logging
+from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 from alsek import Message
 from alsek.core.consumer import Consumer
 from alsek.core.pools._helpers import (
-    filter_tasks,
-    extract_broker,
     derive_consumer_subset,
+    extract_broker,
+    filter_tasks,
 )
 from alsek.core.task import Task
 from alsek.types import SupportedMechanismType
-from abc import ABC, abstractmethod
-import logging
-
 
 log = logging.getLogger(__name__)
 

@@ -3,6 +3,7 @@
     Test Decorators
 
 """
+
 import pytest
 
 from alsek.utils.decorators import exception_suppressor

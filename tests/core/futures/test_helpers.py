@@ -6,7 +6,6 @@
 
 import pytest
 
-from alsek.defaults import DEFAULT_MAX_RETRIES
 from alsek.core.broker import Broker
 from alsek.core.futures import (
     _complete_future_handler,
@@ -17,6 +16,7 @@ from alsek.core.futures import (
 )
 from alsek.core.message import Message
 from alsek.core.task import task
+from alsek.defaults import DEFAULT_MAX_RETRIES
 from alsek.storage.result import ResultStore
 
 

@@ -3,6 +3,7 @@
     Decorators
 
 """
+
 from functools import wraps
 from typing import Any, Callable, TypeVar
 
@@ -17,5 +18,7 @@ def exception_suppressor(*exceptions: type[BaseException]) -> Callable[[F], F]:
                 return func(*args, **kwargs)
             except exceptions:
                 return None
+
         return wrapper
+
     return decorator

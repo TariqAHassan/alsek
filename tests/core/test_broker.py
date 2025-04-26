@@ -8,10 +8,10 @@ from typing import Optional
 
 import pytest
 
-from alsek.defaults import DEFAULT_TTL
 from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
+from alsek.defaults import DEFAULT_TTL
 from alsek.exceptions import MessageDoesNotExistsError
 from alsek.utils.namespacing import get_dlq_message_name, get_message_name
 from tests._helpers import sleeper
