@@ -199,33 +199,33 @@ class ThreadWorkerPool(BaseWorkerPool):
         self.slot_wait_interval = slot_wait_interval
         self.complete_only_on_thread_exit = complete_only_on_thread_exit
 
-        self._groups: List[ProcessGroup] = list()
+        self._progress_groups: List[ProcessGroup] = list()
 
     def stop_all_futures(self) -> None:
         """Stop all futures in the pool."""
-        for g in self._groups:
+        for g in self._progress_groups:
             g.stop()
 
     def _prune(self) -> None:
         updated_groups = list()
-        for g in self._groups:
+        for g in self._progress_groups:
             g.process.join(timeout=0)  # reap quickly if already exited
             if g.process.is_alive():
                 updated_groups.append(g)
-        self._groups = updated_groups
+        self._progress_groups = updated_groups
 
     def _acquire_group(self) -> Optional[ProcessGroup]:
-        for g in self._groups:
+        for g in self._progress_groups:
             if g.has_slot():
                 return g
 
-        if len(self._groups) < self.n_processes:
+        if len(self._progress_groups) < self.n_processes:
             new_group = ProcessGroup(
                 n_threads=self.n_threads,
                 complete_only_on_thread_exit=self.complete_only_on_thread_exit,
                 slot_wait_interval=self.slot_wait_interval,
             )
-            self._groups.append(new_group)
+            self._progress_groups.append(new_group)
             return new_group
         return None
 
