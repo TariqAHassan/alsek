@@ -88,11 +88,10 @@ class StatusTracker:
 
     @staticmethod
     def deserialize(data: dict[str, Any]) -> StatusTracker:
-        backend_data = dill.loads(data["broker_backend"])
+        backend_data = dill.loads(data["backend"])
         backend = backend_data["backend"]._from_settings(backend_data["settings"])
-        broker = Broker(backend=backend, **data["broker"])
         return StatusTracker(
-            backend=broker.backend,
+            backend=backend,
             ttl=data["ttl"],
             enable_pubsub=data["enable_pubsub"],
         )
