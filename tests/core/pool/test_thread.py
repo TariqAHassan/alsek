@@ -19,7 +19,11 @@ from alsek.core.pools.thread import (
     ProcessGroup,
     ThreadInProcessGroup,
 )
-
+from alsek.core.task import task
+import multiprocessing as mp
+import threading
+from alsek.core.status import StatusTracker
+from pathlib import Path
 
 # ------------------------------------------------------------------ #
 # Helpers
@@ -209,6 +213,7 @@ def test_thread_worker_pool_prune_removes_dead_groups(
 # 9. ThreadInProcessGroup._prune() drops finished & timed-out futures
 # ------------------------------------------------------------------ #
 
+
 def test_thread_in_process_group_prune_behavior() -> None:
     """• remove objects whose .complete is True
     • kill + drop objects whose .time_limit_exceeded is True
@@ -250,6 +255,7 @@ def test_thread_in_process_group_prune_behavior() -> None:
 # ------------------------------------------------------------------ #
 # 10-12. ThreadWorkerPool._acquire_group() logic
 # ------------------------------------------------------------------ #
+
 
 def _mk_pool(broker: Broker) -> ThreadWorkerPool:
     """Spin up a tiny pool with a single dummy thread-task."""
@@ -311,3 +317,173 @@ def test_submit_message_fails_when_every_group_full(rolling_broker: Broker) -> N
     g1.stop()
     g2.stop()
     pool.on_shutdown()
+
+
+# ------------------------------------------------------------------ #
+# 9. Capacity is never exceeded
+# ------------------------------------------------------------------ #
+
+
+# @pytest.mark.flaky(reruns=2)
+# def test_pool_never_exceeds_capacity(rolling_broker) -> None:
+#     """
+#     Spin up a pool (2 procs × 2 threads = 4 max) and submit 12 tasks that each
+#     sleep for 50 ms.  We track the *peak* number of concurrent executions with
+#     a multiprocessing.Value shared between all workers.
+#     """
+#     manager = mp.Manager()
+#     current = manager.Value("i", 0)
+#     peak = manager.Value("i", 0)
+#     lock = manager.Lock()
+#
+#     def _tracked_work() -> None:
+#         with lock:
+#             current.value += 1
+#             peak.value = max(peak.value, current.value)
+#         time.sleep(0.05)
+#         with lock:
+#             current.value -= 1
+#
+#     tracked_task = task(
+#         rolling_broker,
+#         name="tracked",
+#         mechanism="thread",
+#         timeout=500,
+#     )(_tracked_work)
+#
+#     pool = ThreadWorkerPool(
+#         tasks=[tracked_task],
+#         n_threads=2,
+#         n_processes=2,
+#     )
+#
+#     # create > capacity messages
+#     for _ in range(12):
+#         tracked_task.generate()
+#
+#     # run pool in background until queue drained
+#     t = threading.Thread(target=pool.run, daemon=True)
+#     t.start()
+#     # wait until all queues empty or timeout
+#     deadline = time.time() + 4
+#     while (
+#         any(_queue_has_items(g.queue) for g in pool._progress_groups)
+#         and time.time() < deadline
+#     ):
+#         time.sleep(0.02)
+#
+#     pool._can_run = False  # stop engine loop
+#     t.join(timeout=1)
+#     pool.on_shutdown()
+#
+#     assert peak.value <= 4, f"peak concurrency {peak.value} exceeded capacity 4"
+
+
+# ------------------------------------------------------------------ #
+# 10. Per-message timeout triggers retry/fail path
+# ------------------------------------------------------------------ #
+
+
+# def test_task_timeout_causes_retry(rolling_broker: Broker) -> None:
+#     """
+#     Make a task whose body sleeps 0.2 s but whose message timeout is 50 ms.
+#     After the pool runs we expect the StatusTracker to show RETRYING (could be
+#     FAILED if retries are exhausted, either is fine as long as not SUCCEEDED).
+#     """
+#
+#     def _slow() -> None:
+#         time.sleep(0.2)
+#
+#     slow_task = task(
+#         rolling_broker,
+#         name="slow",
+#         mechanism="thread",
+#         timeout=50,  # 50 ms
+#         max_retries=0,  # fail immediately
+#     )(_slow)
+#
+#     msg = slow_task.generate()
+#
+#     pool = ThreadWorkerPool(tasks=[slow_task], n_threads=1, n_processes=1)
+#     pool.run()  # single scan → returns
+#
+#     status = StatusTracker(rolling_broker).get(msg)
+#     assert status in {"FAILED", "RETRYING"}
+
+
+# # ------------------------------------------------------------------ #
+# # 11. Graceful shutdown stops children
+# # ------------------------------------------------------------------ #
+
+def test_graceful_shutdown_cleans_processes(rolling_broker: Broker) -> None:
+    """
+    Run a pool in a background thread, then set its stop-signal.
+    All ProcessGroup processes must exit within 1 s.
+    """
+    stopper = threading.Event()
+
+    def _work() -> None:
+        while not stopper.is_set():
+            time.sleep(0.01)
+
+    busy_task = task(
+        rolling_broker,
+        name="busy",
+        mechanism="thread",
+        timeout=10_000,
+    )(_work)
+
+    # Generate a handful so at least one thread per process is alive
+    for _ in range(6):
+        busy_task.generate()
+
+    pool = ThreadWorkerPool(tasks=[busy_task], n_threads=2, n_processes=2)
+    runner = threading.Thread(target=pool.run, daemon=True)
+    runner.start()
+
+    time.sleep(0.1)  # let workers spin up
+    pool.stop_signal.exit_event.set()  # request shutdown
+    stopper.set()  # allow tasks to finish quickly
+    runner.join(timeout=2)
+
+    # All child processes must be dead
+    assert all(not g.process.is_alive() for g in pool._progress_groups)
+
+
+# ------------------------------------------------------------------ #
+# 12. Revocation mid-flight is handled (bonus)
+# ------------------------------------------------------------------ #
+
+def test_revocation_mid_flight(
+    rolling_broker: Broker,
+    tmp_path: Path,
+) -> None:
+    """
+    The task writes to a file after 100 ms.  We revoke mid-flight and expect the
+    file to *not* exist because the future is stopped.
+    """
+    outfile = tmp_path / "should_not_exist.txt"
+
+    def _writes() -> None:
+        time.sleep(0.1)
+        outfile.write_text("oops")
+
+    revocable_task = task(
+        rolling_broker,
+        name="revocable",
+        mechanism="thread",
+        timeout=500,
+    )(_writes)
+
+    msg = revocable_task.generate()
+
+    pool = ThreadWorkerPool(tasks=[revocable_task], n_threads=1, n_processes=1)
+    runner = threading.Thread(target=pool.run, daemon=True)
+    runner.start()
+
+    time.sleep(0.03)  # give it a moment to start
+    revocable_task.revoke(msg)  # send revocation
+    runner.join(timeout=1)
+    pool.on_shutdown()
+
+    assert not outfile.exists()
