@@ -163,12 +163,9 @@ class BaseWorkerPool(Consumer, ABC):
                 # want to saturate it by message priority (high -> low).
                 break
 
-    def stop_all_futures(self) -> None:
+    def on_shutdown(self) -> None:
         """Stop all active futures."""
         raise NotImplementedError()
-
-    def _on_shutdown(self) -> None:
-        self.stop_all_futures()
 
     def run(self) -> None:
         """Run the worker pool."""
@@ -178,4 +175,4 @@ class BaseWorkerPool(Consumer, ABC):
             self.engine()
         finally:
             log.info("Worker pool shutting down...")
-            self._on_shutdown()
+            self.on_shutdown()

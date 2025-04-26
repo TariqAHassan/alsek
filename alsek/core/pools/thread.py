@@ -208,7 +208,7 @@ class ThreadWorkerPool(BaseWorkerPool):
         )
         super().on_boot()
 
-    def stop_all_futures(self) -> None:
+    def on_shutdown(self) -> None:
         """Stop all futures in the pool."""
         for g in self._progress_groups:
             g.stop()

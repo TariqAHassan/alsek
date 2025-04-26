@@ -56,7 +56,7 @@ class ProcessWorkerPool(BaseWorkerPool):
                 kept.append(fut)
         self._futures = kept
 
-    def stop_all_futures(self) -> None:
+    def on_shutdown(self) -> None:
         """Terminate everything that is still alive."""
         for f in self._futures:
             f.stop(TerminationError)
