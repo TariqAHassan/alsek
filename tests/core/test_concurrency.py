@@ -4,15 +4,15 @@
 
 """
 
-from socket import gethostname
+import multiprocessing as mp
 import os
 import threading
 from queue import Queue
+from socket import gethostname
 from typing import Any
 
 import dill
 import pytest
-import multiprocessing as mp
 
 from alsek.core.concurrency import Lock, _make_lock_name  # noqa
 from alsek.storage.backends import Backend

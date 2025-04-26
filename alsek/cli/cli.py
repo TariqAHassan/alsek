@@ -120,7 +120,7 @@ def _configure_reload(package: str) -> Observer:
     "--complete_only_on_thread_exit",
     is_flag=True,
     help="Only mark thread futures as complete when the thread exits. "
-         "More rigorous, but may hang if the thread doesn't terminate cleanly.",
+    "More rigorous, but may hang if the thread doesn't terminate cleanly.",
 )
 @click.option(
     "--consumer_backoff_factor",

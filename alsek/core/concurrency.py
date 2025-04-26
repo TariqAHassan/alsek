@@ -6,14 +6,14 @@
 
 from __future__ import annotations
 
+import os
+import threading
+from socket import gethostname
 from types import TracebackType
 from typing import Optional, Type, cast
 
 from alsek.storage.backends import Backend
 from alsek.utils.printing import auto_repr
-import os
-import threading
-from socket import gethostname
 
 
 def _make_lock_name() -> str:
