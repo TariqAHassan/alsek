@@ -18,6 +18,7 @@ from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.core.task import Task, TriggerTask
 from alsek.exceptions import SchedulingError, ValidationError
+from alsek.storage.backends import Backend
 from alsek.storage.result import ResultStore
 from tests._helpers import sleeper
 
@@ -112,7 +113,7 @@ def test_task_revoke(rolling_broker: Broker) -> None:
 def test_generate_validation(
     with_result_store: bool,
     task_class: Type[Task],
-    rolling_backend: Broker,
+    rolling_backend: Backend,
 ) -> None:
     task = task_class(
         lambda: 1,
