@@ -251,6 +251,6 @@ class ThreadWorkerPool(BaseWorkerPool):
                 self.stop_signal.wait(self.slot_wait_interval)  # back-off once
                 # Break so we start the stream again from the beginning.
                 # This is important because the stream is ordered by priority.
-                # That is, when we finally can acquire a group again, we want
-                # to saturate it by message priority (high -> low).
+                # That is, when we finally can acquire a process group again, we
+                # want to saturate it by message priority (high -> low).
                 break
