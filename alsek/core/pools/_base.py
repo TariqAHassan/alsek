@@ -115,7 +115,7 @@ class BaseWorkerPool(Consumer, ABC):
 
         self._task_map = {t.name: t for t in tasks}
 
-    def log_on_boot(self) -> None:
+    def on_boot(self) -> None:
         log.info(
             "Monitoring %s %s.",
             len(self.tasks) if self.task_specific_mode else len(self.queues),
@@ -172,7 +172,7 @@ class BaseWorkerPool(Consumer, ABC):
 
     def run(self) -> None:
         """Run the worker pool."""
-        self.log_on_boot()
+        self.on_boot()
 
         try:
             self.engine()

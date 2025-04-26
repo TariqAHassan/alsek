@@ -33,6 +33,15 @@ class ProcessWorkerPool(BaseWorkerPool):
 
         self._futures: List[ProcessTaskFuture] = list()
 
+    def on_boot(self) -> None:
+        log.info(
+            "Starting process-based worker pool with up to %s workers (%s max process%s)...",
+            self.n_processes,
+            self.n_processes,
+            "" if self.n_processes == 1 else "es",
+        )
+        super().on_boot()
+
     def has_slot(self) -> bool:
         return len(self._futures) < self.n_processes
 

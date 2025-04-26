@@ -197,6 +197,17 @@ class ThreadWorkerPool(BaseWorkerPool):
 
         self._progress_groups: List[ProcessGroup] = list()
 
+    def on_boot(self) -> None:
+        log.info(
+            "Starting thread-based worker pool with up to %s workers (%s max thread%s and %s max process%s)...",
+            self.n_threads * self.n_processes,
+            self.n_threads,
+            "" if self.n_threads == 1 else "es",
+            self.n_processes,
+            "" if self.n_processes == 1 else "es",
+        )
+        super().on_boot()
+
     def stop_all_futures(self) -> None:
         """Stop all futures in the pool."""
         for g in self._progress_groups:
