@@ -4,7 +4,7 @@
 
 """
 
-from typing import Collection, Optional, Union
+from typing import Optional, Union
 
 import pytest
 
@@ -84,7 +84,7 @@ def test_extract_broker_multi_broker(rolling_backend: Backend) -> None:
     ],
 )
 def test_derive_consumer_subset(
-    task_names: Collection[Task],
+    task_names: list[Task],
     queues: Optional[list[str]],
     task_specific_mode: bool,
     expected: Union[dict[str, list[str]], BaseException],

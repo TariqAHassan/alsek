@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from collections import defaultdict
-from typing import Collection, Optional, DefaultDict
+from typing import Optional, DefaultDict
 
 from alsek import Broker
 from alsek.core.task import Task
@@ -17,9 +17,9 @@ from alsek.utils.sorting import dict_sort
 
 
 def filter_tasks(
-    tasks: Collection[Task],
+    tasks: list[Task] | tuple[Task, ...],
     mechanism: SupportedMechanismType,
-) -> Collection[Task] | None:
+) -> list[Task] | None:
     if not tasks:
         raise NoTasksFoundError("No tasks found")
     elif tasks := [t for t in tasks if t.mechanism == mechanism]:
@@ -28,7 +28,7 @@ def filter_tasks(
         raise NoTasksFoundError(f"No tasks found with mechanism '{mechanism}'.")
 
 
-def extract_broker(tasks: Collection[Task]) -> Broker:
+def extract_broker(tasks: list[Task] | tuple[Task, ...]) -> Broker:
     if not tasks:
         raise NoTasksFoundError("No tasks found")
 
@@ -41,7 +41,7 @@ def extract_broker(tasks: Collection[Task]) -> Broker:
 
 
 def derive_consumer_subset(
-    tasks: Collection[Task],
+    tasks: list[Task] | tuple[Task, ...],
     queues: Optional[list[str]],
     task_specific_mode: bool,
 ) -> dict[str, list[str]] | list[str]:

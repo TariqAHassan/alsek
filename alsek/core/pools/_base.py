@@ -6,7 +6,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Collection, Optional
+from typing import Any, Optional
 
 from alsek import Message
 from alsek.core.consumer import Consumer
@@ -33,7 +33,7 @@ class BaseWorkerPool(Consumer, ABC):
 
     Args:
         mechanism (SupportedMechanismType): the mechanism to use (thread or process).
-        tasks (Collection[Task]): one or more tasks to handle. This
+        tasks (list[Task], tuple[Task, ...]): one or more tasks to handle. This
             must include all tasks the worker may encounter by listening
             to ``queues``.
         queues (list[str], optional): the names of one or more queues
@@ -57,7 +57,7 @@ class BaseWorkerPool(Consumer, ABC):
         self,
         *,
         mechanism: SupportedMechanismType,
-        tasks: Collection[Task],
+        tasks: list[Task] | tuple[Task, ...],
         queues: Optional[list[str]] = None,
         task_specific_mode: bool = False,
         slot_wait_interval: int = 0.05,
