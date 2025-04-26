@@ -130,7 +130,15 @@ class BaseWorkerPool(Consumer, ABC):
 
     @abstractmethod
     def handle_message(self, message: Message) -> bool:
-        """Handle a single message"""
+        """Handle a single message.
+
+        Args:
+            message (Message): an Alsek message.
+
+        Returns:
+            submitted (bool): ``True`` if the message was successfully submitted
+
+        """
         raise NotImplementedError()
 
     def engine(self) -> None:
