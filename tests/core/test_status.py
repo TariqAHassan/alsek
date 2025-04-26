@@ -154,7 +154,7 @@ def test_wait_for_various_cases(
     should_set: bool,
     expected: bool,
 ) -> None:
-    msg = Message("task", uuid=f"wf-param-{expected}")
+    msg = Message("task")
     if should_set:
         # delay then set the final_status
         def _delayed_set() -> None:
