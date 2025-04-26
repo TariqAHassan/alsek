@@ -27,12 +27,7 @@ class ProcessWorkerPool(BaseWorkerPool):
 
     """
 
-    def __init__(
-        self,
-        *,
-        n_processes: Optional[int] = None,
-        **kwargs: Any,
-    ) -> None:
+    def __init__(self, n_processes: Optional[int] = None, **kwargs: Any) -> None:
         super().__init__(mechanism="process", **kwargs)
         self.n_processes = n_processes or smart_cpu_count()
 
