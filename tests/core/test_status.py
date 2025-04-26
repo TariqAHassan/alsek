@@ -149,3 +149,22 @@ def test_integrity_scaner(rolling_status_tracker: StatusTracker) -> None:
 
     # Check that the status of this message is now 'UNKNOWN'.
     assert rolling_status_tracker.get(message).status == TaskStatus.UNKNOWN
+
+
+def test_status_tracker_serialize_deserialize(
+    rolling_status_tracker: StatusTracker,
+) -> None:
+    # Serialize
+    serialized = rolling_status_tracker.serialize()
+
+    # Deserialize
+    rebuilt_tracker = StatusTracker.deserialize(serialized)
+
+    # Sanity check: rebuilt instance is a StatusTracker
+    assert isinstance(rebuilt_tracker, StatusTracker)
+
+    # Deep test: use it
+    message = Message("task", uuid="test-uuid")
+    rebuilt_tracker.set(message, status=TaskStatus.SUCCEEDED)
+    status = rebuilt_tracker.get(message).status
+    assert status == TaskStatus.SUCCEEDED
