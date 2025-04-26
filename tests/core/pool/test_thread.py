@@ -327,7 +327,6 @@ def test_submit_message_fails_when_every_group_full(rolling_broker: Broker) -> N
 # ------------------------------------------------------------------ #
 
 
-
 @pytest.mark.timeout(10)
 @pytest.mark.flaky(max_runs=2)
 def test_task_completes_successfully(rolling_broker: Broker) -> None:
@@ -547,3 +546,92 @@ def test_revocation_mid_flight(
     pool.on_shutdown()
 
     assert not outfile.exists()
+
+
+# ------------------------------------------------------------------ #
+# 14. Test Scaling
+# ------------------------------------------------------------------ #
+
+
+@pytest.mark.timeout(20)
+@pytest.mark.flaky(max_runs=3)
+def test_pool_elastic_scale_up_and_down(rolling_broker: Broker, monkeypatch):
+    """
+    Verify that ThreadWorkerPool spins up extra ProcessGroups under load,
+    then prunes them back to zero once the queue is drained.
+    """
+    N_PROCESSES = 4  # noqa
+    N_THREADS = 2  # noqa
+    # anything > N_THREADS is enough to force a 2nd group
+    N_JOBS = N_THREADS * (N_PROCESSES + 1)  # noqa
+
+    # ---------- 1. shared counters ----------
+    mgr = mp.Manager()
+    concurrent = mgr.Value("i", 0)
+    peak = mgr.Value("i", 0)
+    lock = mgr.Lock()
+
+    # ---------- 2. patch ProcessGroup ----------
+    orig_pg_init = ProcessGroup.__init__
+
+    def _patched_init(self, *a, **k):
+        with lock:
+            concurrent.value += 1
+            peak.value = max(peak.value, concurrent.value)
+        orig_pg_init(self, *a, **k)
+
+    monkeypatch.setattr(ProcessGroup, "__init__", _patched_init, raising=False)
+
+    orig_pg_stop = ProcessGroup.stop
+
+    def _patched_stop(self, *a, **k):
+        orig_pg_stop(self, *a, **k)
+        with lock:
+            concurrent.value -= 1
+
+    monkeypatch.setattr(ProcessGroup, "stop", _patched_stop, raising=False)
+
+    # ---------- 3. workload ----------
+    def _work() -> None:
+        time.sleep(0.05)
+
+    work_task = task(
+        rolling_broker,
+        name="elastic",
+        mechanism="thread",
+        timeout=500,
+    )(_work)
+
+    pool = ThreadWorkerPool(
+        tasks=[work_task],
+        n_threads=N_THREADS,
+        n_processes=N_PROCESSES,
+    )
+
+    # enqueue 40 jobs → more than a single ProcessGroup can hold
+    for _ in range(N_JOBS):
+        work_task.generate()
+
+    t = threading.Thread(target=pool.run, daemon=True)
+    t.start()
+
+    # ---------- 4. wait until queue is empty ----------
+    deadline = time.time() + 6
+    while (
+        any(_queue_has_items(g.queue) for g in pool._progress_groups)
+        and time.time() < deadline
+    ):
+        time.sleep(0.05)
+
+    # after queue drained …
+    time.sleep(0.2)
+    pool.prune()
+
+    # ---------- 5. shutdown ----------
+    pool.stop_signal.exit_event.set()
+    t.join(timeout=2)
+    pool.on_shutdown()
+
+    # ---------- 6. assertions ----------
+    assert peak.value > 1, "pool never scaled UP"
+    assert concurrent.value < peak.value, "pool never scaled DOWN"
