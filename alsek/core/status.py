@@ -5,6 +5,8 @@
 """
 
 from __future__ import annotations
+
+import time
 from enum import Enum
 import dill
 from typing import Any, Iterable, NamedTuple, Optional, Union
@@ -226,6 +228,46 @@ class StatusTracker:
             )
         else:
             raise KeyError(f"No status found for message '{message.summary}'")
+
+    def wait_for(
+        self,
+        message: Message,
+        status: TaskStatus | tuple[TaskStatus, ...] | list[TaskStatus],
+        timeout: Optional[float] = 5.0,
+        poll_interval: float = 0.05,
+    ) -> bool:
+        """Wait for a message to reach a desired status.
+
+        Args:
+            message (Message): the message to monitor
+            status (TaskStatus, tuple[TaskStatus...], list[TaskStatus]): the target status
+            timeout (float, optional): max time to wait (in seconds). None means wait forever.
+            poll_interval (float): how often to check (in seconds)
+
+        Returns:
+            bool: True if desired status reached, False if timed out
+        """
+        if not isinstance(status, TaskStatus) and not isinstance(status, (list, tuple)):
+            raise ValueError(f"Invalid status type: {type(status)}")
+
+        def is_match(current_status: TaskStatus) -> bool:
+            if isinstance(status, TaskStatus):
+                return current_status == status
+            elif isinstance(status, (list, tuple)):
+                return current_status in status
+            else:
+                raise ValueError(f"Invalid status type: {type(status)}")
+
+        deadline = None if timeout is None else time.time() + timeout
+        while True:
+            try:
+                if is_match(self.get(message).status):
+                    return True
+            except KeyError:
+                pass
+            if deadline is not None and time.time() > deadline:
+                return False
+            time.sleep(poll_interval)
 
     def delete(self, message: Message, check: bool = True) -> None:
         """Delete the status of ``message``.
