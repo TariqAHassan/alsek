@@ -48,12 +48,12 @@ class ProcessWorkerPool(BaseWorkerPool):
     def prune(self) -> None:
         """Prune spent futures."""
         kept: list[ProcessTaskFuture] = list()
-        for fut in self._futures:
-            if fut.time_limit_exceeded:
-                fut.stop(TimeoutError)
-                fut.clean_up(ignore_errors=True)
-            elif not fut.complete:
-                kept.append(fut)
+        for f in self._futures:
+            if f.time_limit_exceeded:
+                f.stop(TimeoutError)
+                f.clean_up(ignore_errors=True)
+            elif not f.complete:
+                kept.append(f)
         self._futures = kept
 
     def on_shutdown(self) -> None:
