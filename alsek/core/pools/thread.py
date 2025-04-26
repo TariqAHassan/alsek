@@ -187,7 +187,6 @@ class ThreadWorkerPool(BaseWorkerPool):
 
     def __init__(
         self,
-        *,
         n_threads: int = 8,
         n_processes: Optional[int] = None,
         complete_only_on_thread_exit: bool = False,
