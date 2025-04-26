@@ -13,7 +13,7 @@ from typing import Any, Callable, Iterable, Optional, Type, Union, cast
 
 import dill
 
-from alsek._defaults import DEFAULT_NAMESPACE
+from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.serialization import JsonSerializer, Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params

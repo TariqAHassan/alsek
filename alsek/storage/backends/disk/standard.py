@@ -10,7 +10,7 @@ import shutil
 from pathlib import Path
 from typing import Any, Callable, Iterable, Optional, Type, Union, cast
 
-from alsek._defaults import DEFAULT_NAMESPACE
+from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.serialization import JsonSerializer, Serializer
 from alsek.types import Empty

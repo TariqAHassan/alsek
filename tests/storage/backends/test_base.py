@@ -7,7 +7,7 @@
 import pytest
 from diskcache import Cache as DiskCache
 
-from alsek._defaults import DEFAULT_NAMESPACE
+from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
 
 

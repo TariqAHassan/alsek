@@ -12,7 +12,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from alsek._defaults import DEFAULT_TTL
+from alsek.defaults import DEFAULT_TTL
 from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.exceptions import ValidationError

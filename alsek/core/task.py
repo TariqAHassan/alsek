@@ -19,7 +19,7 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from alsek._defaults import (
+from alsek.defaults import (
     DEFAULT_MAX_RETRIES,
     DEFAULT_MECHANISM,
     DEFAULT_QUEUE,
