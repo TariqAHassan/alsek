@@ -10,7 +10,6 @@ import shutil
 from pathlib import Path
 from typing import Any, Callable, Iterable, Optional, Type, Union, cast
 
-from alsek import Lock
 from alsek._defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.serialization import JsonSerializer, Serializer
@@ -45,7 +44,7 @@ class DiskCacheBackend(Backend):
         not implement 'server-side' "if not exist" on `SET` (`nx`) support or
         true priority capabilities. For these reasons, ``DiskCacheBackend()`` is
         recommended for development and testing purposes only. (Multi-worker setups
-        in particular should not be used with this backend.)
+        in particular should NOT be used with this backend.)
 
     """
 
@@ -222,18 +221,14 @@ class DiskCacheBackend(Backend):
             None
 
         """
-        with Lock(f"mutex_{key}", backend=self) as lock:
-            if lock.acquire(strict=False):
-                queue = self.get(key, default=[])
-                queue = {unique_id: priority for (unique_id, priority) in queue}
-                queue[unique_id] = priority
-                self.set(
-                    key,
-                    value=sorted(queue.items(), key=lambda x: x[-1]),
-                    nx=False,
-                )
-            else:
-                raise RuntimeError("Could not acquire lock")
+        queue = self.get(key, default=[])
+        queue = {unique_id: priority for (unique_id, priority) in queue}
+        queue[unique_id] = priority
+        self.set(
+            key,
+            value=sorted(queue.items(), key=lambda x: x[-1]),
+            nx=False,
+        )
 
     def priority_get(self, key: str) -> Optional[str]:
         """Get (peek) the highest-priority item without removing it.
@@ -277,13 +272,9 @@ class DiskCacheBackend(Backend):
             None
 
         """
-        with Lock(f"mutex_{key}", backend=self) as lock:
-            if lock.acquire(strict=False):
-                queue = self.get(key, default=[])
-                self.set(
-                    key,
-                    value=[(u, p) for (u, p) in queue if u != unique_id],
-                    nx=False,
-                )
-            else:
-                raise RuntimeError("Could not acquire lock")
+        queue = self.get(key, default=[])
+        self.set(
+            key,
+            value=[(u, p) for (u, p) in queue if u != unique_id],
+            nx=False,
+        )
