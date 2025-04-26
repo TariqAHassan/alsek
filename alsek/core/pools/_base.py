@@ -6,67 +6,22 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
-from typing import Any, Collection, DefaultDict, Optional
+from typing import Any, Collection, Optional
 
 from alsek import Message
-from alsek.core.broker import Broker
 from alsek.core.consumer import Consumer
+from alsek.core.pools._helpers import (
+    filter_tasks,
+    extract_broker,
+    derive_consumer_subset,
+)
 from alsek.core.task import Task
-from alsek.exceptions import MultipleBrokersError, NoTasksFoundError
 from alsek.types import SupportedMechanismType
-from alsek.utils.checks import has_duplicates
-from alsek.utils.sorting import dict_sort
 from abc import ABC, abstractmethod
 import logging
 
 
 log = logging.getLogger(__name__)
-
-
-def _filter_tasks(
-    tasks: Collection[Task],
-    mechanism: SupportedMechanismType,
-) -> Collection[Task] | None:
-    if not tasks:
-        raise NoTasksFoundError("No tasks found")
-    elif tasks := [t for t in tasks if t.mechanism == mechanism]:
-        return tasks
-    else:
-        raise NoTasksFoundError(f"No tasks found with mechanism '{mechanism}'.")
-
-
-def _extract_broker(tasks: Collection[Task]) -> Broker:
-    if not tasks:
-        raise NoTasksFoundError("No tasks found")
-
-    brokers = {t.broker for t in tasks}
-    if len(brokers) > 1:
-        raise MultipleBrokersError("Multiple brokers used")
-    else:
-        (broker,) = brokers
-        return broker
-
-
-def _derive_consumer_subset(
-    tasks: Collection[Task],
-    queues: Optional[list[str]],
-    task_specific_mode: bool,
-) -> dict[str, list[str]] | list[str]:
-    if queues and has_duplicates(queues):
-        raise ValueError(f"Duplicates in provided queues: {queues}")
-    elif queues and not task_specific_mode:
-        return queues
-
-    subset: DefaultDict[str, list[str]] = defaultdict(list)
-    for t in tasks:
-        if queues is None or t.queue in queues:
-            subset[t.queue].append(t.name)
-
-    if task_specific_mode:
-        return dict_sort(subset, key=queues.index if queues else None)
-    else:
-        return sorted(subset.keys())
 
 
 class BaseWorkerPool(Consumer, ABC):
@@ -108,10 +63,10 @@ class BaseWorkerPool(Consumer, ABC):
         slot_wait_interval: int = 0.05,
         **kwargs: Any,
     ) -> None:
-        tasks = _filter_tasks(tasks=tasks, mechanism=mechanism)
+        tasks = filter_tasks(tasks=tasks, mechanism=mechanism)
         super().__init__(
-            broker=_extract_broker(tasks),
-            subset=_derive_consumer_subset(
+            broker=extract_broker(tasks),
+            subset=derive_consumer_subset(
                 tasks=tasks,
                 queues=queues,
                 task_specific_mode=task_specific_mode,
