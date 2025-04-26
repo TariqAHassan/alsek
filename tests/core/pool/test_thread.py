@@ -326,6 +326,7 @@ def test_submit_message_fails_when_every_group_full(rolling_broker: Broker) -> N
 # ------------------------------------------------------------------ #
 
 
+@pytest.mark.timeout(30)
 @pytest.mark.flaky(max_runs=2)
 def test_pool_never_exceeds_capacity(rolling_broker) -> None:
     """
@@ -386,6 +387,7 @@ def test_pool_never_exceeds_capacity(rolling_broker) -> None:
 # ------------------------------------------------------------------ #
 
 
+# @pytest.mark.timeout(30)
 # def test_task_timeout_causes_retry(rolling_broker: Broker) -> None:
 #     """
 #     Make a task whose body sleeps 0.2 s but whose message timeout is 50 ms.
@@ -417,6 +419,7 @@ def test_pool_never_exceeds_capacity(rolling_broker) -> None:
 # # 11. Graceful shutdown stops children
 # # ------------------------------------------------------------------ #
 
+@pytest.mark.timeout(30)
 def test_graceful_shutdown_cleans_processes(rolling_broker: Broker) -> None:
     """
     Run a pool in a background thread, then set its stop-signal.
@@ -456,6 +459,7 @@ def test_graceful_shutdown_cleans_processes(rolling_broker: Broker) -> None:
 # 12. Revocation mid-flight is handled (bonus)
 # ------------------------------------------------------------------ #
 
+@pytest.mark.timeout(30)
 def test_revocation_mid_flight(
     rolling_broker: Broker,
     tmp_path: Path,
