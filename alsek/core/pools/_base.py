@@ -24,6 +24,18 @@ import logging
 log = logging.getLogger(__name__)
 
 
+def _filter_tasks(
+    tasks: Collection[Task],
+    mechanism: SupportedMechanismType,
+) -> Collection[Task] | None:
+    if not tasks:
+        raise NoTasksFoundError("No tasks found")
+    elif tasks := [t for t in tasks if t.mechanism == mechanism]:
+        return tasks
+    else:
+        raise NoTasksFoundError(f"No tasks found with mechanism '{mechanism}'.")
+
+
 def _extract_broker(tasks: Collection[Task]) -> Broker:
     if not tasks:
         raise NoTasksFoundError("No tasks found")
@@ -96,9 +108,7 @@ class BaseWorkerPool(Consumer, ABC):
         slot_wait_interval: int = 0.05,
         **kwargs: Any,
     ) -> None:
-        tasks = [t for t in tasks if t.mechanism == mechanism]
-        if not tasks:
-            raise NoTasksFoundError(f"No tasks found with mechanism '{mechanism}'.")
+        tasks = _filter_tasks(tasks=tasks, mechanism=mechanism)
         super().__init__(
             broker=_extract_broker(tasks),
             subset=_derive_consumer_subset(
