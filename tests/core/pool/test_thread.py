@@ -7,6 +7,7 @@
 from __future__ import annotations
 
 import queue as _q
+import time
 from multiprocessing import Event, Queue as MPQueue
 from queue import Queue
 from typing import Any
@@ -326,7 +327,6 @@ def test_submit_message_fails_when_every_group_full(rolling_broker: Broker) -> N
 # ------------------------------------------------------------------ #
 
 
-import time
 
 @pytest.mark.timeout(10)
 @pytest.mark.flaky(max_runs=2)
@@ -363,7 +363,6 @@ def test_task_completes_successfully(rolling_broker: Broker) -> None:
     runner.join(timeout=2)
 
     assert tracker.get(msg).status == TaskStatus.SUCCEEDED
-
 
 
 # ------------------------------------------------------------------ #
@@ -431,26 +430,41 @@ def test_pool_never_exceeds_capacity(rolling_broker) -> None:
 # 11. Per-message timeout triggers retry/fail path
 # ------------------------------------------------------------------ #
 
-# @pytest.mark.timeout(15)
-# def test_task_timeout_causes_retry(rolling_broker: Broker) -> None:
-#     def _slow() -> None:
-#         time.sleep(0.2)
-#
-#     slow_task = task(
-#         rolling_broker,
-#         name="slow",
-#         mechanism="thread",
-#         timeout=50,  # ms
-#         max_retries=-1,  # <— *do not* re-queue after timeout
-#     )(_slow)
-#
-#     msg = slow_task.generate()
-#
-#     pool = ThreadWorkerPool(tasks=[slow_task], n_threads=1, n_processes=1)
-#     pool.run()
-#
-#     status = StatusTracker(rolling_broker).get(msg)
-#     assert status == "FAILED"
+
+@pytest.mark.timeout(15)
+@pytest.mark.flaky(max_runs=2)
+def test_task_timeout_causes_retry(rolling_broker: Broker) -> None:
+    def _slow() -> None:
+        time.sleep(0.2)
+
+    status_tracker = StatusTracker(rolling_broker.backend)
+
+    slow_task = task(
+        rolling_broker,
+        name="slow",
+        mechanism="thread",
+        timeout=50,  # ms — timeout after 50ms
+        status_tracker=status_tracker,
+        max_retries=-1,
+    )(_slow)
+
+    msg = slow_task.generate()
+
+    pool = ThreadWorkerPool(tasks=[slow_task], n_threads=1, n_processes=1)
+    runner = threading.Thread(target=pool.run, daemon=True)
+    runner.start()
+
+    # Wait until it fails
+    status_tracker.wait_for(
+        message=msg,
+        status=TaskStatus.FAILED,
+        timeout=5,
+    )
+
+    pool.stop_signal.exit_event.set()
+    runner.join(timeout=2)
+
+    assert status_tracker.get(msg).status == TaskStatus.FAILED
 
 
 # ------------------------------------------------------------------ #
