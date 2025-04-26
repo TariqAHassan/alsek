@@ -19,7 +19,6 @@ from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.exceptions import ValidationError
 from alsek.storage.backends import Backend
-from alsek.utils.aggregation import gather_init_params
 
 
 class TaskStatus(Enum):
@@ -58,7 +57,8 @@ class StatusTracker:
     """Alsek Status Tracker.
 
     Args:
-        broker (Broker): broker used by tasks.
+        backend (Backend): backend to persists results to. (In almost all cases, this
+            should be the same backend used by the Broker).
         ttl (int, optional): time to live (in milliseconds) for the status
         enable_pubsub (bool, optional): if ``True`` automatically publish PUBSUB updates.
             If ``None`` determine automatically given the capabilities of the backend
@@ -68,25 +68,20 @@ class StatusTracker:
 
     def __init__(
         self,
-        broker: Broker,
+        backend: Backend,
         ttl: Optional[int] = DEFAULT_TTL,
         enable_pubsub: Optional[bool] = None,
     ) -> None:
-        self.broker = broker
+        self.backend = backend
         self.ttl = ttl
-        self.enable_pubsub = broker.backend.SUPPORTS_PUBSUB if enable_pubsub is None else enable_pubsub  # fmt: skip
+        self.enable_pubsub = backend.SUPPORTS_PUBSUB if enable_pubsub is None else enable_pubsub  # fmt: skip
 
-        if enable_pubsub and not broker.backend.SUPPORTS_PUBSUB:
-            raise AssertionError("Backend of broker does not support PUBSUB")
-
-    @property
-    def backend(self) -> Backend:
-        return self.broker.backend
+        if enable_pubsub and not backend.SUPPORTS_PUBSUB:
+            raise AssertionError("Backend does not support PUBSUB")
 
     def serialize(self) -> dict[str, Any]:
         return {
-            "broker": gather_init_params(self.broker, ignore=("backend",)),
-            "broker_backend": self.backend.encode(),
+            "backend": self.backend.encode(),
             "ttl": self.ttl,
             "enable_pubsub": self.enable_pubsub,
         }
@@ -97,7 +92,7 @@ class StatusTracker:
         backend = backend_data["backend"]._from_settings(backend_data["settings"])
         broker = Broker(backend=backend, **data["broker"])
         return StatusTracker(
-            broker=broker,
+            backend=broker.backend,
             ttl=data["ttl"],
             enable_pubsub=data["enable_pubsub"],
         )
@@ -155,7 +150,7 @@ class StatusTracker:
             None
 
         """
-        self.broker.backend.pub(
+        self.backend.pub(
             self.get_pubsub_name(message),
             value=update.as_dict(),  # converting to dict makes this serializer-agnostic
         )
@@ -179,7 +174,7 @@ class StatusTracker:
         if not self.enable_pubsub:
             raise ValueError("PUBSUB not enabled")
 
-        for i in self.broker.backend.sub(self.get_pubsub_name(message)):
+        for i in self.backend.sub(self.get_pubsub_name(message)):
             if i.get("type", "").lower() == "message":
                 update = StatusUpdate(
                     status=TaskStatus[i["data"]["status"]],  # noqa
@@ -271,9 +266,11 @@ class StatusTrackerIntegryScanner:
     def __init__(
         self,
         status_tracker: StatusTracker,
+        broker: Broker,
         trigger: Union[CronTrigger, DateTrigger, IntervalTrigger] = IntervalTrigger(hours=1),  # fmt: skip
     ) -> None:
         self.status_tracker = status_tracker
+        self.broker = broker
         self.trigger = trigger
 
         self.scheduler: BackgroundScheduler = BackgroundScheduler()
@@ -298,6 +295,6 @@ class StatusTrackerIntegryScanner:
             if (
                 status is not None
                 and status not in TERMINAL_TASK_STATUSES
-                and not self.status_tracker.broker.exists(message)
+                and not self.broker.exists(message)
             ):
                 self.status_tracker.set(message, status=TaskStatus.UNKNOWN)

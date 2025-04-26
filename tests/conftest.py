@@ -145,8 +145,8 @@ def rolling_result_pool(rolling_result_store: ResultStore):
 
 
 @pytest.fixture()
-def rolling_status_tracker(rolling_broker: Broker) -> StatusTracker:
-    return StatusTracker(rolling_broker)
+def rolling_status_tracker(rolling_backend: Backend) -> StatusTracker:
+    return StatusTracker(rolling_backend)
 
 
 @pytest.fixture()

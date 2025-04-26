@@ -6,6 +6,7 @@
 
 import pytest
 
+from alsek import Broker
 from alsek.core.message import Message
 from alsek.core.status import (
     TERMINAL_TASK_STATUSES,
@@ -137,7 +138,11 @@ def test_integrity_scaner(rolling_status_tracker: StatusTracker) -> None:
     # status for a message that has never actually been added to the broker.
     message = Message("task1")
     rolling_status_tracker.set(message, status=TaskStatus.RUNNING)
-    integry_scanner = StatusTrackerIntegryScanner(rolling_status_tracker)
+    broker = Broker(rolling_status_tracker.backend)
+    integry_scanner = StatusTrackerIntegryScanner(
+        status_tracker=rolling_status_tracker,
+        broker=broker,
+    )
 
     # Run a scan
     integry_scanner.scan()

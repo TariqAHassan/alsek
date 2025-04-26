@@ -588,7 +588,7 @@ from alsek.storage.backends.redis import RedisBackend
 backend = RedisBackend("<connection_url>")
 
 broker = Broker(backend)
-status_tracker = StatusTracker(broker)
+status_tracker = StatusTracker(backend)
 
 @task(broker, status_tracker=status_tracker)
 def sum_n(n: int) -> int:

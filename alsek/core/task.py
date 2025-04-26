@@ -175,18 +175,33 @@ class Task:
 
     def serialize(self) -> dict[str, Any]:
         settings = gather_init_params(self, ignore=("broker",))
+
+        # Broker
         settings["broker"] = gather_init_params(self.broker, ignore=("backend",))
         settings["broker"]["backend"] = self.broker.backend.encode()
+
+        # Status Tracker
+        if self.status_tracker:
+            settings["status_tracker"] = self.status_tracker.serialize()
+        else:
+            settings["status_tracker"] = None
         return dict(task=self.__class__, settings=settings)
 
     @staticmethod
     def deserialize(data: dict[str, Any]) -> Task:
         def unwind_settings(settings: dict[str, Any]) -> dict[str, Any]:
             backend_data = dill.loads(settings["broker"]["backend"])
+
+            # Broker
             settings["broker"]["backend"] = backend_data["backend"]._from_settings(
                 backend_data["settings"]
             )
             settings["broker"] = Broker(**settings["broker"])
+
+            # Status Tracker
+            if status_tracker_settings := settings.get("status_tracker"):
+                settings["status_tracker"] = StatusTracker.deserialize(status_tracker_settings)  # fmt: skip
+
             return settings
 
         rebuilt_task = data["task"](**unwind_settings(data["settings"]))
