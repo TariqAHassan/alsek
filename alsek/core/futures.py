@@ -30,11 +30,11 @@ log = logging.getLogger(__name__)
 MULTIPROCESSING_BACKEND = os.getenv("ALSEK_MULTIPROCESSING_BACKEND", "standard").strip()
 
 if MULTIPROCESSING_BACKEND == "standard":
-    from multiprocessing import Process, Queue
+    from multiprocessing import Process, Queue, Event
 
     log.info("Using standard multiprocessing backend.")
 elif MULTIPROCESSING_BACKEND == "torch":
-    from torch.multiprocessing import Process, Queue  # type: ignore
+    from torch.multiprocessing import Process, Queue, Event  # type: ignore
 
     log.info("Using torch multiprocessing backend.")
 else:
