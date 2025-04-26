@@ -162,10 +162,27 @@ class ProcessGroup:
 class ThreadWorkerPool(BaseWorkerPool):
     """Elastic thread-based pool.
 
-    • Spawns a new **process** (ThreadProcessGroup) only when all existing
-      groups are saturated and the hard ceiling `n_processes` hasn’t been hit.
+    Args:
+        n_threads (int): the number of threads to use per group.
+        n_processes (int, optional): the number of process groups to use
+        complete_only_on_thread_exit (bool): if ``True``, only mark the future
+            as complete when the thread formally exits (i.e., is not alive).
+            Pro: more rigorous — avoids marking the task complete until the thread fully terminates.
+            Useful when you need strict control over thread lifecycle (e.g., for resource management).
+            Con: may lead to hanging if the thread doesn’t terminate quickly (e.g., when using
+            `thread_raise()` during revocation). Can also temporarily result in more than the
+            allotted number of threads running, since a future is only removed from the pool
+            after the thread is confirmed dead.
+        slot_wait_interval (float): amount of time (in milliseconds) to wait
+            between checks to determine worker availability for pending tasks.
+        **kwargs (Keyword Args): Keyword arguments to pass to ``BaseWorkerPool()``.
 
-    • Each group runs up to `n_threads` true ThreadTaskFutures concurrently.
+    Notes:
+        * Spawns a new **process** (ThreadProcessGroup) only when all existing
+          groups are saturated and the hard ceiling `n_processes` hasn’t been hit.
+        * Each group runs up to `n_threads` true ThreadTaskFutures concurrently.
+        * Total worker capacity is ``n_threads * n_processes``.
+
     """
 
     def __init__(
@@ -186,6 +203,7 @@ class ThreadWorkerPool(BaseWorkerPool):
         self._groups: List[ProcessGroup] = list()
 
     def stop_all_futures(self) -> None:
+        """Stop all futures in the pool."""
         for g in self._groups:
             g.stop()
 
@@ -213,6 +231,7 @@ class ThreadWorkerPool(BaseWorkerPool):
         return None
 
     def engine(self) -> None:
+        """Run the worker pool."""
         while not self.stop_signal.received:
             for message in self.stream():
                 self._prune()
