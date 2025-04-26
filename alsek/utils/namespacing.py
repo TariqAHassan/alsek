@@ -6,13 +6,26 @@
 
 from typing import Optional
 
+from socket import gethostname
 from alsek.core.message import Message
+import os
+import threading
 
 QUEUES_NAMESPACE_KEY: str = "queues"
 TASK_NAMESPACE_KEY: str = "tasks"
 MESSAGES_NAMESPACE_KEY: str = "messages"
 PRIORITY_NAMESPACE_KEY: str = "priority"
 DLQ_NAMESPACE_KEY: str = "dlq"
+
+
+def make_lock_name():
+    """Make a lock name using the current hostname, PID, and thread ID.
+
+    Returns:
+        name (str): lock name
+
+    """
+    return f"{gethostname()}:{os.getpid()}:{threading.get_ident()}"
 
 
 def get_subnamespace(

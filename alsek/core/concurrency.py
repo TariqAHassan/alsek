@@ -6,11 +6,11 @@
 
 from __future__ import annotations
 
-from socket import gethostname
 from types import TracebackType
 from typing import Optional, Type, cast
 
 from alsek.storage.backends import Backend
+from alsek.utils.namespacing import make_lock_name
 from alsek.utils.printing import auto_repr
 
 
@@ -80,9 +80,14 @@ class Lock:
         return cast(Optional[str], self.backend.get(self.long_name))
 
     @property
+    def _my_holder_id(self) -> Optional[str]:
+        """ID of the host that currently holds the lock, if any."""
+        return make_lock_name()
+
+    @property
     def held(self) -> bool:
-        """If the lock is held by the current host."""
-        return self.holder == gethostname()
+        """If the lock is held by the current host/process/thread."""
+        return self.holder == self._my_holder_id
 
     def acquire(self, strict: bool = True) -> bool:
         """Try to acquire the lock.
@@ -107,7 +112,12 @@ class Lock:
             return not strict
 
         try:
-            self.backend.set(self.long_name, value=gethostname(), nx=True, ttl=self.ttl)
+            self.backend.set(
+                self.long_name,
+                value=self._my_holder_id,
+                nx=True,
+                ttl=self.ttl,
+            )
             return True
         except KeyError:
             return False

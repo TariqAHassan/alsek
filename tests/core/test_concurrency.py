@@ -4,8 +4,6 @@
 
 """
 
-from socket import gethostname
-
 import pytest
 
 from alsek.core.concurrency import Lock
@@ -28,7 +26,7 @@ def test_holder(do_acquire: bool, rolling_backend: Backend) -> None:
 
     if do_acquire:
         lock.acquire()
-        assert lock.holder == gethostname()
+        assert lock.holder == lock._my_holder_id
     else:
         assert lock.holder is None
 
