@@ -124,6 +124,7 @@ class BaseWorkerPool(Consumer, ABC):
         self.slot_wait_interval = slot_wait_interval
 
         self._task_map = {t.name: t for t in tasks}
+        self._can_run: bool = True
 
     def on_boot(self) -> None:
         log.info(
@@ -153,7 +154,7 @@ class BaseWorkerPool(Consumer, ABC):
 
     def engine(self) -> None:
         """Run the worker pool."""
-        while not self.stop_signal.received:
+        while self._can_run and not self.stop_signal.received:
             for message in self.stream():
                 self.prune()
 
