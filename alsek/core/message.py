@@ -134,7 +134,7 @@ class Message:
         else:
             self.created_at, self.updated_at = created_at, updated_at
 
-        self._lock: Optional[str] = None
+        self.lock_long_name: Optional[str] = None
 
     @property
     def exception_details(self) -> Optional[ExceptionDetails]:
@@ -259,10 +259,10 @@ class Message:
               never persisted to the data backend.
 
         """
-        if self._lock and not override:
-            raise AttributeError(f"Already linked to '{self._lock}'")
+        if self.lock_long_name and not override:
+            raise AttributeError(f"Already linked to lock '{self.lock_long_name}'")
         else:
-            self._lock = lock.long_name
+            self.lock_long_name = lock.long_name
         return self
 
     def _unlink_lock(self, missing_ok: bool = False) -> Optional[str]:
@@ -280,9 +280,9 @@ class Message:
                 and ``missing_ok`` is not ``True``.
 
         """
-        if self._lock:
-            lock = self._lock
-            self._lock = None
+        if self.lock_long_name:
+            lock = self.lock_long_name
+            self.lock_long_name = None
             return lock
         elif missing_ok:
             return None

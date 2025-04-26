@@ -126,16 +126,16 @@ def test_link_lock(rolling_backend: Backend) -> None:
     lock = Lock("lock", rolling_backend)
     msg = Message("task")._link_lock(lock)
 
-    assert msg._lock == lock.long_name
+    assert msg.lock_long_name == lock.long_name
 
 
 def test_release_lock(rolling_backend: Backend) -> None:
     lock = Lock("lock", rolling_backend)
     msg = Message("task")._link_lock(lock)
 
-    assert msg._lock == lock.long_name
+    assert msg.lock_long_name == lock.long_name
     msg._unlink_lock(missing_ok=False)
-    assert msg._lock is None
+    assert msg.lock_long_name is None
 
 
 def test_clone() -> None:

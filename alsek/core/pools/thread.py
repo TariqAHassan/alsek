@@ -226,8 +226,8 @@ class ThreadWorkerPool(BaseWorkerPool):
                         continue
 
                 # Saturated: free message & retry later
-                if message._lock:
-                    Lock(message._lock, backend=self.broker.backend).release()
+                if message.lock_long_name:
+                    Lock(message.lock_long_name, backend=self.broker.backend).release()
                     message._unlink_lock(missing_ok=True)  # noqa
                 self.stop_signal.wait(self.slot_wait_interval)  # back-off once
                 # Break so we start the stream again from the beginning.
