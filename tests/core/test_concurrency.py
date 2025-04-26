@@ -6,11 +6,13 @@
 
 from socket import gethostname
 import os
-import multiprocessing
 import threading
 from queue import Queue
+from typing import Any
 
+import dill
 import pytest
+import multiprocessing as mp
 
 from alsek.core.concurrency import Lock, _make_lock_name  # noqa
 from alsek.storage.backends import Backend
@@ -89,26 +91,62 @@ def test_make_lock_name() -> None:
     assert lock_name == expected_prefix
 
 
+def _rebuild_backend(encoded: bytes) -> Backend:
+    data: dict[str, Any] = dill.loads(encoded)
+    backend_cls = data["backend"]
+    return backend_cls._from_settings(data["settings"])  # noqa
+
+
 def test_thread_isolation(rolling_backend: Backend) -> None:
     """Test that a lock acquired in one thread cannot be acquired in another thread."""
-    lock = Lock("thread_lock", backend=rolling_backend)
-    assert lock.acquire()
-    assert lock.held
+    lock_name = "thread_lock"
+    primary_lock = Lock(lock_name, backend=rolling_backend)
 
-    result_queue = Queue()
+    # Thread-0 takes the lock
+    assert primary_lock.acquire(strict=True)
+    assert primary_lock.held
 
-    def thread_func() -> None:
-        # Try to acquire the same lock in a different thread
-        thread_lock = Lock("thread_lock", backend=rolling_backend)
-        acquire_result = thread_lock.acquire()
-        result_queue.put(acquire_result)
+    # Serialise the backend so the worker thread can build its own copy
+    encoded_backend = rolling_backend._encode()
+    q: Queue[bool] = Queue()
 
-    thread = threading.Thread(target=thread_func)
-    thread.start()
-    thread.join()
+    def worker() -> None:
+        secondary_backend = _rebuild_backend(encoded_backend)
+        acquired = Lock(lock_name, backend=secondary_backend).acquire(strict=True)
+        q.put(acquired)
 
-    # The thread should not be able to acquire the lock
-    assert not result_queue.get()
+    t = threading.Thread(target=worker, daemon=True)
+    t.start()
+    t.join()
 
-    # Clean up
-    lock.release()
+    # The second thread must *not* obtain the lock
+    assert q.get() is False
+
+    # Clean-up
+    assert primary_lock.release()
+    primary_lock.backend.clear_namespace()
+
+
+def _worker(name: str, encoded_backend: bytes, q: Queue) -> None:
+    backend = _rebuild_backend(encoded_backend)
+    got_lock = Lock(name, backend=backend).acquire(strict=True)
+    q.put(got_lock)
+
+
+def test_process_isolation(rolling_backend: Backend) -> None:
+    lock_name = "process_lock"
+    lock = Lock(lock_name, backend=rolling_backend)
+
+    assert lock.acquire(strict=True)
+
+    result_q: Queue[bool] = mp.Queue()
+    proc = mp.Process(
+        target=_worker,
+        args=(lock_name, rolling_backend._encode(), result_q),
+        daemon=True,
+    )
+    proc.start()
+    proc.join()
+
+    assert result_q.get() is False  # child must *not* acquire the lock
+    assert lock.release()
