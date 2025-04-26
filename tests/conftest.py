@@ -147,12 +147,25 @@ def rolling_status_tracker(rolling_broker: Broker) -> StatusTracker:
 
 
 @pytest.fixture()
-def rolling_worker_pool(rolling_broker: Broker) -> WorkerPool:
-    n: int = 3
-    tasks = [task(rolling_broker, name=f"task-{i}")(lambda: i) for i in range(n)]
-    pool = WorkerPool(tasks)
+def rolling_thread_worker_pool(rolling_broker):
+    n = 3
+    tasks = [
+        task(rolling_broker, name=f"thread-task-{i}", mechanism="thread")(lambda: i)
+        for i in range(n)
+    ]
 
-    # Replace `stream()` with `_poll()`. This means that calls of
-    # `run()` wil now exit, rather than looping indefinitely.
-    pool.stream = pool._poll
+    pool = ThreadWorkerPool(tasks=tasks)
+    pool.stream = pool._poll  # single scan → finite run
+
+    # ---- wrap submit_message so it stops the pool after one hit ----
+    original_submit = pool.submit_message
+
+    @wraps(original_submit)
+    def submit_and_quit(msg: Message) -> bool:
+        submitted = original_submit(msg)
+        if submitted:  # first successful enqueue
+            pool._can_run = False  # break the outer while-loop
+        return submitted
+
+    pool.submit_message = submit_and_quit
     return pool
