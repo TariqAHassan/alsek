@@ -13,6 +13,7 @@ from queue import Queue
 from typing import Any
 
 import pytest
+
 from alsek import Message, Broker
 from alsek.core.pools.thread import (
     ThreadWorkerPool,
@@ -24,6 +25,7 @@ import multiprocessing as mp
 import threading
 from alsek.core.status import StatusTracker
 from pathlib import Path
+
 
 # ------------------------------------------------------------------ #
 # Helpers
@@ -324,59 +326,59 @@ def test_submit_message_fails_when_every_group_full(rolling_broker: Broker) -> N
 # ------------------------------------------------------------------ #
 
 
-# @pytest.mark.flaky(reruns=2)
-# def test_pool_never_exceeds_capacity(rolling_broker) -> None:
-#     """
-#     Spin up a pool (2 procs × 2 threads = 4 max) and submit 12 tasks that each
-#     sleep for 50 ms.  We track the *peak* number of concurrent executions with
-#     a multiprocessing.Value shared between all workers.
-#     """
-#     manager = mp.Manager()
-#     current = manager.Value("i", 0)
-#     peak = manager.Value("i", 0)
-#     lock = manager.Lock()
-#
-#     def _tracked_work() -> None:
-#         with lock:
-#             current.value += 1
-#             peak.value = max(peak.value, current.value)
-#         time.sleep(0.05)
-#         with lock:
-#             current.value -= 1
-#
-#     tracked_task = task(
-#         rolling_broker,
-#         name="tracked",
-#         mechanism="thread",
-#         timeout=500,
-#     )(_tracked_work)
-#
-#     pool = ThreadWorkerPool(
-#         tasks=[tracked_task],
-#         n_threads=2,
-#         n_processes=2,
-#     )
-#
-#     # create > capacity messages
-#     for _ in range(12):
-#         tracked_task.generate()
-#
-#     # run pool in background until queue drained
-#     t = threading.Thread(target=pool.run, daemon=True)
-#     t.start()
-#     # wait until all queues empty or timeout
-#     deadline = time.time() + 4
-#     while (
-#         any(_queue_has_items(g.queue) for g in pool._progress_groups)
-#         and time.time() < deadline
-#     ):
-#         time.sleep(0.02)
-#
-#     pool._can_run = False  # stop engine loop
-#     t.join(timeout=1)
-#     pool.on_shutdown()
-#
-#     assert peak.value <= 4, f"peak concurrency {peak.value} exceeded capacity 4"
+@pytest.mark.flaky(max_runs=2)
+def test_pool_never_exceeds_capacity(rolling_broker) -> None:
+    """
+    Spin up a pool (2 procs × 2 threads = 4 max) and submit 12 tasks that each
+    sleep for 50 ms.  We track the *peak* number of concurrent executions with
+    a multiprocessing.Value shared between all workers.
+    """
+    manager = mp.Manager()
+    current = manager.Value("i", 0)
+    peak = manager.Value("i", 0)
+    lock = manager.Lock()
+
+    def _tracked_work() -> None:
+        with lock:
+            current.value += 1
+            peak.value = max(peak.value, current.value)
+        time.sleep(0.05)
+        with lock:
+            current.value -= 1
+
+    tracked_task = task(
+        rolling_broker,
+        name="tracked",
+        mechanism="thread",
+        timeout=500,
+    )(_tracked_work)
+
+    pool = ThreadWorkerPool(
+        tasks=[tracked_task],
+        n_threads=2,
+        n_processes=2,
+    )
+
+    # create > capacity messages
+    for _ in range(12):
+        tracked_task.generate()
+
+    # run pool in background until queue drained
+    t = threading.Thread(target=pool.run, daemon=True)
+    t.start()
+    # wait until all queues empty or timeout
+    deadline = time.time() + 4
+    while (
+        any(_queue_has_items(g.queue) for g in pool._progress_groups)
+        and time.time() < deadline
+    ):
+        time.sleep(0.02)
+
+    pool._can_run = False  # stop engine loop
+    t.join(timeout=1)
+    pool.on_shutdown()
+
+    assert peak.value <= 4, f"peak concurrency {peak.value} exceeded capacity 4"
 
 
 # ------------------------------------------------------------------ #
