@@ -10,7 +10,7 @@ import dill, logging
 from typing import List, Optional, Any
 
 import queue
-from alsek import Message, Lock
+from alsek import Message
 from alsek.core.futures import ThreadTaskFuture, Queue, Event, Process
 from alsek.core.pools._base import BaseWorkerPool
 from alsek.core.task import Task
@@ -227,8 +227,10 @@ class ThreadWorkerPool(BaseWorkerPool):
 
                 # Saturated: free message & retry later
                 if message.lock_long_name:
-                    Lock(message.lock_long_name, backend=self.broker.backend).release()
-                    message._unlink_lock(missing_ok=True)  # noqa
+                    message.unlink_lock(
+                        missing_ok=True,
+                        target_backend=self.broker.backend,
+                    )
                 self.stop_signal.wait(self.slot_wait_interval)  # back-off once
                 # Break so we start the stream again from the beginning.
                 # This is important because the stream is ordered by priority.
