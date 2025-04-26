@@ -173,8 +173,6 @@ class ThreadWorkerPool(BaseWorkerPool):
             `thread_raise()` during revocation). Can also temporarily result in more than the
             allotted number of threads running, since a future is only removed from the pool
             after the thread is confirmed dead.
-        slot_wait_interval (float): amount of time (in milliseconds) to wait
-            between checks to determine worker availability for pending tasks.
         **kwargs (Keyword Args): Keyword arguments to pass to ``BaseWorkerPool()``.
 
     Notes:
@@ -190,13 +188,11 @@ class ThreadWorkerPool(BaseWorkerPool):
         n_threads: int = 8,
         n_processes: Optional[int] = None,
         complete_only_on_thread_exit: bool = False,
-        slot_wait_interval: float = 0.05,
         **kwargs: Any,
     ) -> None:
         super().__init__(mechanism="thread", **kwargs)
         self.n_threads = n_threads
         self.n_processes = n_processes or smart_cpu_count()
-        self.slot_wait_interval = slot_wait_interval
         self.complete_only_on_thread_exit = complete_only_on_thread_exit
 
         self._progress_groups: List[ProcessGroup] = list()
@@ -206,7 +202,8 @@ class ThreadWorkerPool(BaseWorkerPool):
         for g in self._progress_groups:
             g.stop()
 
-    def _prune(self) -> None:
+    def prune(self) -> None:
+        """Prune spent futures."""
         updated_groups = list()
         for g in self._progress_groups:
             g.process.join(timeout=0)  # reap quickly if already exited
@@ -229,28 +226,12 @@ class ThreadWorkerPool(BaseWorkerPool):
             return new_group
         return None
 
-    def engine(self) -> None:
-        """Run the worker pool."""
-        while not self.stop_signal.received:
-            for message in self.stream():
-                self._prune()
-
-                if group := self._acquire_group():  # we have a slot → run it
-                    successfully_submitted = group.submit(
-                        task=self._task_map[message.task_name],
-                        message=message,
-                    )
-                    if successfully_submitted:
-                        continue
-
-                # Saturated: free message & retry later
-                message.unlink_lock(
-                    missing_ok=True,
-                    target_backend=self.broker.backend,
-                )
-                self.stop_signal.wait(self.slot_wait_interval)  # back-off once
-                # Break so we start the stream again from the beginning.
-                # This is important because the stream is ordered by priority.
-                # That is, when we finally can acquire a process group again, we
-                # want to saturate it by message priority (high -> low).
-                break
+    def handle_message(self, message: Message) -> bool:
+        """Handle a single message"""
+        submitted = False
+        if group := self._acquire_group():  # we have a slot → run it
+            submitted = group.submit(
+                task=self._task_map[message.task_name],
+                message=message,
+            )
+        return submitted

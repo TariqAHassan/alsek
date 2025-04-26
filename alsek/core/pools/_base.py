@@ -9,6 +9,7 @@ from __future__ import annotations
 from collections import defaultdict
 from typing import Any, Collection, DefaultDict, Optional
 
+from alsek import Message
 from alsek.core.broker import Broker
 from alsek.core.consumer import Consumer
 from alsek.core.task import Task
@@ -89,6 +90,7 @@ class BaseWorkerPool(Consumer, ABC):
         tasks: Collection[Task],
         queues: Optional[list[str]] = None,
         task_specific_mode: bool = False,
+        slot_wait_interval: bool = 0.05,
         **kwargs: Any,
     ) -> None:
         tasks = [t for t in tasks if t.mechanism == mechanism]
@@ -106,6 +108,7 @@ class BaseWorkerPool(Consumer, ABC):
         self.tasks = tasks
         self.queues = queues or sorted(self.subset)
         self.task_specific_mode = task_specific_mode
+        self.slot_wait_interval = slot_wait_interval
 
         self._task_map = {t.name: t for t in tasks}
 
@@ -118,9 +121,36 @@ class BaseWorkerPool(Consumer, ABC):
         log.info("Worker pool online.")
 
     @abstractmethod
-    def engine(self) -> None:
-        """Main engine loop."""
+    def prune(self) -> None:
+        """Prune spent futures."""
         raise NotImplementedError()
+
+    @abstractmethod
+    def handle_message(self, message: Message) -> bool:
+        """Handle a single message"""
+        raise NotImplementedError()
+
+    def engine(self) -> None:
+        """Run the worker pool."""
+        while not self.stop_signal.received:
+            for message in self.stream():
+                self.prune()
+
+                if self.handle_message(message):
+                    continue
+
+                # Saturated: free message & retry later
+                message.unlink_lock(
+                    missing_ok=True,
+                    target_backend=self.broker.backend,
+                )
+                # Brief back-off, then restart the stream (priority reset)
+                self.stop_signal.wait(self.slot_wait_interval)
+                # Break so we start the stream again from the beginning.
+                # This is important because the stream is ordered by priority.
+                # That is, when we finally can acquire a process group again, we
+                # want to saturate it by message priority (high -> low).
+                break
 
     def stop_all_futures(self) -> None:
         """Stop all active futures."""
