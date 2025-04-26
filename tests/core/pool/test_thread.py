@@ -95,6 +95,7 @@ def test_process_group_has_slot() -> None:
 # ------------------------------------------------------------------ #
 # 5. ProcessGroup.submit() – success & queue.Full path
 # ------------------------------------------------------------------ #
+
 class _DummyTask:
     @staticmethod
     def serialize() -> dict[str, Any]:
@@ -147,6 +148,7 @@ def test_process_group_submit_when_full(monkeypatch: pytest.MonkeyPatch) -> None
 # ------------------------------------------------------------------ #
 # 6. ProcessGroup.stop() terminates child process
 # ------------------------------------------------------------------ #
+
 def test_process_group_stop_terminates_process() -> None:
     g = ProcessGroup(
         n_threads=1,
@@ -161,6 +163,7 @@ def test_process_group_stop_terminates_process() -> None:
 # ------------------------------------------------------------------ #
 # 7. ThreadInProcessGroup._has_capacity()
 # ------------------------------------------------------------------ #
+
 def test_thread_in_process_group_has_capacity() -> None:
     tig = ThreadInProcessGroup(
         q=MPQueue(),
@@ -179,6 +182,8 @@ def test_thread_in_process_group_has_capacity() -> None:
 # ------------------------------------------------------------------ #
 # 8. ThreadWorkerPool.prune() removes exited groups
 # ------------------------------------------------------------------ #
+
+
 def test_thread_worker_pool_prune_removes_dead_groups(
     rolling_thread_worker_pool: ThreadWorkerPool,
 ) -> None:
