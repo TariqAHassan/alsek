@@ -226,8 +226,8 @@ class ThreadWorkerPool(BaseWorkerPool):
             return new_group
         return None
 
-    def handle_message(self, message: Message) -> bool:
-        """Handle a single message"""
+    def submit_message(self, message: Message) -> bool:
+        """Submit a single message"""
         submitted = False
         if group := self._acquire_group():  # we have a slot → run it
             submitted = group.submit(

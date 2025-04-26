@@ -129,7 +129,7 @@ class BaseWorkerPool(Consumer, ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def handle_message(self, message: Message) -> bool:
+    def submit_message(self, message: Message) -> bool:
         """Handle a single message.
 
         Args:
@@ -147,7 +147,7 @@ class BaseWorkerPool(Consumer, ABC):
             for message in self.stream():
                 self.prune()
 
-                if self.handle_message(message):
+                if self.submit_message(message):
                     continue
 
                 # Saturated: free message & retry later

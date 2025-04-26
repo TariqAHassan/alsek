@@ -62,8 +62,8 @@ class ProcessWorkerPool(BaseWorkerPool):
             )
         )
 
-    def handle_message(self, message: Message) -> bool:
-        """Handle a single message"""
+    def submit_message(self, message: Message) -> bool:
+        """Submit a single message"""
         submitted = False
         if self.has_slot():
             self._submit(message)
