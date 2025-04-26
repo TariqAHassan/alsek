@@ -26,6 +26,8 @@ import multiprocessing as mp
 import threading
 from pathlib import Path
 
+from alsek.storage.result import ResultStore
+
 
 # ------------------------------------------------------------------ #
 # Helpers
@@ -333,14 +335,16 @@ def test_task_completes_successfully(rolling_broker: Broker) -> None:
     def _fast_task() -> int:
         return 99
 
-    tracker = StatusTracker(rolling_broker.backend)
+    status_tracker = StatusTracker(rolling_broker.backend)
+    result_store = ResultStore(rolling_broker.backend)
 
     fast_task = task(
         rolling_broker,
         name="fast_task",
         mechanism="thread",
         max_retries=0,
-        status_tracker=tracker,
+        status_tracker=status_tracker,
+        result_store=result_store,
     )(_fast_task)
 
     msg = fast_task.generate()
@@ -351,7 +355,7 @@ def test_task_completes_successfully(rolling_broker: Broker) -> None:
     runner.start()
 
     # Actively wait for the status to change
-    tracker.wait_for(
+    status_tracker.wait_for(
         message=msg,
         status=TERMINAL_TASK_STATUSES,
         timeout=5,
@@ -361,7 +365,8 @@ def test_task_completes_successfully(rolling_broker: Broker) -> None:
     pool.stop_signal.exit_event.set()
     runner.join(timeout=2)
 
-    assert tracker.get(msg).status == TaskStatus.SUCCEEDED
+    assert status_tracker.get(msg).status == TaskStatus.SUCCEEDED
+    assert result_store.get(msg) == 99
 
 
 # ------------------------------------------------------------------ #

@@ -4,7 +4,10 @@
 
 """
 
+from __future__ import annotations
 from typing import Any, Iterable, Union
+
+import dill
 
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
@@ -28,6 +31,19 @@ class ResultStore:
 
     def __init__(self, backend: Backend) -> None:
         self.backend = backend
+
+    def serialize(self) -> dict[str, Any]:
+        return {
+            "backend": self.backend.encode(),
+        }
+
+    @staticmethod
+    def deserialize(data: dict[str, Any]) -> ResultStore:
+        backend_data = dill.loads(data["backend"])
+        backend = backend_data["backend"]._from_settings(backend_data["settings"])
+        return ResultStore(
+            backend=backend,
+        )
 
     @staticmethod
     def _get_stable_prefix(message: Message) -> str:

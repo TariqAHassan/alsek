@@ -183,8 +183,11 @@ class Task:
         # Status Tracker
         if self.status_tracker:
             settings["status_tracker"] = self.status_tracker.serialize()
-        else:
-            settings["status_tracker"] = None
+
+        # Result Store
+        if self.result_store:
+            settings["result_store"] = self.result_store.serialize()
+
         return dict(task=self.__class__, settings=settings)
 
     @staticmethod
@@ -201,6 +204,10 @@ class Task:
             # Status Tracker
             if status_tracker_settings := settings.get("status_tracker"):
                 settings["status_tracker"] = StatusTracker.deserialize(status_tracker_settings)  # fmt: skip
+
+            # Result Store
+            if result_store_settings := settings.get("result_store"):
+                settings["result_store"] = ResultStore.deserialize(result_store_settings)
 
             return settings
 
