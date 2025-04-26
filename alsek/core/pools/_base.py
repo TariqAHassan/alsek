@@ -170,7 +170,7 @@ class BaseWorkerPool(Consumer, ABC):
                 # Break so we start the stream again from the beginning.
                 # This is important because the stream is ordered by priority.
                 # That is, when we finally can acquire a process group again, we
-                # want to saturate it by message priority (high -> low).
+                # want to saturate our capacity by message priority (high -> low).
                 break
 
     @abstractmethod
