@@ -33,7 +33,7 @@ class ThreadInProcessGroup:
         q: Queue,
         shutdown_event: Event,
         n_threads: int,
-        slot_wait_interval: float = 0.02,
+        slot_wait_interval: float,
     ) -> None:
         self.q = q
         self.shutdown_event = shutdown_event
@@ -114,7 +114,7 @@ class ProcessGroup:
         self,
         n_threads: int,
         complete_only_on_thread_exit: bool,
-        slot_wait_interval: float = 0.02,
+        slot_wait_interval: float,
     ) -> None:
         self._n_threads = n_threads
         self.complete_only_on_thread_exit = complete_only_on_thread_exit
