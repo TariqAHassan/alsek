@@ -10,7 +10,6 @@ import pytest
 
 from alsek import Message
 from alsek.utils.namespacing import (
-    make_lock_name,
     get_dlq_message_name,
     get_message_name,
     get_messages_namespace,
@@ -18,18 +17,6 @@ from alsek.utils.namespacing import (
     get_priority_namespace_from_message,
     get_subnamespace,
 )
-from socket import gethostname
-import os
-import threading
-
-
-def test_make_lock_name() -> None:
-    lock_name = make_lock_name()
-    hostname = gethostname()
-    pid = os.getpid()
-    thread_id = threading.get_ident()
-    expected_prefix = f"{hostname}:{pid}:{thread_id}"
-    assert lock_name == expected_prefix
 
 
 @pytest.mark.parametrize(

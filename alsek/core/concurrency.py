@@ -10,8 +10,14 @@ from types import TracebackType
 from typing import Optional, Type, cast
 
 from alsek.storage.backends import Backend
-from alsek.utils.namespacing import make_lock_name
 from alsek.utils.printing import auto_repr
+import os
+import threading
+from socket import gethostname
+
+
+def _make_lock_name() -> str:
+    return f"{gethostname()}:{os.getpid()}:{threading.get_ident()}"
 
 
 class Lock:
@@ -82,7 +88,7 @@ class Lock:
     @property
     def _my_holder_id(self) -> Optional[str]:
         """ID of the host that currently holds the lock, if any."""
-        return make_lock_name()
+        return _make_lock_name()
 
     @property
     def held(self) -> bool:
