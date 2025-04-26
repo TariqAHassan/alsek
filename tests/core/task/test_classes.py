@@ -30,9 +30,9 @@ def test_task_serialization(
     task_class: Type[Task],
     rolling_broker: Broker,
 ) -> None:
-    task_data = task_class(lambda: 1, broker=rolling_broker)._serialize()
+    task_data = task_class(lambda: 1, broker=rolling_broker).serialize()
     Schema({"task": type, "settings": dict}).validate(task_data)
-    reconstructed_task = Task._deserialize(task_data)
+    reconstructed_task = Task.deserialize(task_data)
     assert isinstance(reconstructed_task, Task)
 
 

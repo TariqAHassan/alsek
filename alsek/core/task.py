@@ -173,14 +173,14 @@ class Task:
 
         self._deferred: bool = False
 
-    def _serialize(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         settings = gather_init_params(self, ignore=("broker",))
         settings["broker"] = gather_init_params(self.broker, ignore=("backend",))
         settings["broker"]["backend"] = self.broker.backend._encode()
         return dict(task=self.__class__, settings=settings)
 
     @staticmethod
-    def _deserialize(data: dict[str, Any]) -> Task:
+    def deserialize(data: dict[str, Any]) -> Task:
         def unwind_settings(settings: dict[str, Any]) -> dict[str, Any]:
             backend_data = dill.loads(settings["broker"]["backend"])
             settings["broker"]["backend"] = backend_data["backend"]._from_settings(
@@ -642,8 +642,8 @@ class TriggerTask(Task):
         self.scheduler = BackgroundScheduler()
         self.scheduler.start()
 
-    def _serialize(self) -> dict[str, Any]:
-        serialized_task = super()._serialize()
+    def serialize(self) -> dict[str, Any]:
+        serialized_task = super().serialize()
         serialized_task["settings"]["trigger"] = self.trigger
         return serialized_task
 

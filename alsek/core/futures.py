@@ -55,12 +55,12 @@ def _generate_callback_message(
 
 
 def _process_future_encoder(task: Task, message: Message) -> bytes:
-    return cast(bytes, dill.dumps((task._serialize(), message)))
+    return cast(bytes, dill.dumps((task.serialize(), message)))
 
 
 def _process_future_decoder(encoded_data: bytes) -> tuple[Task, Message]:
     task_data, message = dill.loads(encoded_data)
-    return Task._deserialize(task_data), cast(Message, message)
+    return Task.deserialize(task_data), cast(Message, message)
 
 
 def _retry_future_handler(
