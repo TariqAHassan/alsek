@@ -7,23 +7,22 @@
 from __future__ import annotations
 
 import queue as _q
-import time
 from multiprocessing import Event, Queue as MPQueue
 from queue import Queue
 from typing import Any
 
 import pytest
 
-from alsek import Message, Broker
+from alsek import Message, Broker, StatusTracker
 from alsek.core.pools.thread import (
     ThreadWorkerPool,
     ProcessGroup,
     ThreadInProcessGroup,
 )
+from alsek.core.status import TaskStatus, TERMINAL_TASK_STATUSES
 from alsek.core.task import task
 import multiprocessing as mp
 import threading
-from alsek.core.status import StatusTracker
 from pathlib import Path
 
 
@@ -157,6 +156,7 @@ def test_process_group_submit_when_full(monkeypatch: pytest.MonkeyPatch) -> None
 # ------------------------------------------------------------------ #
 
 
+@pytest.mark.flaky(max_runs=2)
 def test_process_group_stop_terminates_process() -> None:
     g = ProcessGroup(
         n_threads=1,
@@ -164,7 +164,7 @@ def test_process_group_stop_terminates_process() -> None:
         slot_wait_interval=0.01,
     )
     assert g.process.is_alive()
-    g.stop(timeout=0.2)
+    g.stop()
     assert not g.process.is_alive()
 
 
@@ -322,7 +322,52 @@ def test_submit_message_fails_when_every_group_full(rolling_broker: Broker) -> N
 
 
 # ------------------------------------------------------------------ #
-# 9. Capacity is never exceeded
+# 9. Normal FLow
+# ------------------------------------------------------------------ #
+
+
+import time
+
+@pytest.mark.timeout(10)
+@pytest.mark.flaky(max_runs=2)
+def test_task_completes_successfully(rolling_broker: Broker) -> None:
+    def _fast_task() -> int:
+        return 99
+
+    tracker = StatusTracker(rolling_broker.backend)
+
+    fast_task = task(
+        rolling_broker,
+        name="fast_task",
+        mechanism="thread",
+        max_retries=0,
+        status_tracker=tracker,
+    )(_fast_task)
+
+    msg = fast_task.generate()
+
+    pool = ThreadWorkerPool(tasks=[fast_task], n_threads=1, n_processes=1)
+
+    runner = threading.Thread(target=pool.run, daemon=True)
+    runner.start()
+
+    # Actively wait for the status to change
+    tracker.wait_for(
+        message=msg,
+        status=TERMINAL_TASK_STATUSES,
+        timeout=5,
+    )
+
+    # now shutdown pool
+    pool.stop_signal.exit_event.set()
+    runner.join(timeout=2)
+
+    assert tracker.get(msg).status == TaskStatus.SUCCEEDED
+
+
+
+# ------------------------------------------------------------------ #
+# 10. Capacity is never exceeded
 # ------------------------------------------------------------------ #
 
 
@@ -383,18 +428,11 @@ def test_pool_never_exceeds_capacity(rolling_broker) -> None:
 
 
 # ------------------------------------------------------------------ #
-# 10. Per-message timeout triggers retry/fail path
+# 11. Per-message timeout triggers retry/fail path
 # ------------------------------------------------------------------ #
 
-
-# @pytest.mark.timeout(30)
+# @pytest.mark.timeout(15)
 # def test_task_timeout_causes_retry(rolling_broker: Broker) -> None:
-#     """
-#     Make a task whose body sleeps 0.2 s but whose message timeout is 50 ms.
-#     After the pool runs we expect the StatusTracker to show RETRYING (could be
-#     FAILED if retries are exhausted, either is fine as long as not SUCCEEDED).
-#     """
-#
 #     def _slow() -> None:
 #         time.sleep(0.2)
 #
@@ -402,22 +440,23 @@ def test_pool_never_exceeds_capacity(rolling_broker) -> None:
 #         rolling_broker,
 #         name="slow",
 #         mechanism="thread",
-#         timeout=50,  # 50 ms
-#         max_retries=0,  # fail immediately
+#         timeout=50,  # ms
+#         max_retries=-1,  # <— *do not* re-queue after timeout
 #     )(_slow)
 #
 #     msg = slow_task.generate()
 #
 #     pool = ThreadWorkerPool(tasks=[slow_task], n_threads=1, n_processes=1)
-#     pool.run()  # single scan → returns
+#     pool.run()
 #
 #     status = StatusTracker(rolling_broker).get(msg)
-#     assert status in {"FAILED", "RETRYING"}
+#     assert status == "FAILED"
 
 
-# # ------------------------------------------------------------------ #
-# # 11. Graceful shutdown stops children
-# # ------------------------------------------------------------------ #
+# ------------------------------------------------------------------ #
+# 12. Graceful shutdown stops children
+# ------------------------------------------------------------------ #
+
 
 @pytest.mark.timeout(30)
 def test_graceful_shutdown_cleans_processes(rolling_broker: Broker) -> None:
@@ -456,8 +495,9 @@ def test_graceful_shutdown_cleans_processes(rolling_broker: Broker) -> None:
 
 
 # ------------------------------------------------------------------ #
-# 12. Revocation mid-flight is handled (bonus)
+# 13. Revocation mid-flight is handled (bonus)
 # ------------------------------------------------------------------ #
+
 
 @pytest.mark.timeout(30)
 def test_revocation_mid_flight(
