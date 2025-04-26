@@ -613,9 +613,9 @@ and can be any one of the following:
   * `<TaskStatus.SUCCEEDED: 5>`
 
 !!! note
-    By default, `StatusTracker()` will periodically scan for message statuses
-    which have become invalid. Specifically, a scan will be performed to
-    check for messages with statuses which are non-terminal (i.e., not 
+    `StatusTracker()` can be paired with `StatusTrackerIntegryScanner()`, which
+    will periodically scan for message statuses which have become invalid. Specifically, 
+    a scan will be performed to check for messages with statuses which are non-terminal (i.e., not 
     ``TaskStatus.FAILED`` or ``TaskStatus.SUCCEEDED``) and no longer exist
     in the broker. Any messages meeting these criteria will have their status
     updated to ``TaskStatus.UNKNOWN``.  Status information can become corrupt in 
@@ -624,8 +624,7 @@ and can be any one of the following:
     is never subsequently retried.
 
     The frequency of status integrity scans can be changed by altering the
-    ``integrity_scan_trigger`` parameter of `StatusTracker()`. Alternatively,
-    these scans can be disabled by setting ``integrity_scan_trigger=None``.
+    ``trigger`` parameter of `StatusTrackerIntegryScanner()`..
 
 ## Result Storage
 
