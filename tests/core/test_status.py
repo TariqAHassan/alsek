@@ -4,6 +4,9 @@
 
 """
 
+import threading
+import time
+
 import pytest
 
 from alsek import Broker
@@ -131,6 +134,59 @@ def test_name2message(name, expected: tuple[str, str, str]) -> None:
     message = _name2message(name)
     actual = (message.task_name, message.queue, message.uuid)
     assert actual == expected
+
+
+@pytest.mark.parametrize(
+    "status_arg, final_status, should_set, expected",
+    [
+        # single-status arg, status will be set → True
+        (TaskStatus.SUCCEEDED, TaskStatus.SUCCEEDED, True, True),
+        # iterable-status arg, status will be set to a matching terminal → True
+        ([TaskStatus.FAILED, TaskStatus.SUCCEEDED], TaskStatus.FAILED, True, True),
+        # status never set → timeout → False
+        (TaskStatus.SUCCEEDED, None, False, False),
+    ],
+)
+def test_wait_for_various_cases(
+    rolling_status_tracker: StatusTracker,
+    status_arg,
+    final_status,
+    should_set: bool,
+    expected: bool,
+) -> None:
+    msg = Message("task", uuid=f"wf-param-{expected}")
+    if should_set:
+        # delay then set the final_status
+        def _delayed_set() -> None:
+            time.sleep(0.05)
+            rolling_status_tracker.set(msg, status=final_status)  # type: ignore[arg-type]
+
+        threading.Thread(target=_delayed_set, daemon=True).start()
+
+    result = rolling_status_tracker.wait_for(
+        message=msg,
+        status=status_arg,
+        timeout=0.2,
+        poll_interval=0.01,
+    )
+    assert result is expected
+
+
+@pytest.mark.parametrize(
+    "bad_status",
+    [
+        "not-a-status",
+        123,
+        object(),
+    ],
+)
+def test_wait_for_invalid_status_types_raise(
+    rolling_status_tracker: StatusTracker,
+    bad_status,
+) -> None:
+    msg = Message("task", uuid="wf-invalid")
+    with pytest.raises(ValueError):
+        rolling_status_tracker.wait_for(message=msg, status=bad_status)  # type: ignore[arg-type]
 
 
 def test_integrity_scaner(rolling_status_tracker: StatusTracker) -> None:
