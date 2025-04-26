@@ -12,6 +12,7 @@ from multiprocessing import Event, Queue as MPQueue
 from queue import Queue
 from typing import Any
 
+import pytest
 from alsek import Message
 from alsek.core.pools.thread import (
     ThreadWorkerPool,
@@ -62,7 +63,7 @@ def test_submit_message_available_slot(
 
 
 def test_submit_message_pool_saturated(
-    monkeypatch,
+    monkeypatch: pytest.MonkeyPatch,
     rolling_thread_worker_pool: ThreadWorkerPool,
 ) -> None:
     pool = rolling_thread_worker_pool
@@ -104,7 +105,7 @@ class _DummyMsg(Message):  # minimal stub; only .data accessed
     data: dict[str, Any] = {}
 
 
-def test_process_group_submit_success(monkeypatch) -> None:
+def test_process_group_submit_success(monkeypatch: pytest.MonkeyPatch) -> None:
     g = ProcessGroup(
         n_threads=1,
         complete_only_on_thread_exit=False,
@@ -122,7 +123,7 @@ def test_process_group_submit_success(monkeypatch) -> None:
     g.stop()
 
 
-def test_process_group_submit_when_full(monkeypatch) -> None:
+def test_process_group_submit_when_full(monkeypatch: pytest.MonkeyPatch) -> None:
     g = ProcessGroup(
         n_threads=1,
         complete_only_on_thread_exit=False,
