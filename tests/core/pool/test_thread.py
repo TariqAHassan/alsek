@@ -13,7 +13,7 @@ from queue import Queue
 from typing import Any
 
 import pytest
-from alsek import Message
+from alsek import Message, Broker
 from alsek.core.pools.thread import (
     ThreadWorkerPool,
     ProcessGroup,
@@ -96,6 +96,7 @@ def test_process_group_has_slot() -> None:
 # 5. ProcessGroup.submit() – success & queue.Full path
 # ------------------------------------------------------------------ #
 
+
 class _DummyTask:
     @staticmethod
     def serialize() -> dict[str, Any]:
@@ -149,6 +150,7 @@ def test_process_group_submit_when_full(monkeypatch: pytest.MonkeyPatch) -> None
 # 6. ProcessGroup.stop() terminates child process
 # ------------------------------------------------------------------ #
 
+
 def test_process_group_stop_terminates_process() -> None:
     g = ProcessGroup(
         n_threads=1,
@@ -163,6 +165,7 @@ def test_process_group_stop_terminates_process() -> None:
 # ------------------------------------------------------------------ #
 # 7. ThreadInProcessGroup._has_capacity()
 # ------------------------------------------------------------------ #
+
 
 def test_thread_in_process_group_has_capacity() -> None:
     tig = ThreadInProcessGroup(
@@ -200,3 +203,111 @@ def test_thread_worker_pool_prune_removes_dead_groups(
 
     pool.prune()
     assert dead_group not in pool._progress_groups
+
+
+# ------------------------------------------------------------------ #
+# 9. ThreadInProcessGroup._prune() drops finished & timed-out futures
+# ------------------------------------------------------------------ #
+
+def test_thread_in_process_group_prune_behavior() -> None:
+    """• remove objects whose .complete is True
+    • kill + drop objects whose .time_limit_exceeded is True
+    • keep live, incomplete futures"""
+    tig = ThreadInProcessGroup(
+        q=MPQueue(),
+        shutdown_event=Event(),
+        n_threads=10,
+        slot_wait_interval=0.01,
+    )
+
+    class _FakeFuture:
+        def __init__(self, *, complete: bool, tlex: bool):
+            self.complete = complete
+            self.time_limit_exceeded = tlex
+            self.stop_called = False
+            self.cleaned = False
+
+        # signature must match real ThreadTaskFuture.stop / clean_up
+        def stop(self, _exc) -> None:  # noqa: D401
+            self.stop_called = True
+
+        def clean_up(self, ignore_errors: bool = False) -> None:
+            self.cleaned = True
+
+    live = _FakeFuture(complete=False, tlex=False)
+    finished = _FakeFuture(complete=True, tlex=False)
+    timed_out = _FakeFuture(complete=False, tlex=True)
+
+    tig._live = [live, finished, timed_out]
+    tig._prune()
+
+    # finished & timed-out should be gone; live remains
+    assert tig._live == [live]
+    # timed_out future must have been stopped & cleaned
+    assert timed_out.stop_called is True and timed_out.cleaned is True
+
+
+# ------------------------------------------------------------------ #
+# 10-12. ThreadWorkerPool._acquire_group() logic
+# ------------------------------------------------------------------ #
+
+def _mk_pool(broker: Broker) -> ThreadWorkerPool:
+    """Spin up a tiny pool with a single dummy thread-task."""
+    from alsek.core.task import task
+
+    dummy_task = task(broker, name="dummy", mechanism="thread")(lambda: None)
+    return ThreadWorkerPool(
+        tasks=[dummy_task],
+        n_threads=1,
+        n_processes=2,  # small cap so we can hit it quickly
+    )
+
+
+def test_acquire_group_reuses_available_slot(rolling_broker: Broker) -> None:
+    pool = _mk_pool(rolling_broker)
+    g1 = pool._acquire_group()  # spawns first group
+    assert g1 is not None
+    # queue still empty → should reuse
+    assert pool._acquire_group() is g1
+    g1.stop()
+    pool.on_shutdown()
+
+
+def test_acquire_group_spawns_until_cap(rolling_broker: Broker) -> None:
+    pool = _mk_pool(rolling_broker)
+
+    g1 = pool._acquire_group()
+    assert len(pool._progress_groups) == 1
+
+    # saturate first group
+    g1.queue.put(b"x")
+
+    g2 = pool._acquire_group()  # new spawn
+    assert g2 is not g1
+    assert len(pool._progress_groups) == 2
+
+    # saturate second group as well
+    g2.queue.put(b"y")
+
+    # cap reached (n_processes=2) so now returns None
+    assert pool._acquire_group() is None
+    g1.stop()
+    g2.stop()
+    pool.on_shutdown()
+
+
+def test_submit_message_fails_when_every_group_full(rolling_broker: Broker) -> None:
+    pool = _mk_pool(rolling_broker)
+    # create groups and fill each queue
+    g1 = pool._acquire_group()
+    g1.queue.put(b"x")
+    g2 = pool._acquire_group()
+    g2.queue.put(b"y")
+
+    # generate a real Message object to pass in
+    msg = pool.tasks[0].generate()
+    assert pool.submit_message(msg) is False
+
+    g1.stop()
+    g2.stop()
+    pool.on_shutdown()
