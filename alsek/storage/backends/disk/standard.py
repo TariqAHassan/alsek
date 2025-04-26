@@ -43,7 +43,7 @@ class DiskCacheBackend(Backend):
         ``DiskCache`` persists data to a local (Sqlite) database and does
         not implement 'server-side' "if not exist" on `SET` (`nx`) support or
         true priority capabilities. For these reasons, ``DiskCacheBackend()`` is
-        recommended for development and testing purposes only. (Multi-worker setups
+        **recommended for development and testing purposes only**. (Multi-worker setups
         in particular should NOT be used with this backend.)
 
     """
