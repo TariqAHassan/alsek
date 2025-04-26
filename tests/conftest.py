@@ -12,13 +12,16 @@ from subprocess import PIPE, Popen
 from typing import Any, Iterable, Optional, Type, Union
 
 import pytest
+from functools import wraps
 from _pytest.fixtures import SubRequest
 from click.testing import CliRunner
 from pytest_redis import factories as redis_factories
 from redis import Redis
 
+from alsek.core.message import Message
 from alsek.cli.cli import main as alsek_cli
 from alsek.core.broker import Broker
+from alsek.core.pools.thread import ThreadWorkerPool
 from alsek.core.status import StatusTracker
 from alsek.core.task import task
 from alsek.core.worker import WorkerPool
