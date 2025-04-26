@@ -150,7 +150,16 @@ class ProcessGroup:
         except queue.Full:
             return False
 
-    def stop(self, timeout: int = 2) -> None:
+    def stop(self, timeout: int | float = 2) -> None:
+        """Stop the group of threads in this process group.
+
+        Args:
+            timeout (int, float): the time to wait in seconds
+
+        Returns:
+            None
+
+        """
         # 1. Signal
         self.shutdown_event.set()
         # 2. Wait a bit for graceful exit
