@@ -163,6 +163,7 @@ class BaseWorkerPool(Consumer, ABC):
                 # want to saturate it by message priority (high -> low).
                 break
 
+    @abstractmethod
     def on_shutdown(self) -> None:
         """Stop all active futures."""
         raise NotImplementedError()

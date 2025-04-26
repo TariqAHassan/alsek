@@ -67,8 +67,9 @@ class ThreadInProcessGroup:
 
     def _stop_all_live_futures(self) -> None:
         for f in self._live:
-            f.stop(TerminationError)
-            f.clean_up(ignore_errors=True)
+            if not f.complete:
+                f.stop(TerminationError)
+                f.clean_up(ignore_errors=True)
 
     def run(self) -> None:
         while not self.shutdown_event.is_set():
