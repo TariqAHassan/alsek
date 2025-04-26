@@ -176,7 +176,7 @@ class Task:
     def serialize(self) -> dict[str, Any]:
         settings = gather_init_params(self, ignore=("broker",))
         settings["broker"] = gather_init_params(self.broker, ignore=("backend",))
-        settings["broker"]["backend"] = self.broker.backend._encode()
+        settings["broker"]["backend"] = self.broker.backend.encode()
         return dict(task=self.__class__, settings=settings)
 
     @staticmethod

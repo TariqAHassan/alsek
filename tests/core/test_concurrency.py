@@ -107,7 +107,7 @@ def test_thread_isolation(rolling_backend: Backend) -> None:
     assert primary_lock.held
 
     # Serialise the backend so the worker thread can build its own copy
-    encoded_backend = rolling_backend._encode()
+    encoded_backend = rolling_backend.encode()
     q: Queue[bool] = Queue()
 
     def worker() -> None:
@@ -142,7 +142,7 @@ def test_process_isolation(rolling_backend: Backend) -> None:
     result_q: Queue[bool] = mp.Queue()
     proc = mp.Process(
         target=_worker,
-        args=(lock_name, rolling_backend._encode(), result_q),
+        args=(lock_name, rolling_backend.encode(), result_q),
         daemon=True,
     )
     proc.start()

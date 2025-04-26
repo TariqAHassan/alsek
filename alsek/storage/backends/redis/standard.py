@@ -86,7 +86,7 @@ class RedisBackend(Backend):
             serializer=self.serializer,
         )
 
-    def _encode(self) -> bytes:
+    def encode(self) -> bytes:
         data: dict[str, Any] = dict(
             backend=self.__class__,
             settings=gather_init_params(self, ignore=("conn",)),
