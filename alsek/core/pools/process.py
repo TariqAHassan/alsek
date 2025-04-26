@@ -54,18 +54,15 @@ class ProcessWorkerPool(BaseWorkerPool):
             fut.clean_up(ignore_errors=True)
         self._futures.clear()
 
-    def _submit(self, message: Message) -> None:
-        self._futures.append(
-            ProcessTaskFuture(
-                task=self._task_map[message.task_name],
-                message=message,
-            )
-        )
-
     def submit_message(self, message: Message) -> bool:
         """Submit a single message"""
         submitted = False
         if self.has_slot():
-            self._submit(message)
+            self._futures.append(
+                ProcessTaskFuture(
+                    task=self._task_map[message.task_name],
+                    message=message,
+                )
+            )
             submitted = True
         return submitted
