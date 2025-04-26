@@ -37,9 +37,6 @@ def _filter_tasks(
 
 
 def _extract_broker(tasks: Collection[Task]) -> Broker:
-    if not tasks:
-        raise NoTasksFoundError("No tasks found")
-
     brokers = {t.broker for t in tasks}
     if len(brokers) > 1:
         raise MultipleBrokersError("Multiple brokers used")
