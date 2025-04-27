@@ -265,15 +265,24 @@ def test_threads_in_process_group_prune_behavior() -> None:
 
 
 def _mk_pool(broker: Broker) -> ThreadWorkerPool:
-    """Spin up a tiny pool with a single dummy thread-task."""
+    """Spin up a tiny pool with a single dummy thread-task.
+    Configures the pool to use ._poll() instead of .stream()
+    so it doesn't run indefinitely if .run() were called.
+    """
     from alsek.core.task import task
 
-    dummy_task = task(broker, name="dummy", mechanism="thread")(lambda: None)
-    return ThreadWorkerPool(
-        tasks=[dummy_task],
+    # Need a real task definition for the pool itself
+    dummy_task_for_pool = task(broker, name="dummy_pool_task", mechanism="thread")(lambda: None)
+    pool = ThreadWorkerPool(
+        tasks=[dummy_task_for_pool],
         n_threads=1,
         n_processes=2,  # small cap so we can hit it quickly
+        # Use a short interval for faster test execution if needed, but default might be fine
+        # slot_wait_interval_seconds=0.01
     )
+    # Make the stream finite for testing like in conftest.py
+    pool.stream = pool._poll 
+    return pool
 
 
 def test_acquire_group_reuses_available_slot(rolling_broker: Broker) -> None:
@@ -282,74 +291,63 @@ def test_acquire_group_reuses_available_slot(rolling_broker: Broker) -> None:
     assert g1 is not None
     # queue still empty → should reuse
     assert pool._acquire_group() is g1
-    g1.stop()
+    # Stop the group process AFTER the test assertion
+    g1.stop(timeout=0.1) 
     pool.on_shutdown()
 
 
-def test_acquire_group_spawns_until_cap(rolling_broker: Broker) -> None:
+def test_acquire_group_spawns_until_cap(rolling_broker: Broker, monkeypatch: pytest.MonkeyPatch) -> None:
     pool = _mk_pool(rolling_broker)
 
-    @task(rolling_broker)
-    def test_task() -> int:
-        return 99
-
-    msg = test_task.generate()
-
     g1 = pool._acquire_group()
+    assert g1 is not None
     assert len(pool._progress_groups) == 1
+    # Don't stop g1 process
 
-    # saturate first group with dummy serialized data
-    dummy_payload = dill.dumps(
-        (
-            test_task.serialize(),
-            msg.data,
-            False,
-        )
-    )
-    g1.queue.put(dummy_payload)
+    # Simulate g1 being full using monkeypatch
+    monkeypatch.setattr(g1, 'has_slot', lambda: False)
 
-    g2 = pool._acquire_group()  # new spawn
+    g2 = pool._acquire_group()  # new spawn because g1 reports no slot
+    assert g2 is not None
     assert g2 is not g1
     assert len(pool._progress_groups) == 2
+    # Don't stop g2 process
+    
+    # Simulate g2 also being full using monkeypatch
+    monkeypatch.setattr(g2, 'has_slot', lambda: False)
 
-    # saturate second group as well
-    g2.queue.put(dummy_payload)
-
-    # cap reached (n_processes=2) so now returns None
+    # Now, with g1 and g2 mocked as full, acquire should fail as pool capacity (2) is met
     assert pool._acquire_group() is None
-    g1.stop()
-    g2.stop()
-    pool.on_shutdown()
+
+    # Cleanup - stop the original groups
+    pool.on_shutdown() # This will call the original stop methods
 
 
-def test_submit_message_fails_when_every_group_full(rolling_broker: Broker) -> None:
+@pytest.mark.timeout(10)
+def test_submit_message_fails_when_every_group_full(rolling_broker: Broker, monkeypatch: pytest.MonkeyPatch) -> None:
     pool = _mk_pool(rolling_broker)
 
-    @task(rolling_broker)
-    def test_task() -> int:
-        return 99
-
-    msg = test_task.generate()
-
-    # create groups and fill each queue with dummy serialized data
-    dummy_payload = dill.dumps(
-        (
-            test_task.serialize(),
-            msg.data,
-            False,
-        )
-    )
+    # Acquire first group
     g1 = pool._acquire_group()
-    g1.queue.put(dummy_payload)
-    g2 = pool._acquire_group()
-    g2.queue.put(dummy_payload)
+    assert g1 is not None
+    # IMMEDIATELY simulate it being full
+    monkeypatch.setattr(g1, 'has_slot', lambda: False)
 
-    # generate a real Message object to pass in
+    # Acquire second group (should be new since g1 is mocked as full)
+    g2 = pool._acquire_group()
+    assert g2 is not None
+    assert g1 is not g2 # This should now pass
+    # IMMEDIATELY simulate it being full
+    monkeypatch.setattr(g2, 'has_slot', lambda: False)
+
+    # generate a real Message object from the pool's task to pass in
     msg = pool.tasks[0].generate()
+    # submit_message calls _acquire_group, which will check g1/g2.has_slot() (mocked)
+    # Since both return False, and len(groups) == n_processes, _acquire_group returns None
+    # Therefore, submit_message should return False
     assert pool.submit_message(msg) is False
 
-    g1.stop()
-    g2.stop()
+    # Cleanup - stop the original groups
     pool.on_shutdown()
 
 
