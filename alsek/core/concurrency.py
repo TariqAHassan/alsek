@@ -39,9 +39,9 @@ class Lock:
 
     Examples:
         >>> from alsek import Lock
-        >>> from alsek.storage.backends.disk import DiskCacheBackend
+        >>> from alsek.storage.backends.redis.standard import RedisBackend
         ...
-        >>> backend = DiskCacheBackend()
+        >>> backend = RedisBackend()
         ...
         >>> with Lock("mutex", backend=backend) as lock:
         >>>     if lock.acquire(strict=False):

@@ -5,8 +5,7 @@ Please feel free to feed the functions. 🙂
 
 ## Backends
 
-Alsek currently provides 'out of the box' support for two popular databases: [`Redis`](https://redis.io) 
-and [`Sqite`](https://www.sqlite.org) (via [`DiskCache`](http://www.grantjenks.com/docs/diskcache/index.html)).
+Alsek currently provides 'out of the box' support for [`Redis`](https://redis.io).
 
 #### Redis
 
@@ -18,24 +17,9 @@ from alsek.storage.backends.redis import RedisBackend
 backend = RedisBackend()
 ```
 
-#### DiskCache
-
-```python
-from alsek.storage.backends.disk import DiskCacheBackend
-
-backend = DiskCacheBackend()
-```
-
-!!! warning
-    ``DiskCache`` persists data to a local (Sqlite) database and does
-    not implement 'server-side' "if not exist" on `SET` (`nx`) support or
-    true priority capabilities. For these reasons, ``DiskCacheBackend()`` is
-    **recommended for development and testing purposes only**. (Multi-worker setups
-    in particular should NOT be used with this backend.)
-
 ### Lazy Initialization
 
-Both `DiskCacheBackend` and `RedisBackend` support lazy initialization.
+The `RedisBackend` supports lazy initialization.
 In this mode, an attempt to establish a connection with the database will be 
 deferred until the first time it is absolutely needed (e.g., for a `SET`, `GET`, 
 `DELETE`, etc.). This can be useful in applications such as REST APIs where the 
@@ -90,9 +74,9 @@ notable of which is explored here.
 
 ```python
 from alsek import Broker, task
-from alsek.storage.backends.disk import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 
-broker = Broker(DiskCacheBackend())
+broker = Broker(RedisBackend())
 
 @task(broker)
 def simple_task() -> int:
@@ -286,10 +270,10 @@ Alsek supports cron, date as well as interval triggers. Let's explore this using
 
 ```python
 from alsek import Broker, task
-from alsek.storage.backends.disk import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 from apscheduler.triggers.interval import IntervalTrigger
 
-broker = Broker(DiskCacheBackend())
+broker = Broker(RedisBackend())
 
 @task(broker, trigger=IntervalTrigger(hours=1))
 def check_system_usage() -> int:
@@ -338,9 +322,9 @@ The message itself will be passed to `task`s which include a `message` parameter
 
 ```python
 from alsek import Broker, Message, task
-from alsek.storage.backends.disk import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 
-broker = Broker(DiskCacheBackend())
+broker = Broker(RedisBackend())
 
 @task(broker)
 def my_task(message: Message) -> None:  # note: type hints are optional
@@ -362,9 +346,9 @@ To see this, let's contrive two simple tasks: `add_1()` and `print_result()`:
 
 ```python
 from alsek import Broker, Message, task
-from alsek.storage.backends.disk import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 
-broker = Broker(DiskCacheBackend())
+broker = Broker(RedisBackend())
 
 @task(broker)
 def add_1(number: int) -> int:
@@ -647,34 +631,6 @@ def valuable_output() -> Dict[str, int]:
     return {"a": 1, "b": 2, "c": 3}
 ```
 
-We are also free to use different backends for `Broker` and `ResultStore`.
-This is illustrated in the example below.
-
-```python
-from typing import Dict
-
-from alsek import Broker, task
-from alsek.storage.backends.redis import RedisBackend
-from alsek.storage.backends.disk import DiskCacheBackend
-from alsek.storage.result import ResultStore
-
-redis_backend = RedisBackend()
-disk_cache_backend = DiskCacheBackend()
-
-broker = Broker(redis_backend)
-result_store = ResultStore(disk_cache_backend)
-
-@task(broker, result_store=result_store)
-def valuable_output() -> Dict[str, int]:
-    return {"a": 1, "b": 2, "c": 3}
-
-message = valuable_output.generate()
-result = result_store.get(message)
-
-print(result)
-# {"a": 1, "b": 2, "c": 3}
-```
-
 !!! warning
     In order for data to be persisted via `result_store`, it must be
     of a type supported by the `backend`'s `serializer`.
@@ -696,10 +652,10 @@ from random import randint
 from apscheduler.triggers.interval import IntervalTrigger
 
 from alsek import Broker, task
-from alsek.storage.backends.disk import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 from alsek.storage.result import ResultStore
 
-backend = DiskCacheBackend
+backend = RedisBackend()
 broker = Broker(backend)
 result_storage = ResultStore(backend)
 
@@ -780,9 +736,9 @@ simultaneity across a distributed application to a single task, as shown here:
 
 ```python
 from alsek import Lock, task
-from alsek.storage.backends.disk import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 
-backend = DiskCacheBackend()
+backend = RedisBackend()
 
 @task(...)
 def send_data() -> None:

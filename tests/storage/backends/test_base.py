@@ -5,15 +5,15 @@
 """
 
 import pytest
-from diskcache import Cache as DiskCache
+from redis import Redis
 
 from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
 
 
 def test_lazy_client() -> None:
-    lazy_client = LazyClient(lambda: DiskCache())
-    assert isinstance(lazy_client.get(), DiskCache)
+    lazy_client = LazyClient(lambda: Redis())
+    assert isinstance(lazy_client.get(), Redis)
 
 
 def test_repr(base_backend: Backend) -> None:

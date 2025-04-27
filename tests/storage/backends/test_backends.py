@@ -5,17 +5,13 @@
 """
 
 import time
-from pathlib import Path
-from tempfile import mkdtemp
 from typing import Any, Callable, Optional, Union
 
 import dill
 import pytest
-from diskcache import Cache as DiskCache
 from redis import Redis
 
 from alsek.storage.backends import Backend, LazyClient
-from alsek.storage.backends.disk.standard import DiskCacheBackend
 from alsek.storage.backends.redis.standard import RedisBackend
 
 
@@ -27,27 +23,7 @@ class Delayed:
         return self.to_run()
 
 
-@pytest.mark.parametrize(
-    "conn",
-    [
-        None,
-        Delayed(lambda: mkdtemp()),
-        Delayed(lambda: Path(mkdtemp())),
-        Delayed(lambda: DiskCache()),
-        LazyClient(lambda: DiskCache()),
-    ],
-)
-def test_disk_cache_conn_parse(
-    conn: Optional[Union[Delayed, LazyClient]],
-    disk_cache_backend: RedisBackend,
-) -> None:
-    if isinstance(conn, Delayed):
-        conn = conn()
-    expected = LazyClient if isinstance(conn, LazyClient) else DiskCache
-    assert isinstance(DiskCacheBackend._conn_parse(conn), expected)
-
-
-@pytest.mark.parametrize("backend", [DiskCacheBackend, RedisBackend])
+@pytest.mark.parametrize("backend", [RedisBackend])
 def test_invalid_conn(backend: Backend) -> None:
     with pytest.raises(ValueError):
         backend._conn_parse(-1)

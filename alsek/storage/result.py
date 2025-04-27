@@ -182,10 +182,10 @@ class ResultStore:
 
         Examples:
             >>> from alsek import Message
-            >>> from alsek.storage.backends.disk import DiskCacheBackend
+            >>> from alsek.storage.backends.redis.standard import RedisBackend
             >>> from alsek.storage.result import ResultStore
 
-            >>> backend = DiskCacheBackend()
+            >>> backend = RedisBackend()
             >>> result_store = ResultStore(backend)
 
             >>> result_store.get(Message(uuid="..."))

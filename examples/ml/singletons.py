@@ -4,15 +4,10 @@
 
 """
 
-from pathlib import Path
-
 from alsek import Broker
-from alsek.storage.backends.disk.standard import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 from alsek.storage.result import ResultStore
 
-cache_dir = Path("~/alsek/diskcache").expanduser()
-cache_dir.mkdir(parents=True, exist_ok=True)
-
-backend = DiskCacheBackend(cache_dir)
+backend = RedisBackend()
 broker = Broker(backend)
 result_store = ResultStore(backend)

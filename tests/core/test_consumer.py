@@ -14,7 +14,6 @@ from alsek.core.consumer import Consumer, Message, _ConsumptionMutex
 from alsek.storage.backends import Backend
 from alsek.utils.namespacing import (
     get_message_name,
-    get_priority_namespace_from_message,
 )
 
 
@@ -115,11 +114,10 @@ def test_stream(messages_to_add: int, rolling_broker: Broker) -> None:
 
 
 if __name__ == "__main__":
-    from alsek.storage.backends.disk import DiskCacheBackend
     from alsek.storage.backends.redis import RedisBackend
 
     messages_to_add = 2
     subset = None
-    rolling_broker = Broker(DiskCacheBackend())
+    rolling_broker = Broker(RedisBackend())
     rolling_broker.backend.clear_namespace()
     sorted(rolling_broker.backend.scan("queues:*"))

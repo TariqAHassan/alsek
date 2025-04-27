@@ -7,7 +7,6 @@
 from __future__ import annotations
 
 from functools import partial, wraps
-from pathlib import Path
 from subprocess import PIPE, Popen
 from typing import Any, Iterable, Optional, Type, Union
 
@@ -25,7 +24,6 @@ from alsek.core.task import task
 from alsek.core.worker.process import ProcessWorkerPool
 from alsek.core.worker.thread import ThreadWorkerPool
 from alsek.storage.backends import Backend
-from alsek.storage.backends.disk.standard import DiskCacheBackend
 from alsek.storage.backends.redis.standard import RedisBackend
 from alsek.storage.result import ResultStore
 from alsek.tools.iteration import ResultPool
@@ -109,21 +107,13 @@ def redis_backend(custom_redisdb: Redis) -> RedisBackend:
     return RedisBackend(custom_redisdb)
 
 
-@pytest.fixture()
-def disk_cache_backend(tmp_path: Path) -> DiskCacheBackend:
-    return DiskCacheBackend(tmp_path)
-
-
-@pytest.fixture(params=["redis", "diskcache"])
+@pytest.fixture(params=["redis"])
 def rolling_backend(
     request: SubRequest,
-    tmp_path: Path,
     custom_redisdb: Redis,
 ) -> Backend:
     if request.param == "redis":
         return RedisBackend(custom_redisdb)
-    elif request.param == "diskcache":
-        return DiskCacheBackend(tmp_path)
     else:
         raise ValueError(f"Unknown backend '{request.param}'")
 

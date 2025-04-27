@@ -807,9 +807,9 @@ def task(
 
     Examples:
         >>> from alsek import Broker, task
-        >>> from alsek.storage.backends.disk import DiskCacheBackend
+        >>> from alsek.storage.backends.redis.standard import RedisBackend
 
-        >>> backend = DiskCacheBackend()
+        >>> backend = RedisBackend()
         >>> broker = Broker(backend)
 
         >>> @task(broker)
