@@ -254,9 +254,6 @@ class ThreadTaskFuture(TaskFuture):
             return self._wrapper_exit or not thread_alive
 
     def _wrapper(self) -> None:
-        # Initialize logging for this thread
-        setup_logging(get_logger().level)
-        
         log.info("Received %s...", self.message.summary)
         self.task.update_status(self.message, status=TaskStatus.RUNNING)
 

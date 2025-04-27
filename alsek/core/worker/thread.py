@@ -19,12 +19,13 @@ from alsek.core import Event, Process, Queue
 from alsek.core.worker._base import BaseWorkerPool
 from alsek.core.task import Task
 from alsek.exceptions import TerminationError
+from alsek.utils.logging import get_logger, setup_logging
 from alsek.utils.system import smart_cpu_count
 
 log = logging.getLogger(__name__)
 
 
-class ThreadInProcessGroup:
+class ThreadsInProcessGroup:
     """
     • Runs inside a forked process
     • Accepts work items via `Queue`
@@ -37,11 +38,15 @@ class ThreadInProcessGroup:
         shutdown_event: Event,
         n_threads: int,
         slot_wait_interval_seconds: float,
+        log_level: int = logging.INFO,
     ) -> None:
         self.q = q
         self.shutdown_event = shutdown_event
         self.n_threads = n_threads
         self.slot_wait_interval_seconds = slot_wait_interval_seconds
+        self.log_level = log_level
+
+        setup_logging(self.log_level)
 
         self._live: list[ThreadTaskFuture] = list()
 
@@ -102,13 +107,15 @@ def _start_thread_worker(
     shutdown_event: Event,
     n_threads: int,
     slot_wait_interval_seconds: float,
+    log_level: int,
 ) -> None:
     # We construct the worker *inside* the child so we don’t have to pickle it.
-    worker = ThreadInProcessGroup(
+    worker = ThreadsInProcessGroup(
         q=q,
         shutdown_event=shutdown_event,
         n_threads=n_threads,
         slot_wait_interval_seconds=slot_wait_interval_seconds,
+        log_level=log_level,
     )
     worker.run()
 
@@ -133,6 +140,7 @@ class ProcessGroup:
                 self.shutdown_event,
                 n_threads,
                 slot_wait_interval_seconds,
+                get_logger().level,
             ),
             daemon=True,
         )

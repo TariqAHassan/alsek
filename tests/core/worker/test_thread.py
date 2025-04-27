@@ -19,7 +19,7 @@ from typing import Any
 import pytest
 
 from alsek import Broker, Message, StatusTracker
-from alsek.core.worker.thread import ProcessGroup, ThreadInProcessGroup, ThreadWorkerPool
+from alsek.core.worker.thread import ProcessGroup, ThreadsInProcessGroup, ThreadWorkerPool
 from alsek.core.status import TERMINAL_TASK_STATUSES, TaskStatus
 from alsek.core.task import task
 from alsek.exceptions import RevokedError
@@ -172,8 +172,8 @@ def test_process_group_stop_terminates_process() -> None:
 # ------------------------------------------------------------------ #
 
 
-def test_thread_in_process_group_has_capacity() -> None:
-    tig = ThreadInProcessGroup(
+def test_threads_in_process_group_has_capacity() -> None:
+    tig = ThreadsInProcessGroup(
         q=MPQueue(),
         shutdown_event=Event(),
         n_threads=2,
@@ -215,11 +215,11 @@ def test_thread_worker_pool_prune_removes_dead_groups(
 # ------------------------------------------------------------------ #
 
 
-def test_thread_in_process_group_prune_behavior() -> None:
+def test_threads_in_process_group_prune_behavior() -> None:
     """• remove objects whose .complete is True
     • kill + drop objects whose .time_limit_exceeded is True
     • keep live, incomplete futures"""
-    tig = ThreadInProcessGroup(
+    tig = ThreadsInProcessGroup(
         q=MPQueue(),
         shutdown_event=Event(),
         n_threads=10,
