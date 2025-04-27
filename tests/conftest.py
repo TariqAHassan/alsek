@@ -179,6 +179,7 @@ def rolling_process_worker_pool(rolling_broker: Broker) -> ProcessWorkerPool:
     A pool that will exit after one successful submit_message, and uses
     ._poll() so run() returns once.
     """
+    1/0
     # create 3 trivial “process” tasks
     tasks = [
         task(
