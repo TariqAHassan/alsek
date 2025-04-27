@@ -12,12 +12,12 @@ from typing import Any, Optional
 
 from alsek import Message
 from alsek.core.consumer import Consumer
+from alsek.core.task import Task
 from alsek.core.worker._helpers import (
     derive_consumer_subset,
     extract_broker,
     filter_tasks,
 )
-from alsek.core.task import Task
 from alsek.types import SupportedMechanismType
 
 log = logging.getLogger(__name__)

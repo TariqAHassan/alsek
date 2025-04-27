@@ -19,9 +19,13 @@ from typing import Any
 import pytest
 
 from alsek import Broker, Message, StatusTracker
-from alsek.core.worker.thread import ProcessGroup, ThreadsInProcessGroup, ThreadWorkerPool
 from alsek.core.status import TERMINAL_TASK_STATUSES, TaskStatus
 from alsek.core.task import task
+from alsek.core.worker.thread import (
+    ProcessGroup,
+    ThreadsInProcessGroup,
+    ThreadWorkerPool,
+)
 from alsek.exceptions import RevokedError
 from alsek.storage.result import ResultStore
 

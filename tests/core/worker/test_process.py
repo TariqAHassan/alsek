@@ -7,9 +7,9 @@ import pytest
 
 from alsek import Broker
 from alsek.core.futures import ProcessTaskFuture
-from alsek.core.worker.process import ProcessWorkerPool
 from alsek.core.status import StatusTracker, TaskStatus
 from alsek.core.task import task
+from alsek.core.worker.process import ProcessWorkerPool
 from alsek.storage.result import ResultStore
 
 # ------------------------------------------------------------------ #

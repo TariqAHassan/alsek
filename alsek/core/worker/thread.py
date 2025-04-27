@@ -14,10 +14,10 @@ from typing import Any, List, Optional
 import dill
 
 from alsek import Message
-from alsek.core.futures import ThreadTaskFuture
 from alsek.core import Event, Process, Queue
-from alsek.core.worker._base import BaseWorkerPool
+from alsek.core.futures import ThreadTaskFuture
 from alsek.core.task import Task
+from alsek.core.worker._base import BaseWorkerPool
 from alsek.exceptions import TerminationError
 from alsek.utils.logging import get_logger, setup_logging
 from alsek.utils.system import smart_cpu_count

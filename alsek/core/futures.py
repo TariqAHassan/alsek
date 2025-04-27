@@ -16,6 +16,7 @@ from typing import Any, Type, cast
 import dill
 
 from alsek import Message
+from alsek.core import Event, Process, Queue
 from alsek.core.status import TaskStatus
 from alsek.core.task import Task
 from alsek.exceptions import RevokedError, TerminationError
@@ -24,7 +25,6 @@ from alsek.utils.logging import get_logger, setup_logging
 from alsek.utils.parsing import parse_exception
 from alsek.utils.system import thread_raise
 from alsek.utils.temporal import utcnow_timestamp_ms
-from alsek.core import Event, Queue, Process
 
 log = logging.getLogger(__name__)
 
