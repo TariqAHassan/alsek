@@ -49,11 +49,15 @@ def setup_logging(level: int) -> None:
     root_logger.addHandler(console_handler)
     root_logger.setLevel(level)
     
-    # Configure all alsek loggers to use the root logger's handler
+    # Set the same level for all alsek loggers
+    # This ensures no alsek logger will log below the specified level
+    get_logger().setLevel(level)
+    
+    # Configure all specific alsek loggers to use the same level
     for name in logging.root.manager.loggerDict:
         if name.startswith('alsek'):
             logger = logging.getLogger(name)
-            logger.setLevel(level)
+            logger.setLevel(level)  # Explicitly set the level
             # Enable propagation to use root logger's handler
             logger.propagate = True
             # Clear any direct handlers to avoid duplicates
