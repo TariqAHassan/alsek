@@ -76,7 +76,8 @@ class ProcessWorkerPool(BaseWorkerPool):
 
     def on_shutdown(self) -> None:
         """Terminate everything that is still alive."""
-        self.scheduler.shutdown(wait=False)
+        if self.scheduler.running:
+            self.scheduler.shutdown(wait=False)
 
         for f in self._futures:
             if not f.complete:
