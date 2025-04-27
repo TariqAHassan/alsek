@@ -112,19 +112,30 @@ class Consumer:
         # ToDo: implement a 'flat' option that moves to the next queue
         #       So, A then B then C, round and round.
         output: list[Message] = list()
-        for s in self._scan_subnamespaces():
-            for name in self.broker.backend.priority_iter(s):
-                message_data = self.broker.backend.get(name)
-                if message_data is None:
-                    # Message data can be None if it has been deleted (by a TTL or
-                    # another worker) between the `priority_iter()` and `get()` operations.
-                    continue
 
-                message = Message(**message_data)
-                if message.ready and not self.stop_signal.received:
-                    with _ConsumptionMutex(message, self.broker.backend) as lock:
-                        if lock.acquire(strict=False):
-                            output.append(message.link_lock(lock, override=True))
+        def main_loop() -> None:
+            for s in self._scan_subnamespaces():
+                for name in self.broker.backend.priority_iter(s):
+                    message_data = self.broker.backend.get(name)
+                    if message_data is None:
+                        # Message data can be None if it has been deleted (by a TTL or
+                        # another worker) between the `priority_iter()` and `get()` operations.
+                        continue
+
+                    message = Message(**message_data)
+                    if message.ready and not self.stop_signal.received:
+                        with _ConsumptionMutex(message, self.broker.backend) as lock:
+                            if lock.acquire(strict=False):
+                                output.append(message.link_lock(lock, override=True))
+
+        try:
+            main_loop()
+        except BaseException as error:
+            if self.stop_signal.received:
+                log.warning("Backend operation interrupted by stop signal: %s", e)
+                return
+            else:
+                raise error
 
         self._empty_passes = 0 if output else self._empty_passes + 1
         return _dedup_messages(output)
