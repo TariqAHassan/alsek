@@ -17,6 +17,7 @@ from queue import Queue
 from typing import Any
 
 import pytest
+import dill
 
 from alsek import Broker, Message, StatusTracker
 from alsek.core.status import TERMINAL_TASK_STATUSES, TaskStatus
@@ -93,9 +94,10 @@ def test_process_group_has_slot() -> None:
         slot_wait_interval_seconds=0.01,
     )
     assert g.has_slot() is True
-    # fill the queue
-    g.queue.put(b"x")
-    g.queue.put(b"y")
+    # fill the queue with dummy serialized data
+    dummy_payload = dill.dumps(({}, {}, False))
+    g.queue.put(dummy_payload)
+    g.queue.put(dummy_payload)
     assert g.has_slot() is False
     g.stop()
 
@@ -121,7 +123,7 @@ def test_process_group_submit_success(monkeypatch: pytest.MonkeyPatch) -> None:
         complete_only_on_thread_exit=False,
         slot_wait_interval_seconds=0.01,
     )
-    # ensure put() doesn’t raise so we hit the happy path
+    # ensure put() doesn't raise so we hit the happy path
     monkeypatch.setattr(g.queue, "put", lambda *a, **kw: None)
     assert (
         g.submit(
@@ -290,15 +292,16 @@ def test_acquire_group_spawns_until_cap(rolling_broker: Broker) -> None:
     g1 = pool._acquire_group()
     assert len(pool._progress_groups) == 1
 
-    # saturate first group
-    g1.queue.put(b"x")
+    # saturate first group with dummy serialized data
+    dummy_payload = dill.dumps(({}, {}, False))
+    g1.queue.put(dummy_payload)
 
     g2 = pool._acquire_group()  # new spawn
     assert g2 is not g1
     assert len(pool._progress_groups) == 2
 
     # saturate second group as well
-    g2.queue.put(b"y")
+    g2.queue.put(dummy_payload)
 
     # cap reached (n_processes=2) so now returns None
     assert pool._acquire_group() is None
@@ -309,11 +312,12 @@ def test_acquire_group_spawns_until_cap(rolling_broker: Broker) -> None:
 
 def test_submit_message_fails_when_every_group_full(rolling_broker: Broker) -> None:
     pool = _mk_pool(rolling_broker)
-    # create groups and fill each queue
+    # create groups and fill each queue with dummy serialized data
+    dummy_payload = dill.dumps(({}, {}, False))
     g1 = pool._acquire_group()
-    g1.queue.put(b"x")
+    g1.queue.put(dummy_payload)
     g2 = pool._acquire_group()
-    g2.queue.put(b"y")
+    g2.queue.put(dummy_payload)
 
     # generate a real Message object to pass in
     msg = pool.tasks[0].generate()
