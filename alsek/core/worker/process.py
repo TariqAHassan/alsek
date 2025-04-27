@@ -45,7 +45,9 @@ class ProcessWorkerPool(BaseWorkerPool):
 
         # Use a simple daemon thread instead of APScheduler
         self._prune_thread = threading.Thread(
-            target=self._prune_loop, daemon=True, name="ProcessPool-Pruner"
+            target=self._prune_loop,
+            daemon=True,
+            name="ProcessPool-Pruner",
         )
         self._prune_thread.start()
 
