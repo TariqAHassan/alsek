@@ -23,7 +23,7 @@ log = logging.getLogger(__name__)
 def filter_tasks(
     tasks: list[Task] | tuple[Task, ...],
     mechanism: SupportedMechanismType,
-) -> list[Task] | None:
+) -> Optional[list[Task]]:
     if not tasks:
         raise NoTasksFoundError("No tasks found")
     if tasks := [t for t in tasks if t.mechanism == mechanism]:

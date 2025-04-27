@@ -6,16 +6,17 @@
 
 import pytest
 
+from typing import Optional
 from alsek.utils.decorators import exception_suppressor
 
 
 @exception_suppressor(KeyError)
-def get_key(d: dict[str, int], key: str) -> int | None:
+def get_key(d: dict[str, int], key: str) -> Optional[int]:
     return d[key]
 
 
 @exception_suppressor(ZeroDivisionError, ValueError)
-def safe_div(num: int, denom: int) -> float | None:
+def safe_div(num: int, denom: int) -> Optional[float]:
     return num / denom
 
 
