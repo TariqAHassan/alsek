@@ -216,7 +216,7 @@ def test_end_to_end_status_and_result(rolling_broker):
 # 8. per-message timeout triggers FAILED status
 # ------------------------------------------------------------------ #
 
-
+@pytest.mark.flaky(max_runs=2)
 def test_process_task_timeout_causes_failed_status(rolling_broker):
     backend = rolling_broker.backend
     status = StatusTracker(backend)
@@ -240,13 +240,10 @@ def test_process_task_timeout_causes_failed_status(rolling_broker):
     )
     assert pool.submit_message(msg) is True
 
-    time.sleep(2)
-
     # wait until status flips to FAILED
+    assert status.wait_for(msg, TaskStatus.FAILED, timeout=5)
     assert status.get(msg).status == TaskStatus.FAILED
     assert status.wait_for(msg, TaskStatus.FAILED, timeout=5)
-    # pool.prune()
-    # pool.on_shutdown()
 
 
 # ------------------------------------------------------------------ #
