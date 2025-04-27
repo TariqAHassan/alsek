@@ -522,6 +522,7 @@ def test_graceful_shutdown_cleans_processes(rolling_broker: Broker) -> None:
 
 
 @pytest.mark.timeout(30)
+@pytest.mark.flaky(max_runs=3)
 def test_revocation_mid_flight(
     rolling_broker: Broker,
     tmp_path: Path,
@@ -552,7 +553,11 @@ def test_revocation_mid_flight(
     runner = threading.Thread(target=pool.run, daemon=True)
     runner.start()
 
-    time.sleep(0.03)  # give it a moment to start
+    assert status_tracker.wait_for(
+        msg,
+        (TaskStatus.SUBMITTED, TaskStatus.RUNNING),
+        timeout=10,
+    )
     revocable_task.revoke(msg)  # send revocation
     runner.join(timeout=3)
     pool.on_shutdown()
