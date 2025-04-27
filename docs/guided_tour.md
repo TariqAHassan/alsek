@@ -573,7 +573,7 @@ def task_c() -> int:
     Here, an incident is a failed attempt to process the message.
 
 !!! note
-    Setting `backoff=None` is functionally equlivant to 
+    Setting `backoff=None` is functionally equivalent to 
     ``ConstantBackoff(constant=0, floor=0, ceiling=0, zero_override=True)``.
 
 
