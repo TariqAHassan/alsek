@@ -21,7 +21,7 @@ LOG_LEVELS = list(logging._nameToLevel.keys())  # noqa
 @click.group()
 @click.version_option(__version__)
 def main() -> None:
-    """Alsek worker pool CLI."""
+    """Alsek CLI."""
     pass
 
 
