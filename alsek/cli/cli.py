@@ -9,10 +9,13 @@ from typing import Optional
 import click
 
 from alsek import __version__
+import logging
 from alsek.core.pools.process import ProcessWorkerPool
 from alsek.core.pools.thread import ThreadWorkerPool
 from alsek.utils.logging import setup_logging
-from alsek.utils.scanning import collect_tasks, parse_logging_level
+from alsek.utils.scanning import collect_tasks
+
+LOG_LEVELS = list(logging._nameToLevel.keys())  # noqa
 
 
 @click.group()
@@ -54,14 +57,10 @@ def main() -> None:
     help="Milliseconds to wait when full.",
 )
 @click.option(
-    "--debug",
-    is_flag=True,
-    help="Enable debug logging.",
-)
-@click.option(
-    "--quiet",
-    is_flag=True,
-    help="Minimize log output.",
+    "--log-level",
+    type=click.Choice(LOG_LEVELS, case_sensitive=False),
+    default="INFO",
+    help="Logging level.",
 )
 def process_pool(
     package: str,
@@ -70,11 +69,11 @@ def process_pool(
     n_processes: Optional[int],
     prune_interval: int,
     slot_wait_interval: int,
-    debug: bool,
-    quiet: bool,
+    log_level: str,
 ) -> None:
     """Start a process-based worker pool."""
-    setup_logging(parse_logging_level(debug, verbose=not quiet))
+    setup_logging(logging.getLevelName(log_level.upper().strip()))
+
     pool = ProcessWorkerPool(
         tasks=collect_tasks(package),
         queues=[q.strip() for q in queues.split(",")] if queues else None,
@@ -123,14 +122,10 @@ def process_pool(
     help="Wait for thread exit to mark as complete.",
 )
 @click.option(
-    "--debug",
-    is_flag=True,
-    help="Enable debug logging.",
-)
-@click.option(
-    "--quiet",
-    is_flag=True,
-    help="Minimize log output.",
+    "--log-level",
+    type=click.Choice(LOG_LEVELS, case_sensitive=False),
+    default="INFO",
+    help="Logging level.",
 )
 def thread_pool(
     package: str,
@@ -140,11 +135,10 @@ def thread_pool(
     n_processes: Optional[int],
     slot_wait_interval: int,
     complete_only_on_thread_exit: bool,
-    debug: bool,
-    quiet: bool,
+    log_level: str,
 ) -> None:
     """Start a thread-based worker pool."""
-    setup_logging(parse_logging_level(debug, verbose=not quiet))
+    setup_logging(logging.getLevelName(log_level.upper().strip()))
 
     pool = ThreadWorkerPool(
         tasks=collect_tasks(package),

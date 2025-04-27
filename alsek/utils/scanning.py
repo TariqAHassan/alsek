@@ -22,25 +22,6 @@ from alsek.utils.logging import magic_logger
 log = logging.getLogger(__name__)
 
 
-def parse_logging_level(debug: bool, verbose: bool) -> int:
-    """Parse requested logging logging level.
-
-    Args:
-        debug (bool): DEBUG level
-        verbose (bool): verbose (INFO) level
-
-    Returns:
-        int
-
-    """
-    if debug:
-        return logging.DEBUG
-    elif verbose:
-        return logging.INFO
-    else:
-        return logging.ERROR
-
-
 def _enumerate_modules(module: ModuleType) -> Iterable[ModuleType]:
     module_path = getattr(module, "__path__", None)
     if module_path is None:
