@@ -115,7 +115,6 @@ class Broker:
 
         message.increment()
         self.backend.set(get_message_name(message), value=message.data)
-        self.nack(message)
         log.info(
             "Retrying %s in %s ms...",
             message.summary,
@@ -167,23 +166,6 @@ class Broker:
 
         """
         self.remove(message)
-
-    @magic_logger(  # noqa
-        before=lambda message: log.debug("Nacking %s...", message.summary),
-        after=lambda input_: log.debug("Nacked %s.", input_["message"].summary),
-    )
-    def nack(self, message: Message) -> None:
-        """Do not acknowledge a message and render it eligible
-        for redelivery.
-
-        Args:
-            message (Message): a message to not acknowledge
-
-        Returns:
-            None
-
-        """
-        self._clear_lock(message)
 
     @magic_logger(
         before=lambda message: log.info("Failing %s...", message.summary),

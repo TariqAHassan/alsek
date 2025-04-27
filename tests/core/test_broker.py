@@ -131,25 +131,6 @@ def test_removal(method: str, rolling_broker: Broker) -> None:
     assert not lock.held
 
 
-def test_nack(rolling_broker: Broker) -> None:
-    lock = Lock("lock", backend=rolling_broker.backend)
-    message = Message("task").link_lock(lock)
-
-    # Add the message via the broker
-    rolling_broker.submit(message)
-    assert rolling_broker.exists(message)
-
-    # Now nack it
-    rolling_broker.nack(message)
-
-    # Check that the broker did not remove the message
-    assert rolling_broker.exists(message)
-
-    # Check that the lock has been fully released.
-    assert message.lock_long_name is None
-    assert not lock.held
-
-
 @pytest.mark.parametrize(
     "dlq_ttl,idempotent_check",
     [
