@@ -15,6 +15,9 @@ from alsek.exceptions import MultipleBrokersError, NoTasksFoundError
 from alsek.types import SupportedMechanismType
 from alsek.utils.checks import has_duplicates
 from alsek.utils.sorting import dict_sort
+import logging
+
+log = logging.getLogger(__name__)
 
 
 def filter_tasks(
@@ -23,7 +26,12 @@ def filter_tasks(
 ) -> list[Task] | None:
     if not tasks:
         raise NoTasksFoundError("No tasks found")
-    elif tasks := [t for t in tasks if t.mechanism == mechanism]:
+    if tasks := [t for t in tasks if t.mechanism == mechanism]:
+        if ignored := [t.name for t in tasks if t.mechanism != mechanism]:
+            log.debug(
+                "Skipping the following tasks due to mechanism mismatch: %s",
+                ", ".join(ignored),
+            )
         return tasks
     else:
         raise NoTasksFoundError(f"No tasks found with mechanism '{mechanism}'.")
