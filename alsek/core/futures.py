@@ -20,7 +20,7 @@ from alsek.core import Event, Process, Queue
 from alsek.core.status import TaskStatus
 from alsek.core.task import Task
 from alsek.exceptions import RevokedError, TerminationError
-from alsek.utils.decorators import exception_suppressor
+from alsek.utils.decorators import suppress_exception
 from alsek.utils.logging import get_logger, setup_logging
 from alsek.utils.parsing import parse_exception
 from alsek.utils.system import thread_raise
@@ -175,7 +175,10 @@ class TaskFuture(ABC):
         """
         raise NotImplementedError()
 
-    @exception_suppressor(TerminationError)
+    @suppress_exception(
+        TerminationError,
+        on_suppress=lambda error: log.info("Termination Detected"),
+    )
     def _revocation_scan(self, check_interval: int | float = 0.5) -> None:
         while not self.complete and not self._revocation_stop_event.is_set():
             if self.task.is_revoked(self.message):
