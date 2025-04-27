@@ -533,7 +533,7 @@ def test_revocation_mid_flight(
     outfile = tmp_path / "should_not_exist.txt"
 
     def _writes() -> None:
-        time.sleep(0.1)
+        time.sleep(10)
         outfile.write_text("oops")
 
     status_tracker = StatusTracker(rolling_broker.backend)
