@@ -19,6 +19,7 @@ from alsek.core.worker._helpers import (
     filter_tasks,
 )
 from alsek.types import SupportedMechanismType
+from alsek.utils.namespacing import get_message_name
 
 log = logging.getLogger(__name__)
 
@@ -80,6 +81,17 @@ class BaseWorkerPool(Consumer, ABC):
         self._task_map = {t.name: t for t in tasks}
         self._can_run: bool = True
 
+        self._seen_messages: dict[str, int] = dict()
+
+    def _novel_message(self, message: Message) -> bool:
+        message_name = get_message_name(message)
+        if message_name in self._seen_messages:
+            prev_retry_count = self._seen_messages[message_name]
+            curr_retry_count = message.retries
+            return curr_retry_count > prev_retry_count
+        else:
+            return True
+
     @property
     def _slot_wait_interval_seconds(self) -> float:
         return self.slot_wait_interval / 1000
@@ -116,7 +128,10 @@ class BaseWorkerPool(Consumer, ABC):
             for message in self.stream():
                 self.prune()
 
-                if self.submit_message(message):
+                if not self._novel_message(message):
+                    continue
+                elif self.submit_message(message):
+                    self._seen_messages[get_message_name(message)] = message.retries
                     continue
 
                 # Saturated: free message & retry later
