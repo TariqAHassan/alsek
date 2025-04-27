@@ -14,7 +14,8 @@ from typing import Any, List, Optional
 import dill
 
 from alsek import Message
-from alsek.core.futures import Event, Process, Queue, ThreadTaskFuture
+from alsek.core.futures import ThreadTaskFuture
+from alsek.core import Event, Process, Queue
 from alsek.core.worker._base import BaseWorkerPool
 from alsek.core.task import Task
 from alsek.exceptions import TerminationError

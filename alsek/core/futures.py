@@ -7,11 +7,10 @@
 from __future__ import annotations
 
 import logging
-import os
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from platform import python_implementation
-from threading import Event, Thread
+from threading import Thread
 from typing import Any, Type, cast
 
 import dill
@@ -25,21 +24,9 @@ from alsek.utils.logging import get_logger, setup_logging
 from alsek.utils.parsing import parse_exception
 from alsek.utils.system import thread_raise
 from alsek.utils.temporal import utcnow_timestamp_ms
+from alsek.core import Event, Queue, Process
 
 log = logging.getLogger(__name__)
-
-MULTIPROCESSING_BACKEND = os.getenv("ALSEK_MULTIPROCESSING_BACKEND", "standard").strip()
-
-if MULTIPROCESSING_BACKEND == "standard":
-    from multiprocessing import Event, Process, Queue
-
-    log.info("Using standard multiprocessing backend.")
-elif MULTIPROCESSING_BACKEND == "torch":
-    from torch.multiprocessing import Event, Process, Queue  # type: ignore
-
-    log.info("Using torch multiprocessing backend.")
-else:
-    raise ImportError(f"Invalid multiprocessing backend '{MULTIPROCESSING_BACKEND}'")
 
 
 def _generate_callback_message(
