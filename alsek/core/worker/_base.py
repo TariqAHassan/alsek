@@ -82,6 +82,7 @@ class BaseWorkerPool(Consumer, ABC):
         self._can_run: bool = True
 
         self._seen_messages: dict[str, int] = dict()
+        self.broker.remove_callback = self._broker_remove_callback
 
     def _novel_message(self, message: Message) -> bool:
         message_name = get_message_name(message)
@@ -91,6 +92,9 @@ class BaseWorkerPool(Consumer, ABC):
             return curr_retry_count > prev_retry_count
         else:
             return True
+
+    def _broker_remove_callback(self, message: Message) -> None:
+        self._seen_messages.pop(get_message_name(message), None)
 
     @property
     def _slot_wait_interval_seconds(self) -> float:

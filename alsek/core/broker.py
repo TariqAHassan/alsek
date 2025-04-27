@@ -42,6 +42,8 @@ class Broker:
         if self.backend.IS_ASYNC:
             raise AttributeError("Asynchronous backends are not yet supported")
 
+        self.remove_callback: Optional[Callable[[Message], None]] = None
+
     def __repr__(self) -> str:
         return auto_repr(
             self,
@@ -147,6 +149,8 @@ class Broker:
         )
         self.backend.delete(get_message_name(message), missing_ok=True)
         self._clear_lock(message)
+        if self.remove_callback:
+            self.remove_callback(message)
 
     @magic_logger(
         before=lambda message: log.debug("Acking %s...", message.summary),
