@@ -13,7 +13,7 @@ from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.defaults import DEFAULT_TTL
 from alsek.exceptions import MessageDoesNotExistsError
-from alsek.utils.namespacing import get_dlq_message_name, get_message_name
+from alsek.utils.namespacing import get_message_name
 from tests._helpers import sleeper
 
 
@@ -187,11 +187,10 @@ def test_fail(
 
     if dlq_ttl:
         # Check that the message has been moved to the dtq
-        dtq_name = get_dlq_message_name(message)
-        assert rolling_broker.backend.exists(dtq_name)
+        assert rolling_broker.in_dlq(message)
         # Check that the DTQ TTL was respected.
         sleeper(dlq_ttl)
-        assert not rolling_broker.backend.exists(dtq_name)
+        assert not rolling_broker.in_dlq(message)
 
 
 @pytest.mark.parametrize("fail", [False, True])

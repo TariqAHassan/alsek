@@ -211,6 +211,22 @@ class Broker:
             log.debug("Added %s to DLQ.", message.summary)
 
     @magic_logger(
+        before=lambda message: log.info("Failing %s...", message.summary),
+        after=lambda input_: log.info("Failed %s.", input_["message"].summary),
+    )
+    def in_dlq(self, message: Message) -> bool:
+        """Determine if a message is in the dead letter queue.
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            bool: whether the message is in the DLQ.
+
+        """
+        return self.backend.exists(get_dlq_message_name(message))
+
+    @magic_logger(
         before=lambda message: log.info("Syncing %s...", message.summary),
         after=lambda input_: log.info("Synced %s.", input_["message"].summary),
     )
