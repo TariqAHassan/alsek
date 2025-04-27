@@ -105,7 +105,7 @@ class BaseWorkerPool(Consumer, ABC):
             "Monitoring %s task%s over %s queue%s.",
             len(self.tasks),
             "s" if len(self.tasks) > 1 else "",
-            self.queues,
+            len(self.queues),
             "s" if len(self.queues) > 1 else "",
         )
         log.info("Worker pool online.")
