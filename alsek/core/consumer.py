@@ -132,11 +132,7 @@ class Consumer:
         try:
             main_loop()
         except BaseException as error:
-            if self.stop_signal.received:
-                logging.info("Backend operation interrupted by stop signal.")
-                return list()
-            else:
-                raise error
+            pass
 
         self._empty_passes = 0 if output else self._empty_passes + 1
         return _dedup_messages(output)
