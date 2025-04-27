@@ -1,5 +1,4 @@
-pytest tests/core/worker/test_thread.py \
-       --strict-markers \
+pytest --strict-markers \
        --cov=alsek \
        --cov-report term-missing \
        --cov-fail-under 80 \
