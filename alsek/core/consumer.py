@@ -134,7 +134,7 @@ class Consumer:
         except BaseException as error:
             if self.stop_signal.received:
                 logging.info("Backend operation interrupted by stop signal.")
-                return
+                return list()
             else:
                 raise error
 
