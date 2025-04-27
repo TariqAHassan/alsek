@@ -10,6 +10,7 @@ from typing import Optional
 import click
 
 from alsek import __version__
+from alsek.core.backoff import LinearBackoff
 from alsek.core.worker.process import ProcessWorkerPool
 from alsek.core.worker.thread import ThreadWorkerPool
 from alsek.utils.logging import setup_logging
@@ -57,6 +58,27 @@ def main() -> None:
     help="Milliseconds to wait when full.",
 )
 @click.option(
+    "--consumer_backoff_factor",
+    type=int,
+    default=1 * 1000,
+    help="Backoff factor in response to passes over the backend "
+    "which yield no messages (milliseconds)",
+)
+@click.option(
+    "--consumer_backoff_floor",
+    type=int,
+    default=1_000,
+    help="Minimum backoff in response to a pass over the backend"
+    "which yields no message (milliseconds)",
+)
+@click.option(
+    "--consumer_backoff_ceiling",
+    type=int,
+    default=30_000,
+    help="Maximum backoff in response to a pass over the backend"
+    "which yields no message (milliseconds)",
+)
+@click.option(
     "--log-level",
     type=click.Choice(LOG_LEVELS, case_sensitive=False),
     default="INFO",
@@ -69,6 +91,9 @@ def process_pool(
     n_processes: Optional[int],
     prune_interval: int,
     slot_wait_interval: int,
+    consumer_backoff_factor: int,
+    consumer_backoff_floor: int,
+    consumer_backoff_ceiling: int,
     log_level: str,
 ) -> None:
     """Start a process-based worker pool."""
@@ -81,6 +106,12 @@ def process_pool(
         n_processes=n_processes,
         prune_interval=prune_interval,
         slot_wait_interval=slot_wait_interval,
+        backoff=LinearBackoff(
+            factor=consumer_backoff_factor,
+            floor=consumer_backoff_floor,
+            ceiling=consumer_backoff_ceiling,
+            zero_override=False,
+        ),
     )
     pool.run()
 
@@ -122,6 +153,27 @@ def process_pool(
     help="Wait for thread exit to mark as complete.",
 )
 @click.option(
+    "--consumer_backoff_factor",
+    type=int,
+    default=1 * 1000,
+    help="Backoff factor in response to passes over the backend "
+    "which yield no messages (milliseconds)",
+)
+@click.option(
+    "--consumer_backoff_floor",
+    type=int,
+    default=1_000,
+    help="Minimum backoff in response to a pass over the backend"
+    "which yields no message (milliseconds)",
+)
+@click.option(
+    "--consumer_backoff_ceiling",
+    type=int,
+    default=30_000,
+    help="Maximum backoff in response to a pass over the backend"
+    "which yields no message (milliseconds)",
+)
+@click.option(
     "--log-level",
     type=click.Choice(LOG_LEVELS, case_sensitive=False),
     default="INFO",
@@ -135,6 +187,9 @@ def thread_pool(
     n_processes: Optional[int],
     slot_wait_interval: int,
     complete_only_on_thread_exit: bool,
+    consumer_backoff_factor: int,
+    consumer_backoff_floor: int,
+    consumer_backoff_ceiling: int,
     log_level: str,
 ) -> None:
     """Start a thread-based worker pool."""
@@ -148,6 +203,12 @@ def thread_pool(
         n_processes=n_processes,
         slot_wait_interval=slot_wait_interval,
         complete_only_on_thread_exit=complete_only_on_thread_exit,
+        backoff=LinearBackoff(
+            factor=consumer_backoff_factor,
+            floor=consumer_backoff_floor,
+            ceiling=consumer_backoff_ceiling,
+            zero_override=False,
+        ),
     )
     pool.run()
 
