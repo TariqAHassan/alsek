@@ -22,6 +22,7 @@ from alsek import Broker, Message, StatusTracker
 from alsek.core.pools.thread import ProcessGroup, ThreadInProcessGroup, ThreadWorkerPool
 from alsek.core.status import TERMINAL_TASK_STATUSES, TaskStatus
 from alsek.core.task import task
+from alsek.exceptions import RevokedError
 from alsek.storage.result import ResultStore
 
 # ------------------------------------------------------------------ #
@@ -527,11 +528,14 @@ def test_revocation_mid_flight(
         time.sleep(0.1)
         outfile.write_text("oops")
 
+    status_tracker = StatusTracker(rolling_broker.backend)
+
     revocable_task = task(
         rolling_broker,
         name="revocable",
         mechanism="thread",
         timeout=500,
+        status_tracker=status_tracker,
     )(_writes)
 
     msg = revocable_task.generate()
@@ -542,10 +546,16 @@ def test_revocation_mid_flight(
 
     time.sleep(0.03)  # give it a moment to start
     revocable_task.revoke(msg)  # send revocation
-    runner.join(timeout=1)
+    runner.join(timeout=3)
     pool.on_shutdown()
 
     assert not outfile.exists()
+    assert status_tracker.wait_for(msg, TaskStatus.FAILED, timeout=10)
+    assert rolling_broker.sync(msg).exception_details
+    assert isinstance(
+        rolling_broker.sync(msg).exception_details.as_exception(),
+        RevokedError,
+    )
 
 
 # ------------------------------------------------------------------ #
