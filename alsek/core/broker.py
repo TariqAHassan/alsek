@@ -123,9 +123,10 @@ class Broker:
         )
 
     def _clear_lock(self, message: Message) -> None:
-        lock_name = message.unlink_lock(missing_ok=True)
-        if lock_name:
-            Lock(lock_name, backend=self.backend).release()
+        message.unlink_lock(
+            missing_ok=True,
+            target_backend=self.backend,
+        )
 
     @magic_logger(
         before=lambda message: log.info("Removing %s...", message.summary),
