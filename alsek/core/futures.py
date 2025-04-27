@@ -201,7 +201,6 @@ class TaskFuture(ABC):
                     task=self.task,
                     message=self.message,
                     exception=RevokedError(f"Task '{self.task.name}' was revoked."),
-
                 )
                 log.info("Evicted '%s'.", self.message.summary)
                 break

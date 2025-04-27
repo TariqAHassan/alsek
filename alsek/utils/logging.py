@@ -38,7 +38,10 @@ def setup_logging(level: int) -> None:
     """
     logger = get_logger()
     handler = logging.StreamHandler()
-    formatter = logging.Formatter(fmt=LOGGING_FORMAT, datefmt=LOGGING_DATEFMT,)
+    formatter = logging.Formatter(
+        fmt=LOGGING_FORMAT,
+        datefmt=LOGGING_DATEFMT,
+    )
     handler.setFormatter(formatter)
     logger.handlers = [handler]
     logger.setLevel(level)

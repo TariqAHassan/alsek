@@ -4,12 +4,12 @@
 
 """
 
+import logging
 from typing import Optional
 
 import click
 
 from alsek import __version__
-import logging
 from alsek.core.pools.process import ProcessWorkerPool
 from alsek.core.pools.thread import ThreadWorkerPool
 from alsek.utils.logging import setup_logging

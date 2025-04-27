@@ -5,12 +5,11 @@ from pathlib import Path
 
 import pytest
 
-from alsek.core.pools.process import ProcessWorkerPool
 from alsek.core.futures import ProcessTaskFuture
+from alsek.core.pools.process import ProcessWorkerPool
+from alsek.core.status import StatusTracker, TaskStatus
 from alsek.core.task import task
 from alsek.storage.result import ResultStore
-from alsek.core.status import StatusTracker, TaskStatus
-
 
 # ------------------------------------------------------------------ #
 # Fixture-based rolling pool (one-submit, finite-run)
@@ -215,6 +214,7 @@ def test_end_to_end_status_and_result(rolling_broker):
 # 8. per-message timeout triggers FAILED status
 # ------------------------------------------------------------------ #
 
+
 @pytest.mark.flaky(max_runs=2)
 def test_process_task_timeout_causes_failed_status(rolling_broker):
     backend = rolling_broker.backend
@@ -242,8 +242,7 @@ def test_process_task_timeout_causes_failed_status(rolling_broker):
 
     assert status.wait_for(msg, TaskStatus.FAILED, timeout=5)
     assert isinstance(
-        rolling_broker.sync(msg).exception_details.as_exception(),
-        TimeoutError
+        rolling_broker.sync(msg).exception_details.as_exception(), TimeoutError
     )
 
 
