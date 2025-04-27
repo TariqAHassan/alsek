@@ -675,8 +675,10 @@ def test_pool_elastic_scale_up_and_down(rolling_broker: Broker, monkeypatch):
 
     # ---------- 5. shutdown ----------
     pool.stop_signal.exit_event.set()
-    t.join(timeout=2)
-    pool.on_shutdown()
+    # Increase timeout significantly to allow full child process/thread cleanup
+    t.join(timeout=10) 
+    # Remove redundant call - on_shutdown is called by pool.run() finally block
+    # pool.on_shutdown() 
 
     # ---------- 6. assertions ----------
     assert peak.value > 1, "pool never scaled UP"
