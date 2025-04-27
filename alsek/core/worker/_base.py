@@ -143,6 +143,8 @@ class BaseWorkerPool(Consumer, ABC):
 
         try:
             self.engine()
+        except KeyboardInterrupt:
+            log.info("Keyboard interrupt received. Initiating shutdown...")
         finally:
             log.info("Worker pool shutting down...")
             self.on_shutdown()
