@@ -36,33 +36,13 @@ def setup_logging(level: int) -> None:
         None
 
     """
-    # First configure the root logger
-    root_logger = logging.getLogger()
-    
-    # Clear existing handlers to avoid duplicates
-    for handler in root_logger.handlers[:]:
-        root_logger.removeHandler(handler)
-        
-    # Add a handler to the root logger
-    console_handler = logging.StreamHandler()
-    console_handler.setFormatter(logging.Formatter(fmt=LOGGING_FORMAT, datefmt=LOGGING_DATEFMT))
-    root_logger.addHandler(console_handler)
-    root_logger.setLevel(level)
-    
-    # Set the same level for all alsek loggers
-    # This ensures no alsek logger will log below the specified level
-    get_logger().setLevel(level)
-    
-    # Configure all specific alsek loggers to use the same level
-    for name in logging.root.manager.loggerDict:
-        if name.startswith('alsek'):
-            logger = logging.getLogger(name)
-            logger.setLevel(level)  # Explicitly set the level
-            # Enable propagation to use root logger's handler
-            logger.propagate = True
-            # Clear any direct handlers to avoid duplicates
-            for handler in logger.handlers[:]:
-                logger.removeHandler(handler)
+    logger = get_logger()
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter(fmt=LOGGING_FORMAT, datefmt=LOGGING_DATEFMT)
+    handler.setFormatter(formatter)
+    logger.handlers = [handler]
+    logger.setLevel(level)
+    logger.propagate = False  # <-- super important!
 
 
 def _magic_parser(
