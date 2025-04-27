@@ -73,13 +73,13 @@ First, create a `conftest.py` file with a `background_worker_pool` fixture.
 import pytest
 from multiprocessing import Process
 
-from alsek.core.worker import WorkerPool
+from alsek.core.pools.thread import ThreadWorkerPool
 
 from my_application.tasks import task_1, task_2
 
 
 def _run_pool() -> None:
-    WorkerPool([task_1, task_2], backoff=None).run()
+    ThreadWorkerPool([task_1, task_2], backoff=None).run()
 
 
 @pytest.fixture()
