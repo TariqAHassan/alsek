@@ -150,9 +150,21 @@ def test_nack(rolling_broker: Broker) -> None:
     assert not lock.held
 
 
-@pytest.mark.parametrize("dlq_ttl", [None, 500])
+@pytest.mark.parametrize(
+    "dlq_ttl,idempotent_check",
+    [
+        (None, True),
+        (None, False),
+        (500, True),
+        (500, False),
+    ],
+)
 @pytest.mark.flaky(max_runs=3)
-def test_fail(dlq_ttl: Optional[int], rolling_broker: Broker) -> None:
+def test_fail(
+    dlq_ttl: Optional[int],
+    idempotent_check: bool,
+    rolling_broker: Broker,
+) -> None:
     lock = Lock("lock", backend=rolling_broker.backend)
     message = Message("task").link_lock(lock)
 
@@ -163,6 +175,8 @@ def test_fail(dlq_ttl: Optional[int], rolling_broker: Broker) -> None:
     # Now fail it
     rolling_broker.dlq_ttl = dlq_ttl
     rolling_broker.fail(message)
+    if idempotent_check:
+        rolling_broker.fail(message)
 
     # Check that the broker removed the message
     assert not rolling_broker.exists(message)
