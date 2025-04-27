@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from alsek import Broker
 from alsek.core.futures import ProcessTaskFuture
 from alsek.core.worker.process import ProcessWorkerPool
 from alsek.core.status import StatusTracker, TaskStatus
@@ -12,17 +13,13 @@ from alsek.core.task import task
 from alsek.storage.result import ResultStore
 
 # ------------------------------------------------------------------ #
-# Fixture-based rolling pool (one-submit, finite-run)
-# ------------------------------------------------------------------ #
-# Provided by conftest.py:
-# @pytest.fixture()
-# def rolling_process_worker_pool(rolling_broker): ...
-
-
-# ------------------------------------------------------------------ #
 # 1. submit_message appends a future
 # ------------------------------------------------------------------ #
-def test_submit_message_appends_future(rolling_process_worker_pool):
+
+
+def test_submit_message_appends_future(
+    rolling_process_worker_pool: ProcessWorkerPool,
+) -> None:
     pool = rolling_process_worker_pool
     msg = pool.tasks[0].generate()
     submitted = pool.submit_message(msg)
@@ -36,7 +33,7 @@ def test_submit_message_appends_future(rolling_process_worker_pool):
 # ------------------------------------------------------------------ #
 
 
-def test_has_slot_and_submit_message_limits(rolling_broker):
+def test_has_slot_and_submit_message_limits(rolling_broker: Broker) -> None:
     t = task(rolling_broker, name="T", mechanism="process")(lambda: time.sleep(0.1))
     pool = ProcessWorkerPool(tasks=[t], n_processes=2)
     msgs = [t.generate() for _ in range(3)]
@@ -65,7 +62,7 @@ def test_has_slot_and_submit_message_limits(rolling_broker):
 # ------------------------------------------------------------------ #
 # 3. prune() removes completed & timed-out futures
 # ------------------------------------------------------------------ #
-def test_prune_behavior(rolling_process_worker_pool):
+def test_prune_behavior(rolling_process_worker_pool: ProcessWorkerPool) -> None:
     pool = rolling_process_worker_pool
 
     class FakeFuture:
@@ -94,7 +91,9 @@ def test_prune_behavior(rolling_process_worker_pool):
 # ------------------------------------------------------------------ #
 # 4. on_shutdown() kills all live futures
 # ------------------------------------------------------------------ #
-def test_on_shutdown_terminates_all(rolling_process_worker_pool):
+def test_on_shutdown_terminates_all(
+    rolling_process_worker_pool: ProcessWorkerPool,
+) -> None:
     pool = rolling_process_worker_pool
 
     class FakeFuture:
@@ -119,16 +118,17 @@ def test_on_shutdown_terminates_all(rolling_process_worker_pool):
     assert pool._futures == []
 
 
-# ================================================================== #
-# Essential end-to-end integration tests
-# ================================================================== #
-
-
 # ------------------------------------------------------------------ #
 # 5. executes tasks, writes files, frees slots
 # ------------------------------------------------------------------ #
+
+
 @pytest.mark.parametrize("n_processes", [1, 3])
-def test_process_pool_executes_and_frees_slots(tmp_path, rolling_broker, n_processes):
+def test_process_pool_executes_and_frees_slots(
+    tmp_path: Path,
+    rolling_broker: Broker,
+    n_processes: int,
+) -> None:
     # prepare output files
     outfiles = [tmp_path / f"out{i}.txt" for i in range(n_processes)]
 
@@ -169,7 +169,9 @@ def test_process_pool_executes_and_frees_slots(tmp_path, rolling_broker, n_proce
 # ------------------------------------------------------------------ #
 # 6. multiple submits produce exact future count
 # ------------------------------------------------------------------ #
-def test_multiple_submits_exact_future_count(rolling_broker):
+
+
+def test_multiple_submits_exact_future_count(rolling_broker: Broker) -> None:
     t = task(rolling_broker, name="T", mechanism="process")(lambda: time.sleep(0.01))
     pool = ProcessWorkerPool(tasks=[t], n_processes=2)
     msgs = [t.generate() for _ in range(4)]
@@ -186,7 +188,7 @@ def test_multiple_submits_exact_future_count(rolling_broker):
 # ------------------------------------------------------------------ #
 
 
-def test_end_to_end_status_and_result(rolling_broker):
+def test_end_to_end_status_and_result(rolling_broker: Broker) -> None:
     status = StatusTracker(rolling_broker.backend)
     results = ResultStore(rolling_broker.backend)
     fast_task = task(
@@ -216,7 +218,7 @@ def test_end_to_end_status_and_result(rolling_broker):
 
 
 @pytest.mark.flaky(max_runs=2)
-def test_process_task_timeout_causes_failed_status(rolling_broker):
+def test_process_task_timeout_causes_failed_status(rolling_broker: Broker) -> None:
     backend = rolling_broker.backend
     status = StatusTracker(backend)
 
@@ -251,7 +253,7 @@ def test_process_task_timeout_causes_failed_status(rolling_broker):
 # ------------------------------------------------------------------ #
 
 
-def test_process_revocation_mid_flight(rolling_broker, tmp_path):
+def test_process_revocation_mid_flight(rolling_broker: Broker, tmp_path: Path) -> None:
     outfile = tmp_path / "should_not_exist_proc.txt"
 
     def _writer() -> None:
