@@ -332,7 +332,8 @@ def test_acquire_group_spawns_until_cap(
 
 @pytest.mark.timeout(10)
 def test_submit_message_fails_when_every_group_full(
-    rolling_broker: Broker, monkeypatch: pytest.MonkeyPatch
+    rolling_broker: Broker,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     pool = _mk_pool(rolling_broker)
 
