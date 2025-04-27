@@ -86,7 +86,7 @@ def test_process_group_has_slot() -> None:
     g = ProcessGroup(
         n_threads=2,
         complete_only_on_thread_exit=False,
-        slot_wait_interval=0.01,
+        slot_wait_interval_seconds=0.01,
     )
     assert g.has_slot() is True
     # fill the queue
@@ -115,7 +115,7 @@ def test_process_group_submit_success(monkeypatch: pytest.MonkeyPatch) -> None:
     g = ProcessGroup(
         n_threads=1,
         complete_only_on_thread_exit=False,
-        slot_wait_interval=0.01,
+        slot_wait_interval_seconds=0.01,
     )
     # ensure put() doesn’t raise so we hit the happy path
     monkeypatch.setattr(g.queue, "put", lambda *a, **kw: None)
@@ -133,7 +133,7 @@ def test_process_group_submit_when_full(monkeypatch: pytest.MonkeyPatch) -> None
     g = ProcessGroup(
         n_threads=1,
         complete_only_on_thread_exit=False,
-        slot_wait_interval=0.01,
+        slot_wait_interval_seconds=0.01,
     )
 
     def _raise_full(*_a, **_kw):
@@ -160,7 +160,7 @@ def test_process_group_stop_terminates_process() -> None:
     g = ProcessGroup(
         n_threads=1,
         complete_only_on_thread_exit=False,
-        slot_wait_interval=0.01,
+        slot_wait_interval_seconds=0.01,
     )
     assert g.process.is_alive()
     g.stop()
@@ -177,7 +177,7 @@ def test_thread_in_process_group_has_capacity() -> None:
         q=MPQueue(),
         shutdown_event=Event(),
         n_threads=2,
-        slot_wait_interval=0.01,
+        slot_wait_interval_seconds=0.01,
     )
     assert tig._has_capacity() is True
     # simulate running futures
@@ -200,7 +200,7 @@ def test_thread_worker_pool_prune_removes_dead_groups(
     dead_group = ProcessGroup(
         n_threads=1,
         complete_only_on_thread_exit=False,
-        slot_wait_interval=0.01,
+        slot_wait_interval_seconds=0.01,
     )
     pool._progress_groups.append(dead_group)
     dead_group.stop(timeout=0.05)
@@ -223,7 +223,7 @@ def test_thread_in_process_group_prune_behavior() -> None:
         q=MPQueue(),
         shutdown_event=Event(),
         n_threads=10,
-        slot_wait_interval=0.01,
+        slot_wait_interval_seconds=0.01,
     )
 
     class _FakeFuture:

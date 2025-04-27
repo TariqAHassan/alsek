@@ -35,12 +35,12 @@ class ThreadInProcessGroup:
         q: Queue,
         shutdown_event: Event,
         n_threads: int,
-        slot_wait_interval: float,
+        slot_wait_interval_seconds: float,
     ) -> None:
         self.q = q
         self.shutdown_event = shutdown_event
         self.n_threads = n_threads
-        self.slot_wait_interval = slot_wait_interval
+        self.slot_wait_interval_seconds = slot_wait_interval_seconds
 
         self._live: list[ThreadTaskFuture] = list()
 
@@ -81,12 +81,12 @@ class ThreadInProcessGroup:
             # 2. Throttle if thread slots are full
             if not self._has_capacity():
                 # Wait *either* for a slot OR the shutdown flag
-                self.shutdown_event.wait(self.slot_wait_interval)
+                self.shutdown_event.wait(self.slot_wait_interval_seconds)
                 continue
 
             # 3. Try to pull one unit of work
             try:
-                payload = self.q.get(timeout=self.slot_wait_interval)
+                payload = self.q.get(timeout=self.slot_wait_interval_seconds)
             except queue.Empty:
                 continue
 
@@ -100,14 +100,14 @@ def _start_thread_worker(
     q: Queue,
     shutdown_event: Event,
     n_threads: int,
-    slot_wait_interval: float,
+    slot_wait_interval_seconds: float,
 ) -> None:
     # We construct the worker *inside* the child so we don’t have to pickle it.
     worker = ThreadInProcessGroup(
         q=q,
         shutdown_event=shutdown_event,
         n_threads=n_threads,
-        slot_wait_interval=slot_wait_interval,
+        slot_wait_interval_seconds=slot_wait_interval_seconds,
     )
     worker.run()
 
@@ -117,11 +117,11 @@ class ProcessGroup:
         self,
         n_threads: int,
         complete_only_on_thread_exit: bool,
-        slot_wait_interval: float,
+        slot_wait_interval_seconds: float,
     ) -> None:
         self._n_threads = n_threads
         self.complete_only_on_thread_exit = complete_only_on_thread_exit
-        self.slot_wait_interval = slot_wait_interval
+        self.slot_wait_interval_seconds = slot_wait_interval_seconds
 
         self.queue: Queue = Queue(maxsize=n_threads)
         self.shutdown_event: Event = Event()
@@ -131,7 +131,7 @@ class ProcessGroup:
                 self.queue,
                 self.shutdown_event,
                 n_threads,
-                slot_wait_interval,
+                slot_wait_interval_seconds,
             ),
             daemon=True,
         )
@@ -185,8 +185,8 @@ class ThreadWorkerPool(BaseWorkerPool):
             `thread_raise()` during revocation). Can also temporarily result in more than the
             allotted number of threads running, since a future is only removed from the pool
             after the thread is confirmed dead.
-        slot_wait_interval (float):  Seconds to wait when the pool is
-            saturated before giving other workers a chance and re-scanning
+        slot_wait_interval_seconds (int): Number of milliseconds to wait when the
+            pool is saturated before giving other workers a chance and re-scanning
             the queues.
         **kwargs (Keyword Args): Keyword arguments to pass to ``BaseWorkerPool()``.
 
@@ -203,7 +203,7 @@ class ThreadWorkerPool(BaseWorkerPool):
         n_threads: int = 8,
         n_processes: Optional[int] = None,
         complete_only_on_thread_exit: bool = False,
-        slot_wait_interval: int = 0.05,
+        slot_wait_interval: int = 50,
         **kwargs: Any,
     ) -> None:
         super().__init__(mechanism="thread", **kwargs)
@@ -248,7 +248,7 @@ class ThreadWorkerPool(BaseWorkerPool):
             new_group = ProcessGroup(
                 n_threads=self.n_threads,
                 complete_only_on_thread_exit=self.complete_only_on_thread_exit,
-                slot_wait_interval=self.slot_wait_interval,
+                slot_wait_interval_seconds=self.slot_wait_interval / 1000,
             )
             self._progress_groups.append(new_group)
             return new_group
