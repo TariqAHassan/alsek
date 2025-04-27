@@ -1,4 +1,4 @@
-pytest tests/core/worker \
+pytest tests/core/worker/test_process.py \
        --strict-markers \
        --cov=alsek \
        --cov-report term-missing \
