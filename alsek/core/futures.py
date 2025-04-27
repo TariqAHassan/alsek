@@ -64,13 +64,29 @@ def _process_future_decoder(encoded_data: bytes) -> tuple[Task, Message]:
     return Task.deserialize(task_data), cast(Message, message)
 
 
-def _handle_retry(task: Task, message: Message, exception: BaseException) -> None:
+def _handle_retry(
+    task: Task,
+    message: Message,
+    exception: BaseException,
+    update_exception_on_message: bool = True,
+) -> None:
+    if update_exception_on_message:
+        message.update(exception_details=parse_exception(exception).as_dict())
+
     task.on_retry(message, exception=exception)
     task.broker.retry(message)
     task.update_status(message, status=TaskStatus.RETRYING)
 
 
-def _handle_failure(task: Task, message: Message, exception: BaseException) -> None:
+def _handle_failure(
+    task: Task,
+    message: Message,
+    exception: BaseException,
+    update_exception_on_message: bool = True,
+) -> None:
+    if update_exception_on_message:
+        message.update(exception_details=parse_exception(exception).as_dict())
+
     task.on_failure(message, exception=exception)
     task.broker.fail(message)
     task.update_status(message, status=TaskStatus.FAILED)
@@ -80,6 +96,7 @@ def _retry_future_handler(
     task: Task,
     message: Message,
     exception: BaseException,
+    update_exception_on_message: bool = True,
 ) -> None:
     if task.is_revoked(message):
         task.on_revocation(message, exception=exception, result=None)
@@ -90,6 +107,7 @@ def _retry_future_handler(
             task=task,
             message=message,
             exception=exception,
+            update_exception_on_message=update_exception_on_message,
         )
     elif not task.broker.in_dlq(message):
         log.error("Retries exhausted for %s.", message.summary)
@@ -97,6 +115,7 @@ def _retry_future_handler(
             task=task,
             message=message,
             exception=exception,
+            update_exception_on_message=update_exception_on_message,
         )
 
 
@@ -178,12 +197,11 @@ class TaskFuture(ABC):
                     self.message.summary,
                 )
                 self.stop(RevokedError)
-                exception = RevokedError(f"Task '{self.task.name}' was revoked.")
-                self.message.update(exception_details=parse_exception(exception).as_dict())  # fmt: skip
                 _handle_failure(
                     task=self.task,
                     message=self.message,
-                    exception=exception,
+                    exception=RevokedError(f"Task '{self.task.name}' was revoked."),
+
                 )
                 log.info("Evicted '%s'.", self.message.summary)
                 break
@@ -277,7 +295,11 @@ class ThreadTaskFuture(TaskFuture):
         if self._wrapper_exit:
             log.debug("Thread task future finished after termination.")
         elif exception is not None:
-            _retry_future_handler(self.task, self.message, exception=exception)
+            _retry_future_handler(
+                task=self.task,
+                message=self.message,
+                exception=exception,
+            )
         else:
             _complete_future_handler(self.task, self.message, result=result)
 
@@ -388,7 +410,12 @@ class ProcessTaskFuture(TaskFuture):
         if not wrapper_exit_queue.empty():
             log.debug("Process task future finished after termination.")
         elif exception is not None:
-            _retry_future_handler(task, message=message, exception=exception)
+            _retry_future_handler(
+                task,
+                message=message,
+                exception=exception,
+                update_exception_on_message=False,
+            )
         else:
             _complete_future_handler(task, message=message, result=result)
 
