@@ -11,6 +11,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Optional
 
 from alsek import Message
+from collections import defaultdict
 from alsek.core.consumer import Consumer
 from alsek.core.task import Task
 from alsek.core.worker._helpers import (
@@ -20,8 +21,16 @@ from alsek.core.worker._helpers import (
 )
 from alsek.types import SupportedMechanismType
 from alsek.utils.namespacing import get_message_name
+from alsek.utils.string import smart_join
 
 log = logging.getLogger(__name__)
+
+
+def _gather_task_names(tasks: list[Task] | tuple[Task, ...]) -> dict[str, list[str]]:
+    queue_tasks = defaultdict(set)
+    for t in tasks:
+        queue_tasks[t.queue].add(t.name)
+    return {k: sorted(v) for k, v in queue_tasks.items()}
 
 
 class BaseWorkerPool(Consumer, ABC):
@@ -108,6 +117,12 @@ class BaseWorkerPool(Consumer, ABC):
             len(self.queues),
             "s" if len(self.queues) > 1 else "",
         )
+        for queue, tasks in _gather_task_names(self.tasks).items():
+            log.info(
+                "Tasks on queue %s: %s",
+                queue,
+                smart_join(sorted(tasks), limit=None),
+            )
         log.info("Worker pool online.")
 
     @abstractmethod
