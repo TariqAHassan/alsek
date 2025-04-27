@@ -20,10 +20,10 @@ from redis import Redis
 from alsek.cli.cli import main as alsek_cli
 from alsek.core.broker import Broker
 from alsek.core.message import Message
+from alsek.core.pools.process import ProcessWorkerPool
 from alsek.core.pools.thread import ThreadWorkerPool
 from alsek.core.status import StatusTracker
 from alsek.core.task import task
-from alsek.core.worker import WorkerPool
 from alsek.storage.backends import Backend
 from alsek.storage.backends.disk.standard import DiskCacheBackend
 from alsek.storage.backends.redis.standard import RedisBackend
@@ -83,7 +83,7 @@ def base_backend() -> Backend:
         def priority_iter(self, key: str) -> Iterable[str]:
             raise NotImplementedError()
 
-        def priority_remove(self, key: str) -> None:
+        def priority_remove(self, key: str, unique_id: str) -> None:
             raise NotImplementedError()
 
         def pub(self, channel: str, value: Any) -> None:
@@ -168,6 +168,35 @@ def rolling_thread_worker_pool(rolling_broker):
         if submitted:  # first successful enqueue
             pool._can_run = False  # break the outer while-loop
         return submitted
+
+    pool.submit_message = submit_and_quit
+    return pool
+
+
+@pytest.fixture()
+def rolling_process_worker_pool(rolling_broker: Broker) -> ProcessWorkerPool:
+    """
+    A pool that will exit after one successful submit_message, and uses
+    ._poll() so run() returns once.
+    """
+    # create 3 trivial “process” tasks
+    tasks = [
+        task(rolling_broker, name=f"proc-task-{i}", mechanism="process")(lambda: i)
+        for i in range(3)
+    ]
+    pool = ProcessWorkerPool(tasks=tasks)
+    # make stream finite
+    pool.stream = pool._poll
+
+    # stop after first submit so run() returns
+    original = pool.submit_message
+
+    @wraps(original)
+    def submit_and_quit(msg: Message) -> bool:
+        ok = original(msg)
+        if ok:
+            pool._can_run = False
+        return ok
 
     pool.submit_message = submit_and_quit
     return pool
