@@ -255,11 +255,14 @@ def test_process_revocation_mid_flight(rolling_broker, tmp_path):
         time.sleep(1)
         outfile.write_text("oops")
 
+    status = StatusTracker(rolling_broker.backend)
+
     rev_task = task(
         rolling_broker,
         name="rev_proc",
         mechanism="process",
         timeout=500,
+        status_tracker=status
     )(_writer)
 
     msg = rev_task.generate()
@@ -271,7 +274,7 @@ def test_process_revocation_mid_flight(rolling_broker, tmp_path):
 
     time.sleep(0.03)
     rev_task.revoke(msg)
-    # assert status.wait_for(msg, TaskStatus.FAILED, timeout=5)
+    assert status.wait_for(msg, TaskStatus.FAILED, timeout=5)
 
     runner.join(timeout=1)
     pool.prune()
