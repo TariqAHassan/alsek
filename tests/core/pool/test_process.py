@@ -241,9 +241,6 @@ def test_process_task_timeout_causes_failed_status(rolling_broker):
     )
     assert pool.submit_message(msg) is True
 
-    # wait until status flips to FAILED
-    assert status.wait_for(msg, TaskStatus.FAILED, timeout=5)
-    assert status.get(msg).status == TaskStatus.FAILED
     assert status.wait_for(msg, TaskStatus.FAILED, timeout=5)
 
 
