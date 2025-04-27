@@ -76,11 +76,11 @@ def _retry_future_handler(
     if task.do_retry(message, exception=exception):
         task.on_retry(message, exception=exception)
         task.broker.retry(message)
-        task._update_status(message, status=TaskStatus.RETRYING)
+        task.update_status(message, status=TaskStatus.RETRYING)
     else:
         log.error("Retries exhausted for %s.", message.summary)
         task.broker.fail(message)
-        task._update_status(message, status=TaskStatus.FAILED)
+        task.update_status(message, status=TaskStatus.FAILED)
         task.on_failure(message, exception=exception)
 
 
@@ -101,7 +101,7 @@ def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
             )
         )
     task.broker.ack(message)
-    task._update_status(message, status=TaskStatus.SUCCEEDED)
+    task.update_status(message, status=TaskStatus.SUCCEEDED)
     task.on_success(message, result=result)
 
 
@@ -228,7 +228,7 @@ class ThreadTaskFuture(TaskFuture):
 
     def _wrapper(self) -> None:
         log.info("Received %s...", self.message.summary)
-        self.task._update_status(self.message, status=TaskStatus.RUNNING)
+        self.task.update_status(self.message, status=TaskStatus.RUNNING)
 
         result, exception = None, None
         try:
@@ -339,7 +339,7 @@ class ProcessTaskFuture(TaskFuture):
         setup_logging(log_level)
         task, message = _process_future_decoder(encoded_data)
         log.info("Received %s...", message.summary)
-        task._update_status(message, status=TaskStatus.RUNNING)
+        task.update_status(message, status=TaskStatus.RUNNING)
 
         result, exception = None, None
         try:

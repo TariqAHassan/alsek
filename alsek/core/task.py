@@ -237,7 +237,17 @@ class Task:
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self.function(*args, **kwargs)
 
-    def _update_status(self, message: Message, status: TaskStatus) -> None:
+    def update_status(self, message: Message, status: TaskStatus) -> None:
+        """Update the status of a message.
+
+        Args:
+            message (Message): message to update the status of.
+            status (TaskStatus): status to update the message to.
+
+        Returns:
+            None
+
+        """
         if self.status_tracker:
             log.debug(f"Setting status of '{message.uuid}' to {status}...")
             self.status_tracker.set(message, status=status)
@@ -377,7 +387,7 @@ class Task:
             self.cancel_defer()
         elif submit:
             self._submit(message, **options)
-            self._update_status(message, status=TaskStatus.SUBMITTED)
+            self.update_status(message, status=TaskStatus.SUBMITTED)
             self.on_submit(message)
         return message
 
@@ -580,7 +590,7 @@ class Task:
                 traceback=None,
             ).as_dict()
         )
-        self._update_status(message, status=TaskStatus.FAILED)
+        self.update_status(message, status=TaskStatus.FAILED)
         self.broker.fail(message)
 
     def is_revoked(self, message: Message) -> bool:
@@ -684,7 +694,7 @@ class TriggerTask(Task):
                 message=message,
                 broker=self.broker,
                 on_submit=self.on_submit,
-                callback_op=partial(self._update_status, status=TaskStatus.SUBMITTED),
+                callback_op=partial(self.update_status, status=TaskStatus.SUBMITTED),
                 options=options,
             ),
             trigger=self.trigger,
