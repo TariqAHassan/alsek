@@ -102,9 +102,11 @@ class BaseWorkerPool(Consumer, ABC):
 
     def on_boot(self) -> None:
         log.info(
-            "Monitoring %s %s.",
-            len(self.tasks) if self.task_specific_mode else len(self.queues),
-            "task(s)" if self.task_specific_mode else "queue(s)",
+            "Monitoring %s task%s over %s queue%s.",
+            len(self.tasks),
+            "s" if len(self.tasks) > 1 else "",
+            self.queues,
+            "s" if len(self.queues) > 1 else "",
         )
         log.info("Worker pool online.")
 

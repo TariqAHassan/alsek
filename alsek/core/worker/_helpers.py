@@ -32,7 +32,6 @@ def filter_tasks(
                 "Skipping the following tasks due to mechanism mismatch: %s",
                 ", ".join(ignored),
             )
-        log.info("Monitoring %s tasks", len(tasks))
         return tasks
     else:
         raise NoTasksFoundError(f"No tasks found with mechanism '{mechanism}'.")
