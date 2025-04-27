@@ -1,4 +1,4 @@
-timeout 45 pytest tests/core/worker --strict-markers \
+timeout 25 pytest tests/core/worker --strict-markers \
       --cov=alsek \
       --cov-report term-missing \
       --cov-fail-under 80 \
@@ -6,9 +6,6 @@ timeout 45 pytest tests/core/worker --strict-markers \
       --showlocals \
       --timeout=250 \
       -vv | tee pytest_output.txt
-
-# Capture exit code
-EXIT_CODE=$?
 
 echo "HERE!"
 
@@ -19,5 +16,5 @@ if [ $EXIT_CODE -eq 124 ] && grep -q "passed" pytest_output.txt && ! grep -q "er
 else
    echo "Errors Detected"
    # Keep the original exit code for any other issues
-   exit $EXIT_CODE
+   exit 1
 fi
