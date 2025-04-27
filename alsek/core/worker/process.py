@@ -13,7 +13,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 
 from alsek import Message
 from alsek.core.futures import ProcessTaskFuture
-from alsek.core.pools._base import BaseWorkerPool
+from alsek.core.worker._base import BaseWorkerPool
 from alsek.exceptions import TerminationError
 from alsek.utils.system import smart_cpu_count
 

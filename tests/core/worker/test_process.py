@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from alsek.core.futures import ProcessTaskFuture
-from alsek.core.pools.process import ProcessWorkerPool
+from alsek.core.worker.process import ProcessWorkerPool
 from alsek.core.status import StatusTracker, TaskStatus
 from alsek.core.task import task
 from alsek.storage.result import ResultStore

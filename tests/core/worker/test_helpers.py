@@ -9,7 +9,7 @@ from typing import Optional, Union
 import pytest
 
 from alsek.core.broker import Broker
-from alsek.core.pools._helpers import derive_consumer_subset, extract_broker  # noqa
+from alsek.core.worker._helpers import derive_consumer_subset, extract_broker  # noqa
 from alsek.core.task import Task, task
 from alsek.defaults import DEFAULT_QUEUE
 from alsek.exceptions import MultipleBrokersError, NoTasksFoundError

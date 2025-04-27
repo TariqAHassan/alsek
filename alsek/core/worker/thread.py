@@ -15,7 +15,7 @@ import dill
 
 from alsek import Message
 from alsek.core.futures import Event, Process, Queue, ThreadTaskFuture
-from alsek.core.pools._base import BaseWorkerPool
+from alsek.core.worker._base import BaseWorkerPool
 from alsek.core.task import Task
 from alsek.exceptions import TerminationError
 from alsek.utils.system import smart_cpu_count

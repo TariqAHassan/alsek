@@ -12,7 +12,7 @@ from typing import Any, Optional
 
 from alsek import Message
 from alsek.core.consumer import Consumer
-from alsek.core.pools._helpers import (
+from alsek.core.worker._helpers import (
     derive_consumer_subset,
     extract_broker,
     filter_tasks,
