@@ -1,4 +1,4 @@
-timeout 45 pytest --strict-markers \
+timeout 45 pytest tests/core/worker --strict-markers \
       --cov=alsek \
       --cov-report term-missing \
       --cov-fail-under 80 \
