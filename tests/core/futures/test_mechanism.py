@@ -45,3 +45,7 @@ def test_future_stop(mechansim: Type[TaskFuture], rolling_broker: Broker) -> Non
     sleeper(100)
     # Validate that the future has stopped ("completed")
     assert future.complete
+    assert isinstance(
+        rolling_broker.sync(testing_msg).exception_details.as_exception(),
+        TerminationError,
+    )
