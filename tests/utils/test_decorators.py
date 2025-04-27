@@ -7,20 +7,20 @@
 import pytest
 
 from typing import Optional
-from alsek.utils.decorators import exception_suppressor
+from alsek.utils.decorators import suppress_exception
 
 
-@exception_suppressor(KeyError)
+@suppress_exception(KeyError)
 def get_key(d: dict[str, int], key: str) -> Optional[int]:
     return d[key]
 
 
-@exception_suppressor(ZeroDivisionError, ValueError)
+@suppress_exception(ZeroDivisionError, ValueError)
 def safe_div(num: int, denom: int) -> Optional[float]:
     return num / denom
 
 
-@exception_suppressor(ValueError)
+@suppress_exception(ValueError)
 def boom() -> None:
     raise KeyError("not suppressed")  # different error → should propagate
 
