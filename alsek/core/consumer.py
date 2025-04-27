@@ -97,7 +97,12 @@ class Consumer:
             ]
 
         for s in subnamespaces:
-            yield from self.broker.backend.scan(f"{get_priority_namespace(s)}*")
+            if self.stop_signal.received:
+                break
+            for i in self.broker.backend.scan(f"{get_priority_namespace(s)}*"):
+                if self.stop_signal.received:
+                    break
+                yield i
 
     def _poll(self) -> list[Message]:
         # NOTE: with this approach, we 'drain' / exhaust queues in
@@ -116,7 +121,7 @@ class Consumer:
                     continue
 
                 message = Message(**message_data)
-                if message.ready:
+                if message.ready and not self.stop_signal.received:
                     with _ConsumptionMutex(message, self.broker.backend) as lock:
                         if lock.acquire(strict=False):
                             output.append(message.link_lock(lock, override=True))
