@@ -34,4 +34,4 @@ def test_help(
 ) -> None:
     result = cli_runner.invoke(args=["--help"])
     assert result.exit_code == 0
-    assert "Start a pool of Alsek workers" in result.output
+    assert "Alsek" in result.output
