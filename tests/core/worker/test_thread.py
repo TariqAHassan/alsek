@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import logging
 import multiprocessing as mp
 import queue as _q
 import threading
@@ -16,8 +17,8 @@ from pathlib import Path
 from queue import Queue
 from typing import Any
 
-import pytest
 import dill
+import pytest
 
 from alsek import Broker, Message, StatusTracker
 from alsek.core.status import TERMINAL_TASK_STATUSES, TaskStatus
@@ -29,7 +30,6 @@ from alsek.core.worker.thread import (
 )
 from alsek.exceptions import RevokedError
 from alsek.storage.result import ResultStore
-import logging
 
 log = logging.getLogger(__name__)
 

@@ -4,9 +4,10 @@
 
 """
 
+from typing import Optional
+
 import pytest
 
-from typing import Optional
 from alsek.utils.decorators import suppress_exception
 
 

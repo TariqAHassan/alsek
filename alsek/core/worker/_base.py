@@ -8,10 +8,10 @@ from __future__ import annotations
 
 import logging
 from abc import ABC, abstractmethod
+from collections import defaultdict
 from typing import Any, Optional
 
 from alsek import Message
-from collections import defaultdict
 from alsek.core.consumer import Consumer
 from alsek.core.task import Task
 from alsek.core.worker._helpers import (

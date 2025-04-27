@@ -12,9 +12,7 @@ from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.consumer import Consumer, Message, _ConsumptionMutex
 from alsek.storage.backends import Backend
-from alsek.utils.namespacing import (
-    get_message_name,
-)
+from alsek.utils.namespacing import get_message_name
 
 
 def test_consumption_mutex_acquisition(rolling_backend: Backend) -> None:

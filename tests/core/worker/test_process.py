@@ -1,7 +1,7 @@
 # tests/core/pool/test_process.py
+import os
 import threading
 import time
-import os
 from pathlib import Path
 
 import pytest
@@ -123,6 +123,7 @@ def test_on_shutdown_terminates_all(
 # 5. executes tasks, writes files, frees slots
 # ------------------------------------------------------------------ #
 
+
 # ToDo: resolve on GitHub CI
 @pytest.mark.skip(reason="Buggy on GitHub CI")
 @pytest.mark.parametrize("n_processes", [1, 3])
@@ -140,7 +141,7 @@ def test_process_pool_executes_and_frees_slots(
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("done")
             # Add sync to ensure file is written to disk
-            if hasattr(os, 'sync'):
+            if hasattr(os, "sync"):
                 os.sync()
 
         return _writer
@@ -173,10 +174,10 @@ def test_process_pool_executes_and_frees_slots(
         while not path.exists() and wait_time < 4.0:
             time.sleep(0.1)
             wait_time += 0.1
-        
+
         assert path.exists(), f"File {path} was not created"
         assert path.read_text() == "done"
-    
+
     assert pool.has_slot() is True
     pool.on_shutdown()
 
