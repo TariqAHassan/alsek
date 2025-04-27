@@ -185,6 +185,9 @@ class ThreadWorkerPool(BaseWorkerPool):
             `thread_raise()` during revocation). Can also temporarily result in more than the
             allotted number of threads running, since a future is only removed from the pool
             after the thread is confirmed dead.
+        slot_wait_interval (float):  Seconds to wait when the pool is
+            saturated before giving other workers a chance and re-scanning
+            the queues.
         **kwargs (Keyword Args): Keyword arguments to pass to ``BaseWorkerPool()``.
 
     Notes:
@@ -200,12 +203,14 @@ class ThreadWorkerPool(BaseWorkerPool):
         n_threads: int = 8,
         n_processes: Optional[int] = None,
         complete_only_on_thread_exit: bool = False,
+        slot_wait_interval: int = 0.05,
         **kwargs: Any,
     ) -> None:
         super().__init__(mechanism="thread", **kwargs)
         self.n_threads = n_threads
         self.n_processes = n_processes or smart_cpu_count()
         self.complete_only_on_thread_exit = complete_only_on_thread_exit
+        self.slot_wait_interval = slot_wait_interval
 
         self._progress_groups: List[ProcessGroup] = list()
 

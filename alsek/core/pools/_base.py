@@ -39,9 +39,6 @@ class BaseWorkerPool(Consumer, ABC):
             consume messages from. If ``None``, all queues will be consumed.
         task_specific_mode (bool, optional): when defining queues to monitor, include
             tasks names. Otherwise, consider queues broadly.
-        slot_wait_interval (float):  Seconds to wait when the pool is
-            saturated before giving other workers a chance and re-scanning
-            the queues.
         **kwargs (Keyword Args): Keyword arguments to pass to ``Consumer()``.
 
     Raises:
@@ -59,7 +56,6 @@ class BaseWorkerPool(Consumer, ABC):
         tasks: list[Task] | tuple[Task, ...],
         queues: Optional[list[str]] = None,
         task_specific_mode: bool = False,
-        slot_wait_interval: int = 0.05,
         **kwargs: Any,
     ) -> None:
         tasks = filter_tasks(tasks=tasks, mechanism=mechanism)
@@ -75,7 +71,6 @@ class BaseWorkerPool(Consumer, ABC):
         self.tasks = tasks
         self.queues = queues or sorted(self.subset)
         self.task_specific_mode = task_specific_mode
-        self.slot_wait_interval = slot_wait_interval
 
         self._task_map = {t.name: t for t in tasks}
         self._can_run: bool = True
