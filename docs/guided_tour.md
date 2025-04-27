@@ -773,57 +773,97 @@ Result pools can be used in applications, or for interactive distributed computi
     in the same order in which the messages were provided, use the ``stream()`` 
     method instead.
 
-## Concurrency
+## Worker Pools
 
-Alsek's concurrency `Lock()` provides a straightforward way limit 
-simultaneity across a distributed application to a single task, as shown here:
+Alsek provides two distinct worker pool implementations for processing tasks: `ThreadWorkerPool` and `ProcessWorkerPool`. Each offers different performance characteristics and scaling capabilities.
 
-```python
-from alsek import Lock, task
-from alsek.storage.backends.disk import DiskCacheBackend
+### Thread Worker Pool
 
-backend = DiskCacheBackend()
-
-@task(...)
-def send_data() -> None:
-    with Lock("send_data", backend=backend) as lock:
-        if lock.acquire(strict=False):
-            print("Sending data...")
-        else:
-            print("Failed to acquire lock")
-```
-
-## Consumers
-
-As their name suggests, consumers pull messages inserted by the broker
-onto workers. A concurrency lock (similar to what is shown above) is
-used to ensure than one, and only one, consumer can hold a message
-at any given time.
-
-Standard use of Alsek does not typically entail direct interaction with consumers,
-as they are managed by _Worker Pools_ (see below). However, in the interest 
-of completeness, an illustrative example of working with consumers is provided below.
+The `ThreadWorkerPool` uses a hierarchical architecture with process groups that each manage multiple threads:
 
 ```python
 from alsek import Broker
-from alsek.core.consumer import Consumer
+from alsek.core.worker.thread import ThreadWorkerPool
 from alsek.storage.backends.redis import RedisBackend
 
-broker = Broker(RedisBackend())
-consumer = Consumer(broker)
+backend = RedisBackend()
+broker = Broker(backend)
 
-for message in consumer.stream():
-    print(f"Got {message.summary}")
+pool = ThreadWorkerPool(
+    tasks=[task_a, task_b],  # tasks to process
+    n_threads=8,             # threads per process group
+    n_processes=4,           # maximum number of process groups
+)
+pool.run()
 ```
 
+Key features of the `ThreadWorkerPool`:
+
+* **Elastic Scaling**: Automatically creates new process groups as needed and prunes them when they're no longer required
+* **Hierarchical Design**: Each process group manages its own set of threads
+* **Total Capacity**: The maximum number of concurrent tasks is `n_threads × n_processes`
+* **Resource Efficiency**: Ideal for I/O-bound tasks or when lower overhead is desired
+
+The `ThreadWorkerPool` will dynamically scale up to `n_processes` process groups, each managing up to `n_threads` threads, for a maximum capacity of `n_threads × n_processes`. When a message needs to be processed, it is assigned to an available process group, which then executes it on one of its threads.
+
+### Process Worker Pool
+
+The `ProcessWorkerPool` uses a direct approach where each task runs in its own dedicated process:
+
+```python
+from alsek import Broker
+from alsek.core.worker.process import ProcessWorkerPool
+from alsek.storage.backends.redis import RedisBackend
+
+backend = RedisBackend()
+broker = Broker(backend)
+
+pool = ProcessWorkerPool(
+    tasks=[task_a, task_b],  # tasks to process
+    n_processes=4,           # maximum number of processes
+    prune_interval=100,      # milliseconds between prune scans
+)
+pool.run()
+```
+
+Key features of the `ProcessWorkerPool`:
+
+* **Process Isolation**: Each task runs in its own dedicated process
+* **Fixed Capacity**: Limited to a maximum of `n_processes` concurrent tasks
+* **Background Pruning**: Uses a background scheduler to periodically prune spent futures
+* **Resource Safety**: Ideal for CPU-bound tasks or when process isolation is necessary
+
+The `ProcessWorkerPool` will execute each task in its own dedicated process, up to the maximum of `n_processes` concurrent processes. This offers stronger isolation between tasks but with slightly higher overhead compared to threads.
+
+### Performance Considerations
+
+When choosing between worker pool types, consider:
+
+1. **I/O vs CPU Bound Tasks**: For I/O-bound tasks (e.g., network requests, database operations), `ThreadWorkerPool` often offers better performance. For CPU-bound tasks, `ProcessWorkerPool` can better utilize multiple cores.
+
+2. **Memory Usage**: `ThreadWorkerPool` is typically more memory-efficient as threads share memory within their process group.
+
+3. **Isolation Needs**: If tasks need strong isolation from each other, `ProcessWorkerPool` provides better separation.
+
+4. **Elasticity**: If your workload has variable demand, `ThreadWorkerPool`'s elastic scaling may be more efficient.
+
+5. **Shutdown Reliability**: `ProcessWorkerPool` offers more robust shutdown logic since it can directly terminate processes, avoiding potential GIL-related issues where a thread might never relinquish control and prevent proper shutdown (see above).
+
 !!! note
-    Consumers backoff following one or more passes over the backend that 
-    do not yield any ready messages. By default, `LinearBackoff()` is used.
+    Both worker pool types use timeouts to manage hanging tasks and provide similar retry and backoff capabilities.
+
+!!! warning
+    For tasks using `mechanism='thread'`, be aware of Python's Global Interpreter Lock (GIL) which can limit true parallelism within a single process group.
 
 ## CLI
 
 Alsek's command line interface (CLI) provides an easy way to bring a pool of
 workers online to process tasks for which we can provide the definition. 
+
+Alsek offers two types of worker pools:
+
+* `thread-pool`: Uses a hierarchical architecture with process groups that each manage multiple threads
+* `process-pool`: Uses a direct approach where each task runs in its own process
 
 Each worker pool relies on a `Consumer` to pull messages written to the backend by the `Broker`. 
 When the worker pool reaches capacity, it will pause the stream of data from the consumer. 
@@ -840,7 +880,11 @@ is located in the current working directory in a file titled `my_task.py`.
 Then, starting a worker pool against this task can be accomplished by running:
 
 ```shell
-alsek my_tasks
+# For a process-based worker pool
+alsek process_pool my_tasks
+
+# For a thread-based worker pool
+alsek thread_pool my_tasks
 ```
 
 #### Nested files
@@ -858,7 +902,7 @@ Starting a pool with this kind of structure can be accomplished by passing
 the dot-separated "path" to the file: 
 
 ```shell
-alsek my_project.my_tasks
+alsek process_pool my_project.my_tasks
 ```
 
 #### Recursive
@@ -867,36 +911,69 @@ We can also simply specify the directory where the task definitions live,
 and it will be scanned recursively in order to recover _all_ task definitions.
 
 ```shell
-alsek my_project
+alsek thread_pool my_project
 ```
 
 ### Advanced options
 
 Alsek's CLI includes several dials to achieve fine-grain control over the worker pool.
-We won't cover all of them here, but there are at least three worth highlighting.
+We won't cover all of them here, but there are at least a few worth highlighting.
 
-The first is the `-qu`/`--queues` option. This allows one to limit the queues
-which will be consumed by the worker pool. It can be set using a comma-separated list.
+#### Queue Selection
+
+The `-qu`/`--queues` option allows you to limit the queues which will be consumed by the worker pool. 
+It can be set using a comma-separated list.
 
 ```shell
-alsek my_project -qu queue_a
+alsek process_pool my_project -qu queue_a
 ```
 
 ```shell
-alsek my_project -qu queue_a,queue_b,queue_z
+alsek thread_pool my_project -qu queue_a,queue_b,queue_z
 ```
 
-The `--max_threads` and `--max_processes` options are also noteworthy.
-These options provide control over the maximum number of threads and 
-processes that can run on the worker pool, respectively. The total number 
-of workers in the pool is determined by the sum of these two numbers.
+#### Worker Capacity
+
+##### Thread-based Worker Pools
+
+For thread-based worker pools, you can control both the number of threads per process group and 
+the maximum number of process groups:
 
 ```shell
-alsek my_project --max_threads 8
+# Configure 8 threads per process group
+alsek thread-pool my_project --n_threads 8
+
+# Configure a maximum of 4 process groups
+alsek thread-pool my_project --n_processes 4
 ```
 
+The total maximum capacity of a thread-based worker pool is `n_threads × n_processes`.
+
+Thread pools support elastic scaling, automatically creating new process groups up to the configured maximum
+as needed, and pruning them when no longer needed.
+
+##### Process-based Worker Pools
+
+For process-based worker pools, you can control the maximum number of concurrent processes:
+
 ```shell
-alsek my_project --max_processes 2
+# Configure a maximum of 4 processes
+alsek process-pool my_project --n_processes 4
+```
+
+#### Performance Tuning
+
+Both worker pool types support additional performance tuning options:
+
+```shell
+# Configure slot wait interval (milliseconds to wait when pool is full)
+alsek thread_pool my_project --slot_wait_interval 50
+
+# For process-based worker pools, configure prune interval
+alsek process_pool my_project --prune_interval 100
+
+# For thread-based worker pools, wait for thread exit to mark as complete
+alsek thread_pool my_project --complete_only_on_thread_exit
 ```
 
 !!! note
