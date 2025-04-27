@@ -9,7 +9,7 @@ from typing import Optional
 
 def smart_join(
     items: list[str],
-    limit: Optional[int] = 5,
+    limit: Optional[int] = None,
     delimiter: str = ", ",
 ) -> str:
     """Joins a list of strings with a delimiter, limiting the number of items to display

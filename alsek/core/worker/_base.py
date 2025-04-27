@@ -119,7 +119,7 @@ class BaseWorkerPool(Consumer, ABC):
         )
         for queue, tasks in _gather_task_names(self.tasks).items():
             log.info(
-                "Tasks on queue %s: %s",
+                "Tasks on queue '%s': %s",
                 queue,
                 smart_join(sorted(tasks), limit=None),
             )
