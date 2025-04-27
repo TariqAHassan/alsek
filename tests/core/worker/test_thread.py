@@ -324,8 +324,21 @@ def test_acquire_group_spawns_until_cap(rolling_broker: Broker) -> None:
 
 def test_submit_message_fails_when_every_group_full(rolling_broker: Broker) -> None:
     pool = _mk_pool(rolling_broker)
+
+    @task(rolling_broker)
+    def test_task() -> int:
+        return 99
+
+    msg = test_task.generate()
+
     # create groups and fill each queue with dummy serialized data
-    dummy_payload = dill.dumps(({}, {}, False))
+    dummy_payload = dill.dumps(
+        (
+            test_task.serialize(),
+            msg.data,
+            False,
+        )
+    )
     g1 = pool._acquire_group()
     g1.queue.put(dummy_payload)
     g2 = pool._acquire_group()
