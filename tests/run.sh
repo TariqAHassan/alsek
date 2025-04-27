@@ -8,6 +8,9 @@ timeout 25 pytest \
       --timeout=250 \
       -vv | tee pytest_output.txt
 
+# Capture exit code
+EXIT_CODE=$?
+
 # If timeout killed it but tests passed, override the exit code
 if [ $EXIT_CODE -eq 124 ] && grep -q "passed" pytest_output.txt && ! grep -q "errors\|failed=[1-9]" pytest_output.txt; then
    echo "Tests appear to have passed but timed out, forcing success"
