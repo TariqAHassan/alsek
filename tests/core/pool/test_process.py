@@ -237,6 +237,7 @@ def test_process_task_timeout_causes_failed_status(rolling_broker):
     pool = ProcessWorkerPool(
         tasks=[slow_task],
         n_processes=1,
+        prune_interval=50,  # ms
     )
     assert pool.submit_message(msg) is True
 
