@@ -7,9 +7,8 @@
 from __future__ import annotations
 
 import logging
+import threading
 from typing import Any, List, Optional
-
-from apscheduler.schedulers.background import BackgroundScheduler
 
 from alsek import Message
 from alsek.core.futures import ProcessTaskFuture
@@ -39,17 +38,27 @@ class ProcessWorkerPool(BaseWorkerPool):
     ) -> None:
         super().__init__(mechanism="process", **kwargs)
         self.n_processes = n_processes or smart_cpu_count()
+        self.prune_interval = prune_interval
 
         self._futures: List[ProcessTaskFuture] = list()
+        self._shutdown_event = threading.Event()
 
-        self.scheduler = BackgroundScheduler()
-        self.scheduler.start()
-        self.scheduler.add_job(
-            self.prune,
-            trigger="interval",
-            seconds=prune_interval / 1000,
-            id="prune_scan",
+        # Use a simple daemon thread instead of APScheduler
+        self._prune_thread = threading.Thread(
+            target=self._prune_loop, daemon=True, name="ProcessPool-Pruner"
         )
+        self._prune_thread.start()
+
+    def _prune_loop(self) -> None:
+        """Background thread that periodically prunes futures."""
+        while not self._shutdown_event.is_set():
+            try:
+                self.prune()
+            except Exception as e:
+                log.exception("Error during future pruning: %s", e)
+
+            # Sleep until next interval or shutdown
+            self._shutdown_event.wait(self.prune_interval / 1000)
 
     def on_boot(self) -> None:
         log.info(
@@ -76,8 +85,7 @@ class ProcessWorkerPool(BaseWorkerPool):
 
     def on_shutdown(self) -> None:
         """Terminate everything that is still alive."""
-        if self.scheduler.running:
-            self.scheduler.shutdown(wait=False)
+        self._shutdown_event.set()
 
         for f in self._futures:
             if not f.complete:
