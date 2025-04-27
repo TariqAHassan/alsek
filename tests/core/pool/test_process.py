@@ -1,11 +1,10 @@
 # tests/core/pool/test_process.py
-
+import threading
 import time
 from pathlib import Path
 
 import pytest
 
-from alsek import Message
 from alsek.core.pools.process import ProcessWorkerPool
 from alsek.core.futures import ProcessTaskFuture
 from alsek.core.task import task
@@ -37,8 +36,10 @@ def test_submit_message_appends_future(rolling_process_worker_pool):
 # ------------------------------------------------------------------ #
 # 2. has_slot & submit_message respects n_processes limit
 # ------------------------------------------------------------------ #
+
+
 def test_has_slot_and_submit_message_limits(rolling_broker):
-    t = task(rolling_broker, name="T", mechanism="process")(lambda: time.sleep(0.01))
+    t = task(rolling_broker, name="T", mechanism="process")(lambda: time.sleep(0.1))
     pool = ProcessWorkerPool(tasks=[t], n_processes=2)
     msgs = [t.generate() for _ in range(3)]
 
@@ -52,13 +53,11 @@ def test_has_slot_and_submit_message_limits(rolling_broker):
     assert pool.submit_message(msgs[2]) is False
 
     # wait for completion
-    deadline = time.time() + 2.0
+    deadline = time.time() + 5.0
     while time.time() < deadline:
-        if all(f.complete for f in pool._futures):  # type: ignore[attr-defined]
+        if all(f.complete for f in pool._futures):
             break
         time.sleep(0.01)
-    else:
-        pytest.skip("Child processes did not complete in time")
 
     pool.prune()
     assert pool.has_slot() is True
@@ -142,9 +141,12 @@ def test_process_pool_executes_and_frees_slots(tmp_path, rolling_broker, n_proce
         return _writer
 
     tasks = [
-        task(rolling_broker, name=f"writer{i}", mechanism="process", timeout=1000)(
-            make_writer(outfiles[i])
-        )
+        task(
+            rolling_broker,
+            name=f"writer{i}",
+            mechanism="process",
+            timeout=1000,
+        )(make_writer(outfiles[i]))
         for i in range(n_processes)
     ]
     pool = ProcessWorkerPool(tasks=tasks, n_processes=n_processes)
@@ -158,8 +160,6 @@ def test_process_pool_executes_and_frees_slots(tmp_path, rolling_broker, n_proce
         if all(f.complete for f in pool._futures):  # type: ignore[attr-defined]
             break
         time.sleep(0.01)
-    else:
-        pytest.skip("Child processes did not finish in time")
 
     pool.prune()
     for path in outfiles:
@@ -186,6 +186,7 @@ def test_multiple_submits_exact_future_count(rolling_broker):
 # ------------------------------------------------------------------ #
 # 7. end-to-end status & result integration
 # ------------------------------------------------------------------ #
+
 def test_end_to_end_status_and_result(rolling_broker):
     status = StatusTracker(rolling_broker.backend)
     results = ResultStore(rolling_broker.backend)
@@ -202,19 +203,78 @@ def test_end_to_end_status_and_result(rolling_broker):
     pool = ProcessWorkerPool(tasks=[fast_task], n_processes=1)
     assert pool.submit_message(msg) is True
 
-    deadline = time.time() + 1.0
-    while time.time() < deadline:
-        try:
-            if status.get(msg).status == TaskStatus.SUCCEEDED:
-                break
-        except KeyError:
-            pass
-        time.sleep(0.01)
-    else:
-        pytest.skip("Task did not complete in time")
-
+    assert status.wait_for(msg, TaskStatus.SUCCEEDED, timeout=5)
     assert status.get(msg).status == TaskStatus.SUCCEEDED
     assert results.get(msg) == 123
 
     pool.prune()
     pool.on_shutdown()
+
+
+# ------------------------------------------------------------------ #
+# 8. per-message timeout triggers FAILED status
+# ------------------------------------------------------------------ #
+
+
+def test_process_task_timeout_causes_failed_status(rolling_broker):
+    backend = rolling_broker.backend
+    status = StatusTracker(backend)
+
+    def _slow() -> None:
+        time.sleep(0.2)
+
+    slow_task = task(
+        rolling_broker,
+        name="slow_proc",
+        mechanism="process",
+        timeout=50,  # ms
+        max_retries=0,
+        status_tracker=status,
+    )(_slow)
+
+    msg = slow_task.generate()
+    pool = ProcessWorkerPool(tasks=[slow_task], n_processes=1)
+    assert pool.submit_message(msg) is True
+
+    # wait until status flips to FAILED
+    assert status.wait_for(msg, TaskStatus.FAILED, timeout=5)
+    assert status.get(msg).status == TaskStatus.FAILED
+    pool.prune()
+    pool.on_shutdown()
+
+
+# ------------------------------------------------------------------ #
+# 9. revocation mid-flight prevents side-effects
+# ------------------------------------------------------------------ #
+
+
+def test_process_revocation_mid_flight(rolling_broker, tmp_path):
+    outfile = tmp_path / "should_not_exist_proc.txt"
+
+    def _writer() -> None:
+        time.sleep(1)
+        outfile.write_text("oops")
+
+    rev_task = task(
+        rolling_broker,
+        name="rev_proc",
+        mechanism="process",
+        timeout=500,
+    )(_writer)
+
+    msg = rev_task.generate()
+    pool = ProcessWorkerPool(tasks=[rev_task], n_processes=1)
+
+    # start pool in background
+    runner = threading.Thread(target=pool.run, daemon=True)
+    runner.start()
+
+    time.sleep(0.03)
+    rev_task.revoke(msg)
+    # assert status.wait_for(msg, TaskStatus.FAILED, timeout=5)
+
+    runner.join(timeout=1)
+    pool.prune()
+    pool.on_shutdown()
+
+    assert not outfile.exists()
