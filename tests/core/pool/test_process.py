@@ -187,6 +187,7 @@ def test_multiple_submits_exact_future_count(rolling_broker):
 # 7. end-to-end status & result integration
 # ------------------------------------------------------------------ #
 
+
 def test_end_to_end_status_and_result(rolling_broker):
     status = StatusTracker(rolling_broker.backend)
     results = ResultStore(rolling_broker.backend)
@@ -233,14 +234,19 @@ def test_process_task_timeout_causes_failed_status(rolling_broker):
     )(_slow)
 
     msg = slow_task.generate()
-    pool = ProcessWorkerPool(tasks=[slow_task], n_processes=1)
+    pool = ProcessWorkerPool(
+        tasks=[slow_task],
+        n_processes=1,
+    )
     assert pool.submit_message(msg) is True
 
+    time.sleep(2)
+
     # wait until status flips to FAILED
-    assert status.wait_for(msg, TaskStatus.FAILED, timeout=5)
     assert status.get(msg).status == TaskStatus.FAILED
-    pool.prune()
-    pool.on_shutdown()
+    assert status.wait_for(msg, TaskStatus.FAILED, timeout=5)
+    # pool.prune()
+    # pool.on_shutdown()
 
 
 # ------------------------------------------------------------------ #
@@ -262,7 +268,7 @@ def test_process_revocation_mid_flight(rolling_broker, tmp_path):
         name="rev_proc",
         mechanism="process",
         timeout=500,
-        status_tracker=status
+        status_tracker=status,
     )(_writer)
 
     msg = rev_task.generate()

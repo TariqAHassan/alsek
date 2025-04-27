@@ -9,6 +9,8 @@ from __future__ import annotations
 import logging
 from typing import Any, List, Optional
 
+from apscheduler.schedulers.background import BackgroundScheduler
+
 from alsek import Message
 from alsek.core.futures import ProcessTaskFuture
 from alsek.core.pools._base import BaseWorkerPool
@@ -24,14 +26,30 @@ class ProcessWorkerPool(BaseWorkerPool):
 
     Args:
         n_processes (int): Maximum number of live `ProcessTaskFuture`s.
+        prune_interval (int): Number of milliseconds between background
+            runs of a scan to prune spent futures.
 
     """
 
-    def __init__(self, n_processes: Optional[int] = None, **kwargs: Any) -> None:
+    def __init__(
+        self,
+        n_processes: Optional[int] = None,
+        prune_interval: int = 100,
+        **kwargs: Any,
+    ) -> None:
         super().__init__(mechanism="process", **kwargs)
         self.n_processes = n_processes or smart_cpu_count()
 
         self._futures: List[ProcessTaskFuture] = list()
+
+        self.scheduler = BackgroundScheduler()
+        self.scheduler.start()
+        self.scheduler.add_job(
+            self.prune,
+            trigger="interval",
+            seconds=prune_interval / 1000,
+            id="prune_scan",
+        )
 
     def on_boot(self) -> None:
         log.info(
@@ -58,6 +76,8 @@ class ProcessWorkerPool(BaseWorkerPool):
 
     def on_shutdown(self) -> None:
         """Terminate everything that is still alive."""
+        self.scheduler.shutdown(wait=False)
+
         for f in self._futures:
             if not f.complete:
                 f.stop(TerminationError)
