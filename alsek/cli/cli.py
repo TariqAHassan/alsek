@@ -10,131 +10,77 @@ import click
 
 from alsek import __version__
 from alsek.cli.helpers import configure_reload
-from alsek.core.backoff import LinearBackoff
-from alsek.core.worker import WorkerPool
+from alsek.core.pools.process import ProcessWorkerPool
+from alsek.core.pools.thread import ThreadWorkerPool
 from alsek.utils.logging import setup_logging
 from alsek.utils.scanning import collect_tasks, parse_logging_level
 
 
-@click.command()
+@click.group()
 @click.version_option(__version__)
+def main() -> None:
+    """Alsek worker pool CLI."""
+    pass
+
+
+@main.command()
 @click.argument("package", type=str)
 @click.option(
-    "-qu",
     "--queues",
     type=str,
     default=None,
-    help="Comma separated list of queues to consume from. "
-    "If null, all queues will be consumed.",
+    help="Comma-separated list of queues to consume from.",
 )
 @click.option(
-    "-tsm",
     "--task_specific_mode",
     is_flag=True,
-    help="Narrowly monitor the tasks (true) or queues more broadly (false; default)",
+    help="Monitor tasks specifically, not just queues.",
 )
 @click.option(
-    "--max_threads",
-    type=int,
-    default=8,
-    help="Maximum of task with mechanism='thread' supported at any 'one' time.",
-)
-@click.option(
-    "--max_processes",
+    "--n_processes",
     type=int,
     default=None,
-    help="Maximum of task with mechanism='process' supported at"
-    "any one time. Defaults to max(1, CPU_COUNT - 1).",
+    help="Max number of processes.",
 )
 @click.option(
-    "--management_interval",
+    "--prune_interval",
     type=int,
     default=100,
-    help="Amount of time (in milliseconds) between maintenance "
-    "scans of background task execution.",
+    help="Milliseconds between prune scans.",
 )
 @click.option(
     "--slot_wait_interval",
     type=int,
     default=100,
-    help="Amount of time (in milliseconds) to wait between checks to "
-    "determine if a process for task execution is available.",
-)
-@click.option(
-    "--complete_only_on_thread_exit",
-    is_flag=True,
-    help="Only mark thread futures as complete when the thread exits. "
-    "More rigorous, but may hang if the thread doesn't terminate cleanly.",
-)
-@click.option(
-    "--consumer_backoff_factor",
-    type=int,
-    default=1 * 1000,
-    help="Backoff factor in response to passes over the backend "
-    "which yield no messages (milliseconds)",
-)
-@click.option(
-    "--consumer_backoff_floor",
-    type=int,
-    default=1_000,
-    help="Minimum backoff in response to a pass over the backend"
-    "which yields no message (milliseconds)",
-)
-@click.option(
-    "--consumer_backoff_ceiling",
-    type=int,
-    default=30_000,
-    help="Maximum backoff in response to a pass over the backend"
-    "which yields no message (milliseconds)",
+    help="Milliseconds to wait when full.",
 )
 @click.option(
     "--debug",
     is_flag=True,
-    help="Enable debugging logging",
+    help="Enable debug logging.",
 )
 @click.option(
-    "-q",
     "--quiet",
     is_flag=True,
-    help="Disable detailed logging.",
+    help="Minimize log output.",
 )
 @click.option(
-    "-r",
     "--reload",
     is_flag=True,
-    help="Watch for changes and automatically reload if changes are detected.",
+    help="Auto-reload worker on code changes.",
 )
-def main(
+def process_pool(
     package: str,
-    queues: Optional[str],  # noqa
-    task_specific_mode: bool,  # noqa
-    max_threads: int,  # noqa
-    max_processes: Optional[int],  # noqa
-    management_interval: int,  # noqa
-    slot_wait_interval: int,  # noqa
-    complete_only_on_thread_exit: bool,  # noqa
-    consumer_backoff_factor: int,  # noqa
-    consumer_backoff_floor: int,  # noqa
-    consumer_backoff_ceiling: int,  # noqa
-    debug: bool,  # noqa
-    quiet: bool,  # noqa
-    reload: bool,  # noqa
+    queues: Optional[str],
+    task_specific_mode: bool,
+    n_processes: Optional[int],
+    prune_interval: int,
+    slot_wait_interval: int,
+    debug: bool,
+    quiet: bool,
+    reload: bool,
 ) -> None:
-    """Start a pool of Alsek workers.
-
-    Arguments:
-
-        package: the package to scan for task definitions
-
-    Examples:
-
-        * alsek my_package.tasks
-
-        * alsek my_package.tasks --processes 4
-
-        * alsek my_package.tasks --qu queue_a,queue_b
-
-    """
+    """Start a process-based worker pool."""
     setup_logging(parse_logging_level(debug, verbose=not quiet))
 
     observer = None
@@ -142,26 +88,110 @@ def main(
         try:
             observer = configure_reload(package)
         except NotADirectoryError as error:
-            click.echo(f"Error: {str(error)}")
+            click.echo(f"Error: {error}")
             return
 
     try:
-        WorkerPool(
+        pool = ProcessWorkerPool(
             tasks=collect_tasks(package),
-            queues=[i.strip() for i in queues.split(",")] if queues else None,
+            queues=[q.strip() for q in queues.split(",")] if queues else None,
             task_specific_mode=task_specific_mode,
-            max_threads=max_threads,
-            max_processes=max_processes,
-            management_interval=management_interval,
+            n_processes=n_processes,
+            prune_interval=prune_interval,
+            slot_wait_interval=slot_wait_interval,
+        )
+        pool.run()
+    finally:
+        if observer:
+            observer.stop()
+            observer.join()
+
+
+@main.command()
+@click.argument("package", type=str)
+@click.option(
+    "--queues",
+    type=str,
+    default=None,
+    help="Comma-separated list of queues to consume from.",
+)
+@click.option(
+    "--task_specific_mode",
+    is_flag=True,
+    help="Monitor tasks specifically, not just queues.",
+)
+@click.option(
+    "--n_threads",
+    type=int,
+    default=8,
+    help="Threads per group.",
+)
+@click.option(
+    "--n_processes",
+    type=int,
+    default=None,
+    help="Max process groups.",
+)
+@click.option(
+    "--slot_wait_interval",
+    type=int,
+    default=50,
+    help="Milliseconds to wait when full.",
+)
+@click.option(
+    "--complete_only_on_thread_exit",
+    is_flag=True,
+    help="Wait for thread exit to mark as complete.",
+)
+@click.option(
+    "--debug",
+    is_flag=True,
+    help="Enable debug logging.",
+)
+@click.option(
+    "--quiet",
+    is_flag=True,
+    help="Minimize log output.",
+)
+@click.option(
+    "--reload",
+    is_flag=True,
+    help="Auto-reload worker on code changes.",
+)
+def thread_pool(
+    package: str,
+    queues: Optional[str],
+    task_specific_mode: bool,
+    n_threads: int,
+    n_processes: Optional[int],
+    slot_wait_interval: int,
+    complete_only_on_thread_exit: bool,
+    debug: bool,
+    quiet: bool,
+    reload: bool,
+) -> None:
+    """Start a thread-based worker pool."""
+    setup_logging(parse_logging_level(debug, verbose=not quiet))
+
+    observer = None
+    if reload:
+        try:
+            observer = configure_reload(package)
+        except NotADirectoryError as error:
+            click.echo(f"Error: {error}")
+            return
+
+    try:
+        pool = ThreadWorkerPool(
+            tasks=collect_tasks(package),
+            queues=[q.strip() for q in queues.split(",")] if queues else None,
+            task_specific_mode=task_specific_mode,
+            n_threads=n_threads,
+            n_processes=n_processes,
             slot_wait_interval=slot_wait_interval,
             complete_only_on_thread_exit=complete_only_on_thread_exit,
-            backoff=LinearBackoff(
-                factor=consumer_backoff_factor,
-                floor=consumer_backoff_floor,
-                ceiling=consumer_backoff_ceiling,
-                zero_override=False,
-            ),
-        ).run()
+        )
+        pool.run()
     finally:
         if observer:
             observer.stop()
