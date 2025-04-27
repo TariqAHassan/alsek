@@ -181,7 +181,11 @@ def rolling_process_worker_pool(rolling_broker: Broker) -> ProcessWorkerPool:
     """
     # create 3 trivial “process” tasks
     tasks = [
-        task(rolling_broker, name=f"proc-task-{i}", mechanism="process")(lambda: i)
+        task(
+            rolling_broker,
+            name=f"proc-task-{i}",
+            mechanism="process",
+        )(lambda: i)
         for i in range(3)
     ]
     pool = ProcessWorkerPool(tasks=tasks)
