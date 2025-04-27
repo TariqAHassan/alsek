@@ -19,6 +19,7 @@ from alsek.core.futures import ThreadTaskFuture
 from alsek.core.task import Task
 from alsek.core.worker._base import BaseWorkerPool
 from alsek.exceptions import TerminationError
+from alsek.utils.decorators import suppress_exception
 from alsek.utils.logging import get_logger, setup_logging
 from alsek.utils.system import smart_cpu_count
 
@@ -79,6 +80,10 @@ class ThreadsInProcessGroup:
                 f.stop(TerminationError)
                 f.clean_up(ignore_errors=True)
 
+    @suppress_exception(
+        KeyboardInterrupt,
+        on_suppress=lambda error: log.info("Keyboard Interrupt Detected"),
+    )
     def run(self) -> None:
         while not self.shutdown_event.is_set():
             # 1. reap finished / timed-out futures
