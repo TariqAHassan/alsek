@@ -16,6 +16,7 @@ from alsek.utils.scanning import collect_tasks
     "module,expected",
     [
         ("examples.simple", {"add"}),
+        ("examples.simple2", {"divide", "multiply"}),
     ],
 )
 def test_collect_tasks(module: str, expected: Set[str]) -> None:
