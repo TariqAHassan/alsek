@@ -9,7 +9,6 @@ from typing import Optional
 import click
 
 from alsek import __version__
-from alsek.cli.helpers import configure_reload
 from alsek.core.pools.process import ProcessWorkerPool
 from alsek.core.pools.thread import ThreadWorkerPool
 from alsek.utils.logging import setup_logging
@@ -64,11 +63,6 @@ def main() -> None:
     is_flag=True,
     help="Minimize log output.",
 )
-@click.option(
-    "--reload",
-    is_flag=True,
-    help="Auto-reload worker on code changes.",
-)
 def process_pool(
     package: str,
     queues: Optional[str],
@@ -78,33 +72,18 @@ def process_pool(
     slot_wait_interval: int,
     debug: bool,
     quiet: bool,
-    reload: bool,
 ) -> None:
     """Start a process-based worker pool."""
     setup_logging(parse_logging_level(debug, verbose=not quiet))
-
-    observer = None
-    if reload:
-        try:
-            observer = configure_reload(package)
-        except NotADirectoryError as error:
-            click.echo(f"Error: {error}")
-            return
-
-    try:
-        pool = ProcessWorkerPool(
-            tasks=collect_tasks(package),
-            queues=[q.strip() for q in queues.split(",")] if queues else None,
-            task_specific_mode=task_specific_mode,
-            n_processes=n_processes,
-            prune_interval=prune_interval,
-            slot_wait_interval=slot_wait_interval,
-        )
-        pool.run()
-    finally:
-        if observer:
-            observer.stop()
-            observer.join()
+    pool = ProcessWorkerPool(
+        tasks=collect_tasks(package),
+        queues=[q.strip() for q in queues.split(",")] if queues else None,
+        task_specific_mode=task_specific_mode,
+        n_processes=n_processes,
+        prune_interval=prune_interval,
+        slot_wait_interval=slot_wait_interval,
+    )
+    pool.run()
 
 
 @main.command()
@@ -153,11 +132,6 @@ def process_pool(
     is_flag=True,
     help="Minimize log output.",
 )
-@click.option(
-    "--reload",
-    is_flag=True,
-    help="Auto-reload worker on code changes.",
-)
 def thread_pool(
     package: str,
     queues: Optional[str],
@@ -168,34 +142,20 @@ def thread_pool(
     complete_only_on_thread_exit: bool,
     debug: bool,
     quiet: bool,
-    reload: bool,
 ) -> None:
     """Start a thread-based worker pool."""
     setup_logging(parse_logging_level(debug, verbose=not quiet))
 
-    observer = None
-    if reload:
-        try:
-            observer = configure_reload(package)
-        except NotADirectoryError as error:
-            click.echo(f"Error: {error}")
-            return
-
-    try:
-        pool = ThreadWorkerPool(
-            tasks=collect_tasks(package),
-            queues=[q.strip() for q in queues.split(",")] if queues else None,
-            task_specific_mode=task_specific_mode,
-            n_threads=n_threads,
-            n_processes=n_processes,
-            slot_wait_interval=slot_wait_interval,
-            complete_only_on_thread_exit=complete_only_on_thread_exit,
-        )
-        pool.run()
-    finally:
-        if observer:
-            observer.stop()
-            observer.join()
+    pool = ThreadWorkerPool(
+        tasks=collect_tasks(package),
+        queues=[q.strip() for q in queues.split(",")] if queues else None,
+        task_specific_mode=task_specific_mode,
+        n_threads=n_threads,
+        n_processes=n_processes,
+        slot_wait_interval=slot_wait_interval,
+        complete_only_on_thread_exit=complete_only_on_thread_exit,
+    )
+    pool.run()
 
 
 if __name__ == "__main__":
