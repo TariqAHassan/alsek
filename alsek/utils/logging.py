@@ -93,7 +93,7 @@ def magic_logger(
 
     Examples:
         >>> import logging
-        >>> from alsek._utils.logging import magic_logger
+        >>> from alsek.utils.logging import magic_logger
 
         >>> log = logging.getLogger(__name__)
 
