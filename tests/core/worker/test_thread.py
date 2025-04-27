@@ -275,9 +275,11 @@ def _mk_pool(broker: Broker) -> ThreadWorkerPool:
     from alsek.core.task import task
 
     # Need a real task definition for the pool itself
-    dummy_task_for_pool = task(broker, name="dummy_pool_task", mechanism="thread")(
-        lambda: None
-    )
+    dummy_task_for_pool = task(
+        broker,
+        name="dummy_pool_task",
+        mechanism="thread",
+    )(lambda: None)
     pool = ThreadWorkerPool(
         tasks=[dummy_task_for_pool],
         n_threads=1,
