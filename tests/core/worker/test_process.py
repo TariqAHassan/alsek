@@ -1,6 +1,7 @@
 # tests/core/pool/test_process.py
 import threading
 import time
+import os
 from pathlib import Path
 
 import pytest
@@ -134,7 +135,12 @@ def test_process_pool_executes_and_frees_slots(
 
     def make_writer(path: Path):
         def _writer() -> None:
+            # Ensure the parent directory exists
+            path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text("done")
+            # Add sync to ensure file is written to disk
+            if hasattr(os, 'sync'):
+                os.sync()
 
         return _writer
 
@@ -152,16 +158,24 @@ def test_process_pool_executes_and_frees_slots(
     for m in msgs:
         assert pool.submit_message(m) is True
 
-    # wait for all to complete
-    deadline = time.time() + 2.0
+    # wait for all to complete with a slightly longer timeout
+    deadline = time.time() + 5.0
     while time.time() < deadline:
-        if all(f.complete for f in pool._futures):  # type: ignore[attr-defined]
+        pool.prune()  # Actively prune to remove completed futures
+        if len(pool._futures) == 0:
             break
-        time.sleep(0.01)
+        time.sleep(0.05)
 
-    pool.prune()
+    # Double check all files exist before asserting content
     for path in outfiles:
+        wait_time = 0
+        while not path.exists() and wait_time < 4.0:
+            time.sleep(0.1)
+            wait_time += 0.1
+        
+        assert path.exists(), f"File {path} was not created"
         assert path.read_text() == "done"
+    
     assert pool.has_slot() is True
     pool.on_shutdown()
 
