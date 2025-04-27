@@ -39,6 +39,9 @@ class BaseWorkerPool(Consumer, ABC):
             consume messages from. If ``None``, all queues will be consumed.
         task_specific_mode (bool, optional): when defining queues to monitor, include
             tasks names. Otherwise, consider queues broadly.
+        slot_wait_interval_seconds (int): Number of milliseconds to wait when the
+            pool is saturated before giving other workers a chance and re-scanning
+            the queues.
         **kwargs (Keyword Args): Keyword arguments to pass to ``Consumer()``.
 
     Raises:
@@ -56,6 +59,7 @@ class BaseWorkerPool(Consumer, ABC):
         tasks: list[Task] | tuple[Task, ...],
         queues: Optional[list[str]] = None,
         task_specific_mode: bool = False,
+        slot_wait_interval: int = 50,
         **kwargs: Any,
     ) -> None:
         tasks = filter_tasks(tasks=tasks, mechanism=mechanism)
@@ -71,9 +75,14 @@ class BaseWorkerPool(Consumer, ABC):
         self.tasks = tasks
         self.queues = queues or sorted(self.subset)
         self.task_specific_mode = task_specific_mode
+        self.slot_wait_interval = slot_wait_interval
 
         self._task_map = {t.name: t for t in tasks}
         self._can_run: bool = True
+
+    @property
+    def _slot_wait_interval_seconds(self) -> float:
+        return self.slot_wait_interval / 1000
 
     def on_boot(self) -> None:
         log.info(
@@ -116,7 +125,7 @@ class BaseWorkerPool(Consumer, ABC):
                     target_backend=self.broker.backend,
                 )
                 # Brief back-off, then restart the stream (priority reset)
-                self.stop_signal.wait(self.slot_wait_interval)
+                self.stop_signal.wait(self._slot_wait_interval_seconds)
                 # Break so we start the stream again from the beginning.
                 # This is important because the stream is ordered by priority.
                 # That is, when we finally can acquire a process group again, we
