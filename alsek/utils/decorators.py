@@ -12,7 +12,7 @@ F = TypeVar("F", bound=Callable[..., Any])
 
 def suppress_exception(
     *exceptions: type[BaseException],
-    on_suppress: Callable[[BaseException], bool] = lambda e: None,
+    on_suppress: Callable[[BaseException], None] = lambda e: None,
 ) -> Callable[[F], F]:
     def decorator(func: F) -> F:  # type: ignore[arg-type]
         @wraps(func)
