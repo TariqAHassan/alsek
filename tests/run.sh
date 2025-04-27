@@ -15,6 +15,7 @@ if [ $EXIT_CODE -eq 124 ] && grep -q "passed" pytest_output.txt && ! grep -q "er
    echo "Tests appear to have passed but timed out, forcing success"
    exit 0
 else
+   echo "Errors Detected"
    # Keep the original exit code for any other issues
    exit $EXIT_CODE
 fi
