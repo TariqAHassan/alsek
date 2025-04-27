@@ -64,6 +64,18 @@ def _process_future_decoder(encoded_data: bytes) -> tuple[Task, Message]:
     return Task.deserialize(task_data), cast(Message, message)
 
 
+def _handle_retry(task: Task, message: Message, exception: BaseException) -> None:
+    task.on_retry(message, exception=exception)
+    task.broker.retry(message)
+    task.update_status(message, status=TaskStatus.RETRYING)
+
+
+def _handle_failure(task: Task, message: Message, exception: BaseException) -> None:
+    task.on_failure(message, exception=exception)
+    task.broker.fail(message)
+    task.update_status(message, status=TaskStatus.FAILED)
+
+
 def _retry_future_handler(
     task: Task,
     message: Message,
@@ -74,14 +86,18 @@ def _retry_future_handler(
         return None
 
     if task.do_retry(message, exception=exception):
-        task.on_retry(message, exception=exception)
-        task.broker.retry(message)
-        task.update_status(message, status=TaskStatus.RETRYING)
-    else:
+        _handle_retry(
+            task=task,
+            message=message,
+            exception=exception,
+        )
+    elif not task.broker.in_dlq(message):
         log.error("Retries exhausted for %s.", message.summary)
-        task.broker.fail(message)
-        task.update_status(message, status=TaskStatus.FAILED)
-        task.on_failure(message, exception=exception)
+        _handle_failure(
+            task=task,
+            message=message,
+            exception=exception,
+        )
 
 
 def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
@@ -162,6 +178,13 @@ class TaskFuture(ABC):
                     self.message.summary,
                 )
                 self.stop(RevokedError)
+                exception = RevokedError(f"Task '{self.task.name}' was revoked.")
+                self.message.update(exception_details=parse_exception(exception).as_dict())  # fmt: skip
+                _handle_failure(
+                    task=self.task,
+                    message=self.message,
+                    exception=exception,
+                )
                 log.info("Evicted '%s'.", self.message.summary)
                 break
             self._revocation_stop_event.wait(check_interval)
