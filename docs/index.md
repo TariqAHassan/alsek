@@ -74,18 +74,11 @@ Message(
     kwargs={},
     metadata=None,
     result_ttl=None,
-    uuid='e49806be-96ad-11eb-9216-acde48001122',
+    uuid='cb3b106a-2314-11f0-b7d7-4af50920870b',
     progenitor_uuid=None,
     retries=0,
     timeout=3600000,
-    created_at='2021-04-06 10:00:00.360000',
-    updated_at='2021-04-06 10:00:00.360000',
-    delay=0,
-    previous_result=None,
-    previous_message_uuid=None,
-    callback_message_data=None,
-    backoff_settings={'algorithm': 'ExponentialBackoff', 'parameters': {'base': 4, 'factor': 10000, 'floor': 60000, 'ceiling': 3600000, 'zero_override': True}},
-    mechanism='process',
+    ...
 )
 ```
 
@@ -102,20 +95,20 @@ In our case, this means passing `my_tasks`. (Note that Alsek scans this argument
 allowing for task definitions to be nested deep inside directories.)
 
 ```shell
-alsek my_tasks
+alsek thread-pool my_tasks
 ```
 
 Now, detailed information about the workers will be logged to the console, which we can see below.
 
 ```shell
-[2025-04-19 18:30:39.522] [MainProcess] [MainThread] [INFO] alsek.core.worker: Alsek v0.8.0 worker pool booting up...
-[2025-04-19 18:30:39.522] [MainProcess] [MainThread] [INFO] alsek.core.worker: Starting worker pool with 8 max thread(s) and 11 max process(es)...
-[2025-04-19 18:30:39.523] [MainProcess] [MainThread] [INFO] alsek.core.worker: Monitoring 1 queue(s).
-[2025-04-19 18:30:39.523] [MainProcess] [MainThread] [INFO] alsek.core.worker: Worker pool online.
-[2025-04-19 18:30:39.524] [MainProcess] [Thread-2 (_wrapper)] [INFO] alsek.core.futures: Received Message(uuid='bf90af06-1d6d-11f0-affc-4af50920870b', queue='math_ops', task='add')...
-[2025-04-19 18:30:39.524] [MainProcess] [Thread-2 (_wrapper)] [INFO] alsek.core.futures: Successfully processed Message(uuid='bf90af06-1d6d-11f0-affc-4af50920870b', queue='math_ops', task='add').
-[2025-04-19 18:30:39.524] [MainProcess] [Thread-2 (_wrapper)] [INFO] alsek.core.broker: Removing Message(uuid='bf90af06-1d6d-11f0-affc-4af50920870b', queue='math_ops', task='add')...
-[2025-04-19 18:30:39.525] [MainProcess] [Thread-2 (_wrapper)] [INFO] alsek.core.broker: Removed Message(uuid='bf90af06-1d6d-11f0-affc-4af50920870b', queue='math_ops', task='add').
+[2025-04-26 23:14:33.329] [MainProcess] [MainThread] [INFO] alsek.core.worker._helpers: Monitoring 1 tasks
+[2025-04-26 23:14:33.329] [MainProcess] [MainThread] [INFO] alsek.core.worker.thread: Starting thread-based worker pool with up to 88 workers (8 max threades and 11 max processes)...
+[2025-04-26 23:14:33.329] [MainProcess] [MainThread] [INFO] alsek.core.worker._base: Monitoring 1 queue(s).
+[2025-04-26 23:14:33.329] [MainProcess] [MainThread] [INFO] alsek.core.worker._base: Worker pool online.
+[2025-04-26 23:14:33.426] [Process-1] [Thread-2 (_wrapper)] [INFO] alsek.core.futures: Received Message(uuid='cb3b106a-2314-11f0-b7d7-4af50920870b', queue='math_ops', task='add')...
+[2025-04-26 23:14:33.427] [Process-1] [Thread-2 (_wrapper)] [INFO] alsek.core.futures: Successfully processed Message(uuid='cb3b106a-2314-11f0-b7d7-4af50920870b', queue='math_ops', task='add').
+[2025-04-26 23:14:33.427] [Process-1] [Thread-2 (_wrapper)] [INFO] alsek.core.broker: Removing Message(uuid='cb3b106a-2314-11f0-b7d7-4af50920870b', queue='math_ops', task='add')...
+[2025-04-26 23:14:33.428] [Process-1] [Thread-2 (_wrapper)] [INFO] alsek.core.broker: Removed Message(uuid='cb3b106a-2314-11f0-b7d7-4af50920870b', queue='math_ops', task='add').
 ```
 
 Above we can see that once the worker pool booted up, a worker consumed the 
