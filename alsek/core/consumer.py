@@ -3,7 +3,7 @@
     Consumer
 
 """
-
+import logging
 from typing import Iterable, Optional, Union
 
 from alsek.core.backoff import Backoff, ConstantBackoff, LinearBackoff
@@ -13,6 +13,7 @@ from alsek.core.message import Message
 from alsek.storage.backends import Backend
 from alsek.utils.namespacing import get_priority_namespace, get_subnamespace
 from alsek.utils.system import StopSignalListener
+from redis.exceptions import ConnectionError
 
 
 class _ConsumptionMutex(Lock):
@@ -132,7 +133,7 @@ class Consumer:
             main_loop()
         except BaseException as error:
             if self.stop_signal.received:
-                log.warning("Backend operation interrupted by stop signal: %s", e)
+                logging.info("Backend operation interrupted by stop signal.")
                 return
             else:
                 raise error
