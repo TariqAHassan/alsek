@@ -73,6 +73,6 @@ def collect_tasks(module: str | ModuleType) -> tuple[Task, ...]:
                 all_tasks[name] = task
 
     if all_tasks:
-        return tuple(all_tasks.values())
+        return tuple(v for _, v in all_tasks.items())
     else:
         raise NoTasksFoundError("No tasks found")
