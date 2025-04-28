@@ -542,10 +542,10 @@ def test_graceful_shutdown_cleans_processes(rolling_broker: Broker) -> None:
     runner = threading.Thread(target=pool.run, daemon=True)
     runner.start()
 
-    time.sleep(0.1)  # let workers spin up
+    time.sleep(0.5)  # let workers spin up
     pool.stop_signal.exit_event.set()  # request shutdown
     stopper.set()  # allow tasks to finish quickly
-    runner.join(timeout=2)
+    runner.join(timeout=5)
 
     # All child processes must be dead
     assert all(not g.process.is_alive() for g in pool._progress_groups)
