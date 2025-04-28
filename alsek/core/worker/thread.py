@@ -230,7 +230,7 @@ class ThreadWorkerPool(BaseWorkerPool):
         elif self.n_processes <= 0:
             raise ValueError(f"n_processes must be > 0")
         if self.n_process_floor > self.n_processes:
-            raise ValueError(f"n_process_floor must be <= to n_processes.")
+            raise ValueError(f"n_process_floor must be <= n_processes.")
 
         self._progress_groups: List[ProcessGroup] = list()
 
