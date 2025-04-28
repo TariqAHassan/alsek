@@ -221,7 +221,7 @@ class ThreadTaskFuture(TaskFuture):
             Pro: more rigorous — avoids marking the task complete until the thread fully terminates.
             Useful when you need strict control over thread lifecycle (e.g., for resource management).
             Con: may lead to hanging if the thread doesn't terminate quickly (e.g., when using
-            `thread_raise()` during revocation). Can also temporarily result in more than the
+            `thread_raise()` during revocation). This can also temporarily result in more than the
             allotted number of threads running, since a future is only removed from the pool
             after the thread is confirmed dead.
 
