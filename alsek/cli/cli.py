@@ -142,6 +142,12 @@ def process_pool(
     help="Max process groups.",
 )
 @click.option(
+    "--n_process_floor",
+    type=int,
+    default=1,
+    help="Minimum number of process groups to keep alive.",
+)
+@click.option(
     "--slot_wait_interval",
     type=int,
     default=50,
@@ -185,6 +191,7 @@ def thread_pool(
     task_specific_mode: bool,
     n_threads: int,
     n_processes: Optional[int],
+    n_process_floor: int,
     slot_wait_interval: int,
     complete_only_on_thread_exit: bool,
     consumer_backoff_factor: int,
@@ -201,6 +208,7 @@ def thread_pool(
         task_specific_mode=task_specific_mode,
         n_threads=n_threads,
         n_processes=n_processes,
+        n_process_floor=n_process_floor,
         slot_wait_interval=slot_wait_interval,
         complete_only_on_thread_exit=complete_only_on_thread_exit,
         backoff=LinearBackoff(

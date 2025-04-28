@@ -191,6 +191,8 @@ class ThreadWorkerPool(BaseWorkerPool):
     Args:
         n_threads (int): the number of threads to use per group.
         n_processes (int, optional): the number of process groups to use
+        n_process_floor (int): the minimum number of processes to have active
+            at any given time, regardless of load.
         complete_only_on_thread_exit (bool): if ``True``, only mark the future
             as complete when the thread formally exits (i.e., is not alive).
             Pro: more rigorous — avoids marking the task complete until the thread fully terminates.
@@ -213,15 +215,34 @@ class ThreadWorkerPool(BaseWorkerPool):
         self,
         n_threads: int = 8,
         n_processes: Optional[int] = None,
+        n_process_floor: int = 1,
         complete_only_on_thread_exit: bool = False,
         **kwargs: Any,
     ) -> None:
         super().__init__(mechanism="thread", **kwargs)
         self.n_threads = n_threads
         self.n_processes = n_processes or smart_cpu_count()
+        self.n_process_floor = n_process_floor
         self.complete_only_on_thread_exit = complete_only_on_thread_exit
 
+        if self.n_threads <= 0:
+            raise ValueError(f"n_threads must be > 0")
+        elif self.n_processes <= 0:
+            raise ValueError(f"n_processes must be > 0")
+        if self.n_process_floor > self.n_processes:
+            raise ValueError(f"n_process_floor must be <= to n_processes.")
+
         self._progress_groups: List[ProcessGroup] = list()
+
+    def _make_new_process_group(self) -> ProcessGroup:
+        log.debug("Starting new process group...")
+        new_process_group = ProcessGroup(
+            n_threads=self.n_threads,
+            complete_only_on_thread_exit=self.complete_only_on_thread_exit,
+            slot_wait_interval_seconds=self._slot_wait_interval_seconds,
+        )
+        self._progress_groups.append(new_process_group)
+        return new_process_group
 
     def on_boot(self) -> None:
         log.info(
@@ -232,6 +253,13 @@ class ThreadWorkerPool(BaseWorkerPool):
             self.n_processes,
             "" if self.n_processes == 1 else "es",
         )
+        if self.n_process_floor:
+            log.info(
+                "Provisioning initial collection of %s processes...",
+                self.n_process_floor,
+            )
+            for _ in range(self.n_process_floor):
+                self._make_new_process_group()
         super().on_boot()
 
     def on_shutdown(self) -> None:
@@ -240,13 +268,22 @@ class ThreadWorkerPool(BaseWorkerPool):
             g.stop()
 
     def prune(self) -> None:
-        """Prune spent futures."""
-        updated_groups = list()
-        for g in self._progress_groups:
-            g.process.join(timeout=0)  # reap quickly if already exited
-            if g.process.is_alive():
-                updated_groups.append(g)
-        self._progress_groups = updated_groups
+        """Prune exited process groups, but only enforce floor if NOT shutting down."""
+        # 1. Filter out any groups whose processes have exited
+        self._progress_groups = [
+            g
+            for g in self._progress_groups
+            if g.process.join(timeout=0) or g.process.is_alive()
+        ]
+
+        # 2. If we’re in shutdown, bail out—don’t respawn floor
+        if self.stop_signal.exit_event.is_set():
+            return
+
+        # 3. Otherwise, ensure at least n_process_floor
+        missing = max(0, self.n_process_floor - len(self._progress_groups))
+        for _ in range(missing):
+            self._make_new_process_group()
 
     def _acquire_group(self) -> Optional[ProcessGroup]:
         for g in self._progress_groups:
@@ -254,12 +291,7 @@ class ThreadWorkerPool(BaseWorkerPool):
                 return g
 
         if len(self._progress_groups) < self.n_processes:
-            new_group = ProcessGroup(
-                n_threads=self.n_threads,
-                complete_only_on_thread_exit=self.complete_only_on_thread_exit,
-                slot_wait_interval_seconds=self._slot_wait_interval_seconds,
-            )
-            self._progress_groups.append(new_group)
+            new_group = self._make_new_process_group()
             return new_group
         return None
 
