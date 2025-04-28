@@ -290,8 +290,7 @@ class ThreadWorkerPool(BaseWorkerPool):
                 return g
 
         if len(self._progress_groups) < self.n_processes:
-            new_group = self._make_new_process_group()
-            return new_group
+            return self._make_new_process_group()
         return None
 
     def submit_message(self, message: Message) -> bool:
