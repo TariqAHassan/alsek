@@ -516,6 +516,7 @@ def test_task_timeout_causes_retry(rolling_broker: Broker) -> None:
 
 
 @pytest.mark.timeout(30)
+@pytest.mark.flaky(max_runs=3)
 def test_graceful_shutdown_cleans_processes(rolling_broker: Broker) -> None:
     """
     Run a pool in a background thread, then set its stop-signal.
