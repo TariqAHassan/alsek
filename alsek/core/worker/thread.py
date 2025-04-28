@@ -234,7 +234,10 @@ class ThreadWorkerPool(BaseWorkerPool):
 
         self._progress_groups: List[ProcessGroup] = list()
 
-    def _make_new_process_group(self) -> ProcessGroup:
+    def _make_new_process_group(self) -> Optional[ProcessGroup]:
+        if self.stop_signal.exit_event.is_set():
+            return None
+
         log.debug("Starting new process group...")
         new_process_group = ProcessGroup(
             n_threads=self.n_threads,
