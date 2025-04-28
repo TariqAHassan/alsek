@@ -279,11 +279,7 @@ class ThreadWorkerPool(BaseWorkerPool):
             if g.process.join(timeout=0) or g.process.is_alive()
         ]
 
-        # 2. If we’re in shutdown, bail out—don’t respawn floor
-        if self.stop_signal.exit_event.is_set():
-            return
-
-        # 3. Otherwise, ensure at least n_process_floor
+        # 2. Otherwise, ensure at least n_process_floor
         missing = max(0, self.n_process_floor - len(self._progress_groups))
         for _ in range(missing):
             self._make_new_process_group()
