@@ -19,6 +19,11 @@ from alsek.utils.scanning import collect_tasks
 LOG_LEVELS = list(logging._nameToLevel.keys())  # noqa
 
 
+def _apply_logging_level(log_level: str) -> None:
+    log_level_value: int = logging.getLevelName(log_level.upper().strip())
+    setup_logging(log_level_value)
+
+
 @click.group()
 @click.version_option(__version__)
 def main() -> None:
@@ -97,7 +102,7 @@ def process_pool(
     log_level: str,
 ) -> None:
     """Start a process-based worker pool."""
-    setup_logging(logging.getLevelName(log_level.upper().strip()))
+    _apply_logging_level(log_level)
 
     pool = ProcessWorkerPool(
         tasks=collect_tasks(package),
@@ -200,7 +205,7 @@ def thread_pool(
     log_level: str,
 ) -> None:
     """Start a thread-based worker pool."""
-    setup_logging(logging.getLevelName(log_level.upper().strip()))
+    _apply_logging_level(log_level)
 
     pool = ThreadWorkerPool(
         tasks=collect_tasks(package),
