@@ -139,7 +139,7 @@ def test_release_lock(rolling_backend: Backend) -> None:
     assert msg.linked_lock
     assert msg.linked_lock["name"] == lock.name
     assert msg.linked_lock["owner_id"] == lock.owner_id
-    msg.release_lock(missing_ok=False, target_backend=rolling_backend)
+    msg.release_lock(not_linked_ok=False, target_backend=rolling_backend)
     assert msg.linked_lock is None
 
 

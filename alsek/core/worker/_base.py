@@ -105,7 +105,7 @@ class BaseWorkerPool(Consumer, ABC):
 
     def _broker_retry_callback(self, message: Message) -> None:
         result = message.release_lock(
-            missing_ok=True,
+            not_linked_ok=True,
             target_backend=self.broker.backend,
         )
         if result:
@@ -168,7 +168,7 @@ class BaseWorkerPool(Consumer, ABC):
 
                 # Saturated: free message & retry later
                 message.release_lock(
-                    missing_ok=True,
+                    not_linked_ok=True,
                     target_backend=self.broker.backend,
                 )
                 # Brief back-off, then restart the stream (priority reset)

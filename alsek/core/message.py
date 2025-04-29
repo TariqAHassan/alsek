@@ -282,11 +282,11 @@ class Message:
             )
         return self
 
-    def release_lock(self, missing_ok: bool, target_backend: Backend) -> bool:
+    def release_lock(self, not_linked_ok: bool, target_backend: Backend) -> bool:
         """Release the lock linked to the message.
 
         Args:
-            missing_ok (bool): if ``True`` do not raise if no lock is found
+            not_linked_ok (bool): if ``True`` do not raise if no lock is found
             target_backend (Backend): a backend to release the lock from.
 
         Returns:
@@ -313,7 +313,7 @@ class Message:
             except redis_lock.NotAcquired:  # noqa
                 log.critical("Failed to release lock", exc_info=True)
                 return False
-        elif missing_ok:
+        elif not_linked_ok:
             return False
         else:
             raise AttributeError("No lock linked to message")

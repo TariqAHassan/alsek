@@ -128,7 +128,7 @@ class Broker:
 
     def _release_lock(self, message: Message) -> None:
         message.release_lock(
-            missing_ok=True,
+            not_linked_ok=True,
             target_backend=self.backend,
         )
 
