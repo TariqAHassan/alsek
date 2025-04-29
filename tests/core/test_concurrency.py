@@ -5,16 +5,16 @@
 """
 
 import multiprocessing as mp
-import os
 import threading
 from queue import Queue
-from socket import gethostname
 from typing import Any
+import os
 
 import dill
 import pytest
+import redis_lock
 
-from alsek.core.concurrency import Lock, _make_lock_name  # noqa
+from alsek.core.concurrency import Lock, ProcessLock, ThreadLock
 from alsek.storage.backends import Backend
 
 
@@ -34,7 +34,7 @@ def test_holder(do_acquire: bool, rolling_backend: Backend) -> None:
 
     if do_acquire:
         lock.acquire()
-        assert lock.holder == lock._my_holder_id
+        assert lock.holder == lock.owner_id
     else:
         assert lock.holder is None
 
@@ -59,7 +59,10 @@ def test_acquire(rolling_backend: Backend) -> None:
 def test_multi_acquire(rolling_backend: Backend) -> None:
     lock = Lock("lock", backend=rolling_backend)
     assert lock.acquire()
-    assert not lock.acquire()
+    assert lock.acquire(already_aquired_ok=True)
+    
+    with pytest.raises(redis_lock.AlreadyAcquired):
+        lock.acquire(already_aquired_ok=False)
 
 
 def test_release(rolling_backend: Backend) -> None:
@@ -82,28 +85,46 @@ def test_context(auto_release: bool, rolling_backend: Backend) -> None:
         assert lock.held
 
 
-def test_make_lock_name() -> None:
-    lock_name = _make_lock_name()
-    hostname = gethostname()
-    pid = os.getpid()
-    thread_id = threading.get_ident()
-    expected_prefix = f"{hostname}:{pid}:{thread_id}"
-    assert lock_name == expected_prefix
-
-
 def _rebuild_backend(encoded: bytes) -> Backend:
     data: dict[str, Any] = dill.loads(encoded)
     backend_cls = data["backend"]
     return backend_cls._from_settings(data["settings"])  # noqa
 
 
-def test_thread_isolation(rolling_backend: Backend) -> None:
-    """Test that a lock acquired in one thread cannot be acquired in another thread."""
-    lock_name = "thread_lock"
+def test_host_level_lock(rolling_backend: Backend) -> None:
+    """Test that standard Lock shares owner_id across instances on the same host."""
+    lock_name = "host_lock"
     primary_lock = Lock(lock_name, backend=rolling_backend)
+    secondary_lock = Lock(lock_name, backend=rolling_backend)
+    
+    # Both locks should have the same owner_id since they're on the same host
+    assert primary_lock.owner_id == secondary_lock.owner_id
+    
+    # Acquire the lock with first instance
+    assert primary_lock.acquire()
+    assert primary_lock.held
+    
+    # The second instance should also see the lock as held
+    assert secondary_lock.held
+    
+    # Second instance should be able to reacquire with already_aquired_ok=True
+    assert secondary_lock.acquire(already_aquired_ok=True)
+    
+    # Either instance should be able to release
+    assert secondary_lock.release()
+    assert not primary_lock.held
+    
+    # Clean-up
+    rolling_backend.clear_namespace()
+
+
+def test_thread_isolation(rolling_backend: Backend) -> None:
+    """Test that ThreadLock provides thread-level isolation."""
+    lock_name = "thread_lock"
+    primary_lock = ThreadLock(lock_name, backend=rolling_backend)
 
     # Thread-0 takes the lock
-    assert primary_lock.acquire(strict=True)
+    assert primary_lock.acquire()
     assert primary_lock.held
 
     # Serialise the backend so the worker thread can build its own copy
@@ -112,7 +133,7 @@ def test_thread_isolation(rolling_backend: Backend) -> None:
 
     def worker() -> None:
         secondary_backend = _rebuild_backend(encoded_backend)
-        acquired = Lock(lock_name, backend=secondary_backend).acquire(strict=True)
+        acquired = ThreadLock(lock_name, backend=secondary_backend).acquire()
         q.put(acquired)
 
     t = threading.Thread(target=worker, daemon=True)
@@ -127,26 +148,54 @@ def test_thread_isolation(rolling_backend: Backend) -> None:
     primary_lock.backend.clear_namespace()
 
 
-def _worker(name: str, encoded_backend: bytes, q: Queue) -> None:
+def _worker_process_lock(name: str, encoded_backend: bytes, q: Queue) -> None:
     backend = _rebuild_backend(encoded_backend)
-    got_lock = Lock(name, backend=backend).acquire(strict=True)
+    got_lock = ProcessLock(name, backend=backend).acquire()
     q.put(got_lock)
 
 
 def test_process_isolation(rolling_backend: Backend) -> None:
+    """Test that ProcessLock provides process-level isolation."""
     lock_name = "process_lock"
-    lock = Lock(lock_name, backend=rolling_backend)
+    lock = ProcessLock(lock_name, backend=rolling_backend)
 
-    assert lock.acquire(strict=True)
+    assert lock.acquire()
 
     result_q: Queue[bool] = mp.Queue()
     proc = mp.Process(
-        target=_worker,
+        target=_worker_process_lock,
         args=(lock_name, rolling_backend.encode(), result_q),
         daemon=True,
     )
     proc.start()
     proc.join()
 
-    assert result_q.get() is False  # child must *not* acquire the lock
+    # The child process must *not* acquire the lock
+    assert result_q.get() is False
+    
+    # Clean-up
+    assert lock.release()
+    lock.backend.clear_namespace()
+
+
+def test_process_lock(rolling_backend: Backend) -> None:
+    """Test that ProcessLock uses process-specific owner_id."""
+    lock = ProcessLock("process_lock", backend=rolling_backend)
+    assert "lock:" in lock.owner_id
+    assert str(os.getpid()) in lock.owner_id
+    
+    assert lock.acquire()
+    assert lock.held
+    assert lock.release()
+
+
+def test_thread_lock(rolling_backend: Backend) -> None:
+    """Test that ThreadLock uses thread-specific owner_id."""
+    lock = ThreadLock("thread_lock", backend=rolling_backend)
+    assert "lock:" in lock.owner_id
+    assert str(os.getpid()) in lock.owner_id
+    assert str(threading.get_ident()) in lock.owner_id
+    
+    assert lock.acquire()
+    assert lock.held
     assert lock.release()
