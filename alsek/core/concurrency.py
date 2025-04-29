@@ -105,7 +105,7 @@ class Lock:
 
     @property
     def holder(self) -> Optional[str]:
-        """Name of the host that currently holds the lock, if any."""
+        """Name of the owner that currently holds the lock, if any."""
         return self._lock.get_owner_id()
 
     @property
