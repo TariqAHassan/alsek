@@ -126,7 +126,7 @@ class Broker:
             format(message.get_backoff_duration(), ","),
         )
 
-    def _clear_lock(self, message: Message) -> None:
+    def _release_lock(self, message: Message) -> None:
         message.release_lock(
             missing_ok=True,
             target_backend=self.backend,
@@ -151,7 +151,7 @@ class Broker:
             unique_id=get_message_name(message),
         )
         self.backend.delete(get_message_name(message), missing_ok=True)
-        self._clear_lock(message)
+        self._release_lock(message)
         if self.remove_callback:
             self.remove_callback(message)
 
