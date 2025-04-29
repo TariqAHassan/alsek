@@ -15,14 +15,14 @@ from alsek.storage.backends import Backend
 from alsek.utils.namespacing import get_message_name, get_message_signature
 
 
-def test_consumption_mutex_acquisition(rolling_backend: Backend) -> None:
+def test_message_mutex_acquisition(rolling_backend: Backend) -> None:
     message = Message("task")
     with MessageMutex(message, backend=rolling_backend) as lock:
         assert lock.acquire()
     assert lock.held
 
 
-def test_consumption_mutex_settings(rolling_backend: Backend) -> None:
+def test_message_mutex_settings(rolling_backend: Backend) -> None:
     message = Message("task")
     with MessageMutex(message, backend=rolling_backend) as lock:
         assert lock.name == get_message_signature(message)
