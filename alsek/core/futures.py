@@ -60,7 +60,11 @@ def _handle_retry(
     if update_exception_on_message:
         message.update(exception_details=parse_exception(exception).as_dict())
 
-    task.on_retry(message, exception=exception)
+    try:
+        task.on_retry(message, exception=exception)
+    except BaseException:  # noqa
+        log.critical("Error encountered with `on_retry()`", exc_info=True)
+
     task.broker.retry(message)
     task.update_status(message, status=TaskStatus.RETRYING)
 
@@ -74,7 +78,11 @@ def _handle_failure(
     if update_exception_on_message:
         message.update(exception_details=parse_exception(exception).as_dict())
 
-    task.on_failure(message, exception=exception)
+    try:
+        task.on_failure(message, exception=exception)
+    except BaseException:  # noqa
+        log.critical("Error encountered with `on_failure()`", exc_info=True)
+
     task.broker.fail(message)
     task.update_status(message, status=TaskStatus.FAILED)
 
@@ -86,7 +94,10 @@ def _retry_future_handler(
     update_exception_on_message: bool = True,
 ) -> None:
     if task.is_revoked(message):
-        task.on_revocation(message, exception=exception, result=None)
+        try:
+            task.on_revocation(message, exception=exception, result=None)
+        except BaseException:  # noqa
+            log.critical("Error encountered with `on_revocation()`", exc_info=True)
         return None
 
     if task.do_retry(message, exception=exception):
@@ -108,7 +119,10 @@ def _retry_future_handler(
 
 def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
     if task.is_revoked(message):
-        task.on_revocation(message, exception=None, result=result)
+        try:
+            task.on_revocation(message, exception=None, result=result)
+        except BaseException:  # noqa
+            log.critical("Error encountered with `on_revocation()`", exc_info=True)
         return None
 
     if task.result_store:
@@ -124,7 +138,10 @@ def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
         )
     task.broker.ack(message)
     task.update_status(message, status=TaskStatus.SUCCEEDED)
-    task.on_success(message, result=result)
+    try:
+        task.on_success(message, result=result)
+    except BaseException:  # noqa
+        log.critical("Error encountered with `on_success()`", exc_info=True)
 
 
 class TaskFuture(ABC):
