@@ -44,7 +44,7 @@ class Lock:
         auto_release (bool): if ``True`` automatically release
             the lock on context exit.
         owner_id (str): unique identifier for the lock.
-            Do not change this unless you know what you are doing.
+            Do not change this value unless you know what you are doing.
 
     Warning:
         * Locks are global and do not consider queues, unless
