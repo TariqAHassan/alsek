@@ -54,10 +54,10 @@ def test_acquire(rolling_backend: Backend) -> None:
 def test_multi_acquire(rolling_backend: Backend) -> None:
     lock = Lock("lock", backend=rolling_backend)
     assert lock.acquire()
-    assert lock.acquire(already_aquired_ok=True)
+    assert lock.acquire(already_acquired_ok=True)
 
     with pytest.raises(redis_lock.AlreadyAcquired):
-        lock.acquire(already_aquired_ok=False)
+        lock.acquire(already_acquired_ok=False)
 
 
 def test_release(rolling_backend: Backend) -> None:
@@ -120,8 +120,8 @@ def test_host_level_lock(rolling_backend: Backend) -> None:
     # The second instance should also see the lock as held
     assert secondary_lock.held
 
-    # Second instance should be able to reacquire with already_aquired_ok=True
-    assert secondary_lock.acquire(already_aquired_ok=True)
+    # Second instance should be able to reacquire with already_acquired_ok=True
+    assert secondary_lock.acquire(already_acquired_ok=True)
 
     # Either instance should be able to release
     assert secondary_lock.release()

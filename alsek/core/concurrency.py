@@ -112,14 +112,14 @@ class Lock:
     def acquire(
         self,
         wait: Optional[int] = None,
-        already_aquired_ok: bool = True,
+        already_acquired_ok: bool = True,
     ) -> bool:
         """Try to acquire the lock.
 
         Args:
             wait (int, optional): the amount of time wait to acquire
                 the lock (in seconds). If ``None`` do not block.
-            already_aquired_ok (bool): if ``True`` do not raise if the lock
+            already_acquired_ok (bool): if ``True`` do not raise if the lock
                 is already held by the current host.
 
         Returns:
@@ -130,7 +130,7 @@ class Lock:
         try:
             return self._lock.acquire(blocking=bool(wait), timeout=wait)
         except redis_lock.AlreadyAcquired as error:
-            if already_aquired_ok:
+            if already_acquired_ok:
                 return True
             else:
                 raise error
