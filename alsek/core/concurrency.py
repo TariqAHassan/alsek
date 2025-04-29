@@ -100,14 +100,6 @@ class Lock:
         )
 
     @property
-    def long_name(self) -> str:
-        """Subnamespace for the lock."""
-        if self.name.startswith("locks:"):
-            return self.name
-        else:
-            return f"locks:{self.name}"
-
-    @property
     def holder(self) -> Optional[str]:
         """Name of the host that currently holds the lock, if any."""
         return self._lock.get_owner_id()

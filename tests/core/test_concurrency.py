@@ -23,11 +23,6 @@ def test_repr(rolling_backend: Backend) -> None:
     assert isinstance(repr(lock), str)
 
 
-def test_long_name(rolling_backend: Backend) -> None:
-    lock = Lock("lock", backend=rolling_backend)
-    assert lock.long_name == "locks:lock"
-
-
 @pytest.mark.parametrize("do_acquire", [True, False])
 def test_holder(do_acquire: bool, rolling_backend: Backend) -> None:
     lock = Lock("lock", backend=rolling_backend)
