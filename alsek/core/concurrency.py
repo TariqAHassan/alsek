@@ -10,7 +10,7 @@ import os
 import threading
 from socket import gethostname
 from types import TracebackType
-from typing import Optional, Type, cast, Any
+from typing import Optional, Type, cast, Any, get_args, Literal
 
 import redis_lock
 from sympy.core.cache import cached_property
@@ -19,6 +19,8 @@ from socket import gethostname
 from alsek.storage.backends import Backend
 from alsek.storage.backends.redis import RedisBackend
 from alsek.utils.printing import auto_repr
+
+IF_ALREADY_ACQUIRED_TYPE = Literal["raise_error", "return_true", "return_false"]
 
 CURRENT_HOST_OWNER_ID = f"lock:{gethostname()}"
 
@@ -120,14 +122,14 @@ class Lock:
     def acquire(
         self,
         wait: Optional[int] = None,
-        already_acquired_ok: bool = True,
+        if_already_acquired: IF_ALREADY_ACQUIRED_TYPE = "raise_error",
     ) -> bool:
         """Try to acquire the lock.
 
         Args:
             wait (int, optional): the amount of time wait to acquire
                 the lock (in seconds). If ``None`` do not block.
-            already_acquired_ok (bool): if ``True`` do not raise if the lock
+            if_already_acquired (str): if ``True`` do not raise if the lock
                 is already held by the current owner.
 
         Returns:
@@ -135,11 +137,16 @@ class Lock:
                 acquired or already acquired by the current owner.
 
         """
+        if if_already_acquired not in get_args(IF_ALREADY_ACQUIRED_TYPE):
+            raise ValueError(f"Invalid `on_already_acquired`, got  {if_already_acquired}")  # fmt: skip
+
         try:
             return self._lock.acquire(blocking=bool(wait), timeout=wait)
         except redis_lock.AlreadyAcquired as error:
-            if already_acquired_ok:
+            if if_already_acquired == "return_true":
                 return True
+            elif if_already_acquired == "return_false":
+                return False
             else:
                 raise error
 

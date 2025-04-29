@@ -94,7 +94,10 @@ def test_clear_lock(rolling_broker: Broker) -> None:
     assert message.linked_lock is not None
 
     # Clear the lock
-    rolling_broker._release_lock(message)
+    message.release_lock(
+        not_linked_ok=True,
+        target_backend=rolling_broker.backend
+    )
 
     # Check that the lock is no longer held
     assert not lock.held

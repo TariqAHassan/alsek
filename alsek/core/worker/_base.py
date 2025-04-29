@@ -20,7 +20,6 @@ from alsek.core.worker._helpers import (
     filter_tasks,
 )
 from alsek.types import SupportedMechanismType
-from alsek.utils.namespacing import get_message_name
 from alsek.utils.string import smart_join
 
 log = logging.getLogger(__name__)
@@ -90,32 +89,6 @@ class BaseWorkerPool(Consumer, ABC):
         self._task_map = {t.name: t for t in tasks}
         self._can_run: bool = True
 
-        self._seen_messages: dict[str, int] = dict()
-        self.broker.retry_callback = self._broker_retry_callback
-        self.broker.remove_callback = self._broker_remove_callback
-
-    def _novel_message(self, message: Message) -> bool:
-        message_name = get_message_name(message)
-        if message_name in self._seen_messages:
-            prev_retry_count = self._seen_messages[message_name]
-            curr_retry_count = message.retries
-            return curr_retry_count > prev_retry_count
-        else:
-            return True
-
-    def _broker_retry_callback(self, message: Message) -> None:
-        result = message.release_lock(
-            not_linked_ok=True,
-            target_backend=self.broker.backend,
-        )
-        if result:
-            log.info("Released lock for %s.", message.summary)
-
-    def _broker_remove_callback(self, message: Message) -> None:
-        result = self._seen_messages.pop(get_message_name(message), None)
-        if result:
-            log.debug("Cleared from seen messages: %s.", message.summary)
-
     @property
     def _slot_wait_interval_seconds(self) -> float:
         return self.slot_wait_interval / 1000
@@ -160,18 +133,17 @@ class BaseWorkerPool(Consumer, ABC):
             for message in self.stream():
                 self.prune()
 
-                if not self._novel_message(message):
-                    continue
-                elif self.submit_message(message):
-                    self._seen_messages[get_message_name(message)] = message.retries
+                # Try to submit the message
+                submitted = self.submit_message(message)
+                if submitted:
                     continue
 
-                # Saturated: free message & retry later
+                # If we fail, we must be saturated, so we free message & retry later
                 message.release_lock(
                     not_linked_ok=True,
                     target_backend=self.broker.backend,
                 )
-                # Brief back-off, then restart the stream (priority reset)
+                # Now we brief back-off, then restart the stream (priority reset)
                 self.stop_signal.wait(self._slot_wait_interval_seconds)
                 # Break so we start the stream again from the beginning.
                 # This is important because the stream is ordered by priority.

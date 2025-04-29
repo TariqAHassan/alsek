@@ -42,9 +42,6 @@ class Broker:
         if self.backend.IS_ASYNC:
             raise AttributeError("Asynchronous backends are not yet supported")
 
-        self.retry_callback: Optional[Callable[[Message], None]] = None
-        self.remove_callback: Optional[Callable[[Message], None]] = None
-
     def __repr__(self) -> str:
         return auto_repr(
             self,
@@ -116,20 +113,18 @@ class Broker:
                 f"Message '{message.uuid}' not found in backend"
             )
 
+        # We release the lock before setting the messate data
+        # so that the `linked_lock` field on the message ie None.
+        message.release_lock(
+            not_linked_ok=True,
+            target_backend=self.backend,
+        )
         message.increment_retries()
         self.backend.set(get_message_name(message), value=message.data)
-        if self.retry_callback:
-            self.retry_callback(message)
         log.info(
             "Retrying %s in %s ms...",
             message.summary,
             format(message.get_backoff_duration(), ","),
-        )
-
-    def _release_lock(self, message: Message) -> None:
-        message.release_lock(
-            not_linked_ok=True,
-            target_backend=self.backend,
         )
 
     @magic_logger(
@@ -151,9 +146,10 @@ class Broker:
             unique_id=get_message_name(message),
         )
         self.backend.delete(get_message_name(message), missing_ok=True)
-        self._release_lock(message)
-        if self.remove_callback:
-            self.remove_callback(message)
+        message.release_lock(
+            not_linked_ok=True,
+            target_backend=self.backend,
+        )
 
     @magic_logger(
         before=lambda message: log.debug("Acking %s...", message.summary),

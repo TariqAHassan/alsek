@@ -129,7 +129,7 @@ class Consumer:
                     message = Message(**message_data)
                     if message.ready and not self.stop_signal.received:
                         with MessageMutex(message, self.broker.backend) as lock:
-                            if lock.acquire():
+                            if lock.acquire(if_already_acquired="return_false"):
                                 output.append(message.link_lock(lock, override=True))
 
         try:
