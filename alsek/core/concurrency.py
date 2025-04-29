@@ -101,6 +101,7 @@ class Lock:
 
     @property
     def full_name(self) -> str:
+        """The full name of the lock including its namespace prefix."""
         return f"{self.backend.namespace}:{self.name}"
 
     @property
