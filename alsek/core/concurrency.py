@@ -21,11 +21,11 @@ from alsek.storage.backends.redis import RedisBackend
 from alsek.utils.printing import auto_repr
 
 # Mutex locks operate at the host-level only.
-MY_HOST_LOCK_OWNER_ID = f"lock:{gethostname()}"
+CURRENT_HOST_OWNER_ID = f"lock:{gethostname()}"
 
 
 def _get_process_lock_owner_id() -> str:
-    return f"{MY_HOST_LOCK_OWNER_ID}:{os.getpid()}"
+    return f"{CURRENT_HOST_OWNER_ID}:{os.getpid()}"
 
 
 def _get_thread_lock_owner_id() -> str:
@@ -72,7 +72,7 @@ class Lock:
         backend: Backend,
         ttl: Optional[int] = 60 * 60 * 1000,
         auto_release: bool = True,
-        owner_id: str = MY_HOST_LOCK_OWNER_ID,
+        owner_id: str = CURRENT_HOST_OWNER_ID,
     ) -> None:
         self.name = name
         self.backend = backend
