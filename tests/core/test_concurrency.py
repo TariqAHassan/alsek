@@ -105,7 +105,7 @@ def test_owner_id_isolation(rolling_backend: Backend) -> None:
     # Acquire with the second lock
     assert lock_2.acquire()
     # Try to release with the third lock
-    # This should fail the owner_id is different.
+    # This should fail because the owner_id is different.
     assert not lock_3.release()
 
 
