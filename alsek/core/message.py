@@ -297,6 +297,7 @@ class Message:
                 and ``missing_ok`` is not ``True``.
 
         """
+        log.info("Releasing lock for %s...", self.summary)
         if self.linked_lock:
             # ToDo: the backend passed into might not be the same
             #   one that was used to create the lock. Without also
@@ -308,10 +309,15 @@ class Message:
                     backend=target_backend,
                     owner_id=self.linked_lock["owner_id"],
                 ).release(raise_if_not_acquired=True)
+                log.info("Released lock for %s.", self.summary)
                 self.linked_lock = None
                 return True
             except redis_lock.NotAcquired:  # noqa
-                log.critical("Failed to release lock", exc_info=True)
+                log.critical(
+                    "Failed to release lock for %s",
+                    self.summary,
+                    exc_info=True,
+                )
                 return False
         elif not_linked_ok:
             return False
