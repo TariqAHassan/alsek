@@ -81,6 +81,10 @@ class Lock:
 
         if not isinstance(backend, RedisBackend):
             raise NotImplementedError("Only RedisBackend is supported.")
+        elif not self.name:
+            raise ValueError("`name` must be provided.")
+        elif not self.owner_id:
+            raise ValueError("`owner_id` must be provided.")
 
         self._lock = redis_lock.Lock(
             backend.conn,
@@ -139,8 +143,12 @@ class Lock:
             else:
                 raise error
 
-    def release(self) -> bool:
+    def release(self, raise_if_not_acquired: bool = False) -> bool:
         """Release the lock.
+
+        Args:
+            raise_if_not_acquired (bool): raise if the lock was not
+                acquired for release.
 
         Returns:
             released (bool): whether the lock was
@@ -150,8 +158,11 @@ class Lock:
         try:
             self._lock.release()
             return True
-        except redis_lock.NotAcquired:
-            return False
+        except redis_lock.NotAcquired as error:
+            if raise_if_not_acquired:
+                raise error
+            else:
+                return False
 
     def __enter__(self) -> Lock:
         """Enter the context and try to acquire the lock.
