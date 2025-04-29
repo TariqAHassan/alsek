@@ -164,12 +164,12 @@ def test_duplicate(new_uuid: Optional[str]) -> None:
     assert msg.uuid != msg.duplicate(new_uuid).uuid
 
 
-def test_increment() -> None:
+def test_increment_retries() -> None:
     msg = Message("task")
     original_retries = copy.deepcopy(msg.retries)
     original_updated_at = copy.deepcopy(msg.updated_at)
 
     time.sleep(0.1)
-    msg.increment()
+    msg.increment_retries()
     assert msg.retries == 1
     assert msg.updated_at > original_updated_at

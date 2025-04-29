@@ -116,7 +116,7 @@ class Broker:
                 f"Message '{message.uuid}' not found in backend"
             )
 
-        message.increment()
+        message.increment_retries()
         self.backend.set(get_message_name(message), value=message.data)
         if self.retry_callback:
             self.retry_callback(message)

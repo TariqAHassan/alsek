@@ -345,7 +345,7 @@ class Message:
         """
         return self.clone().update(uuid=uuid or _make_uuid())
 
-    def increment(self) -> Message:
+    def increment_retries(self) -> Message:
         """Update a message by increasing the number
         of retries.
 
@@ -360,4 +360,7 @@ class Message:
             * Changes are *not* automatically persisted to the backend.
 
         """
-        return self.update(retries=self.retries + 1, updated_at=utcnow_timestamp_ms())
+        return self.update(
+            retries=self.retries + 1,
+            updated_at=utcnow_timestamp_ms(),
+        )
