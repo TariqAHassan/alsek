@@ -115,7 +115,7 @@ class Lock:
     @property
     def held(self) -> bool:
         """If the lock is held by the current host."""
-        return self.holder == MY_HOST_LOCK_OWNER_ID
+        return self.holder == self.owner_id
 
     def acquire(
         self,
