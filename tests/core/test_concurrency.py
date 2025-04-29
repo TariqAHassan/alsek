@@ -60,7 +60,7 @@ def test_multi_acquire(rolling_backend: Backend) -> None:
     lock = Lock("lock", backend=rolling_backend)
     assert lock.acquire()
     assert lock.acquire(already_aquired_ok=True)
-    
+
     with pytest.raises(redis_lock.AlreadyAcquired):
         lock.acquire(already_aquired_ok=False)
 
@@ -91,29 +91,47 @@ def _rebuild_backend(encoded: bytes) -> Backend:
     return backend_cls._from_settings(data["settings"])  # noqa
 
 
+def test_owner_id_isolation(rolling_backend: Backend) -> None:
+    """Test that Lock provides process-level isolation."""
+    lock_1 = Lock("test", backend=rolling_backend, owner_id="A")
+    lock_2 = Lock("test", backend=rolling_backend, owner_id="A")
+    lock_3 = Lock("test", backend=rolling_backend, owner_id="B")
+
+    # Acquire with the first lock object
+    assert lock_1.acquire()
+    # Release with the second lock object
+    assert lock_2.release()
+    assert not lock_2.release()
+    # Acquire with the second lock
+    assert lock_2.acquire()
+    # Try to release with the third lock
+    # This should fail the owner_id is different.
+    assert not lock_3.release()
+
+
 def test_host_level_lock(rolling_backend: Backend) -> None:
     """Test that standard Lock shares owner_id across instances on the same host."""
     lock_name = "host_lock"
     primary_lock = Lock(lock_name, backend=rolling_backend)
     secondary_lock = Lock(lock_name, backend=rolling_backend)
-    
+
     # Both locks should have the same owner_id since they're on the same host
     assert primary_lock.owner_id == secondary_lock.owner_id
-    
+
     # Acquire the lock with first instance
     assert primary_lock.acquire()
     assert primary_lock.held
-    
+
     # The second instance should also see the lock as held
     assert secondary_lock.held
-    
+
     # Second instance should be able to reacquire with already_aquired_ok=True
     assert secondary_lock.acquire(already_aquired_ok=True)
-    
+
     # Either instance should be able to release
     assert secondary_lock.release()
     assert not primary_lock.held
-    
+
     # Clean-up
     rolling_backend.clear_namespace()
 
@@ -172,7 +190,7 @@ def test_process_isolation(rolling_backend: Backend) -> None:
 
     # The child process must *not* acquire the lock
     assert result_q.get() is False
-    
+
     # Clean-up
     assert lock.release()
     lock.backend.clear_namespace()
@@ -183,7 +201,7 @@ def test_process_lock(rolling_backend: Backend) -> None:
     lock = ProcessLock("process_lock", backend=rolling_backend)
     assert "lock:" in lock.owner_id
     assert str(os.getpid()) in lock.owner_id
-    
+
     assert lock.acquire()
     assert lock.held
     assert lock.release()
@@ -195,7 +213,7 @@ def test_thread_lock(rolling_backend: Backend) -> None:
     assert "lock:" in lock.owner_id
     assert str(os.getpid()) in lock.owner_id
     assert str(threading.get_ident()) in lock.owner_id
-    
+
     assert lock.acquire()
     assert lock.held
     assert lock.release()
