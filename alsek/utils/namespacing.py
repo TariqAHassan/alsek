@@ -7,7 +7,9 @@
 from typing import Optional
 
 from alsek.core.message import Message
+from socket import gethostname
 
+LOCK_NAMESPACE_KEY: str = "lock"
 QUEUES_NAMESPACE_KEY: str = "queues"
 TASK_NAMESPACE_KEY: str = "tasks"
 MESSAGES_NAMESPACE_KEY: str = "messages"
@@ -123,3 +125,13 @@ def get_dlq_message_name(message: Message) -> str:
 
     """
     return f"{DLQ_NAMESPACE_KEY}:{get_message_name(message)}"
+
+
+def get_lock_name() -> str:
+    """Get a lock name for the current host.
+
+    Returns:
+        lock_name (str): lock name for the current host.
+
+    """
+    return f"{LOCK_NAMESPACE_KEY}:{gethostname()}"
