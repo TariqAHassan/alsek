@@ -91,7 +91,7 @@ def test_clear_lock(rolling_broker: Broker) -> None:
 
     # Link to a message
     message = Message("task").link_lock(lock)
-    assert message.lock_long_name is not None
+    assert message.linked_lock is not None
 
     # Clear the lock
     rolling_broker._clear_lock(message)
@@ -100,7 +100,7 @@ def test_clear_lock(rolling_broker: Broker) -> None:
     assert not lock.held
 
     # Check that the lock is no longer linked to the message
-    assert message.lock_long_name is None
+    assert message.linked_lock is None
 
 
 @pytest.mark.parametrize(
@@ -114,6 +114,7 @@ def test_clear_lock(rolling_broker: Broker) -> None:
 )
 def test_removal(method: str, rolling_broker: Broker) -> None:
     lock = Lock("lock", backend=rolling_broker.backend)
+    lock.acquire()
     message = Message("task").link_lock(lock)
 
     # Add the message via the broker
@@ -127,7 +128,7 @@ def test_removal(method: str, rolling_broker: Broker) -> None:
     assert not rolling_broker.exists(message)
 
     # Check that the lock has been fully released.
-    assert message.lock_long_name is None
+    assert message.linked_lock is None
     assert not lock.held
 
 
@@ -147,6 +148,7 @@ def test_fail(
     rolling_broker: Broker,
 ) -> None:
     lock = Lock("lock", backend=rolling_broker.backend)
+    lock.acquire()
     message = Message("task").link_lock(lock)
 
     # Add the message via the broker
@@ -163,7 +165,7 @@ def test_fail(
     assert not rolling_broker.exists(message)
 
     # Check that the lock has been fully released.
-    assert message.lock_long_name is None
+    assert message.linked_lock is None
     assert not lock.held
 
     if dlq_ttl:

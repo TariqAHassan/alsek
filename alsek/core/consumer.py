@@ -4,10 +4,7 @@
 
 """
 
-import logging
 from typing import Iterable, Optional, Union
-
-from redis.exceptions import ConnectionError
 
 from alsek.core.backoff import Backoff, ConstantBackoff, LinearBackoff
 from alsek.core.broker import Broker
@@ -17,7 +14,7 @@ from alsek.storage.backends import Backend
 from alsek.utils.namespacing import (
     get_priority_namespace,
     get_subnamespace,
-    get_message_name,
+    get_message_signature,
 )
 from alsek.utils.system import StopSignalListener
 
@@ -30,7 +27,7 @@ class MessageMutex(Lock):
         ttl_buffer: int = 90 * 1000,
     ) -> None:
         super().__init__(
-            name=get_message_name(message),
+            name=get_message_signature(message),
             backend=backend,
             ttl=message.timeout + ttl_buffer,
             auto_release=False,
@@ -113,7 +110,7 @@ class Consumer:
 
     def _poll(self) -> list[Message]:
         # NOTE: with this approach, we 'drain' / exhaust queues in
-        #       the order they're privided, and then drain the next.
+        #       the order they're provided, and then drain the next.
         #       So if we had queues A,B,C we'd drain A, then drain B
         #       and, finally, drain C.
         # ToDo: implement a 'flat' option that moves to the next queue
@@ -132,7 +129,7 @@ class Consumer:
                     message = Message(**message_data)
                     if message.ready and not self.stop_signal.received:
                         with MessageMutex(message, self.broker.backend) as lock:
-                            if lock.acquire(strict=False):
+                            if lock.acquire():
                                 output.append(message.link_lock(lock, override=True))
 
         try:

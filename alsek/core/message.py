@@ -7,9 +7,12 @@
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import Any, Iterable, Optional, Union
+from typing import Any, Iterable, Optional, Union, TypedDict
 from uuid import uuid1
 
+import redis_lock
+
+import logging
 from alsek.core.backoff import ExponentialBackoff, settings2backoff
 from alsek.core.concurrency import Lock
 from alsek.defaults import DEFAULT_MECHANISM, DEFAULT_QUEUE, DEFAULT_TASK_TIMEOUT
@@ -18,6 +21,8 @@ from alsek.types import SupportedMechanismType
 from alsek.utils.parsing import ExceptionDetails
 from alsek.utils.printing import auto_repr
 from alsek.utils.temporal import fromtimestamp_ms, utcnow_timestamp_ms
+
+log = logging.getLogger(__name__)
 
 
 def _make_uuid() -> str:
@@ -30,6 +35,11 @@ def _collect_callback_uuids(callback_message_data: dict[str, Any]) -> Iterable[s
         yield from _collect_callback_uuids(
             callback_message_data["callback_message_data"]
         )
+
+
+class LinkedLock(TypedDict):
+    name: str
+    owner_id: str
 
 
 class Message:
@@ -108,6 +118,7 @@ class Message:
         callback_message_data: Optional[dict[str, Any]] = None,
         backoff_settings: Optional[dict[str, Any]] = None,
         mechanism: SupportedMechanismType = DEFAULT_MECHANISM,
+        linked_lock: Optional[LinkedLock] = None,
     ) -> None:
         self.task_name = task_name
         self.queue = queue or DEFAULT_QUEUE
@@ -127,6 +138,7 @@ class Message:
         self.callback_message_data = callback_message_data
         self.backoff_settings = backoff_settings or ExponentialBackoff().settings
         self.mechanism = mechanism
+        self.linked_lock = linked_lock
 
         if created_at is None and updated_at is None:
             self.created_at = self.updated_at = utcnow_timestamp_ms()
@@ -135,7 +147,7 @@ class Message:
         else:
             self.created_at, self.updated_at = created_at, updated_at
 
-        self.lock_long_name: Optional[str] = None
+        self.linked_lock: Optional[LinkedLock] = None
 
     @property
     def exception_details(self) -> Optional[ExceptionDetails]:
@@ -188,6 +200,7 @@ class Message:
             callback_message_data=self.callback_message_data,
             backoff_settings=self.backoff_settings,
             mechanism=self.mechanism,
+            linked_lock=self.linked_lock,
         )
 
     def __repr__(self) -> str:
@@ -260,40 +273,48 @@ class Message:
               never persisted to the data backend.
 
         """
-        if self.lock_long_name and not override:
-            raise AttributeError(f"Already linked to lock '{self.lock_long_name}'")
+        if self.linked_lock and not override:
+            raise AttributeError(f"Message already linked to a lock")
         else:
-            self.lock_long_name = lock.long_name
+            self.linked_lock = LinkedLock(
+                name=lock.name,
+                owner_id=lock.owner_id,
+            )
         return self
 
-    def unlink_lock(
-        self,
-        missing_ok: bool = False,
-        target_backend: Optional[Backend] = None,
-    ) -> Optional[str]:
-        """Clear the lock linked to the message.
+    def release_lock(self, missing_ok: bool, target_backend: Backend) -> bool:
+        """Release the lock linked to the message.
 
         Args:
-            missing_ok (bool): if ``True`` do not raise
-                if no lock is found
-            target_backend (Backend): a backend to purge the lock from.
+            missing_ok (bool): if ``True`` do not raise if no lock is found
+            target_backend (Backend): a backend to release the lock from.
 
         Returns:
-            lock (str, optional): the name of the lock which was cleared
+            success (bool): if the lock was released successfully.
 
         Raises:
             AttributeError: if no lock is associated with the message
                 and ``missing_ok`` is not ``True``.
 
         """
-        if self.lock_long_name:
-            lock = self.lock_long_name
-            if target_backend:
-                Lock(self.lock_long_name, backend=target_backend).release()
-            self.lock_long_name = None
-            return lock
+        if self.linked_lock:
+            # ToDo: the backend passed into might not be the same
+            #   one that was used to create the lock. Without also
+            #   saving the backend information along with 'name' and
+            #   'owner_id' we have no way of knowing that. Fix.
+            try:
+                Lock(
+                    self.linked_lock["name"],
+                    backend=target_backend,
+                    owner_id=self.linked_lock["owner_id"],
+                ).release(raise_if_not_acquired=True)
+                self.linked_lock = None
+                return True
+            except redis_lock.NotAcquired:  # noqa
+                log.critical("Failed to release lock", exc_info=True)
+                return False
         elif missing_ok:
-            return None
+            return False
         else:
             raise AttributeError("No lock linked to message")
 

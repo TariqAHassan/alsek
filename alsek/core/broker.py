@@ -127,7 +127,7 @@ class Broker:
         )
 
     def _clear_lock(self, message: Message) -> None:
-        message.unlink_lock(
+        message.release_lock(
             missing_ok=True,
             target_backend=self.backend,
         )

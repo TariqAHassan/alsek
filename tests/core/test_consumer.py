@@ -12,7 +12,7 @@ from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.consumer import Consumer, Message, MessageMutex
 from alsek.storage.backends import Backend
-from alsek.utils.namespacing import get_message_name
+from alsek.utils.namespacing import get_message_name, get_message_signature
 
 
 def test_consumption_mutex_acquisition(rolling_backend: Backend) -> None:
@@ -25,7 +25,7 @@ def test_consumption_mutex_acquisition(rolling_backend: Backend) -> None:
 def test_consumption_mutex_settings(rolling_backend: Backend) -> None:
     message = Message("task")
     with MessageMutex(message, backend=rolling_backend) as lock:
-        assert lock.name == message.uuid
+        assert lock.name == get_message_signature(message)
         assert lock.ttl >= message.timeout
 
 
@@ -78,7 +78,11 @@ def test_poll(messages_to_add: int, rolling_broker: Broker) -> None:
 
     actual = set()
     for msg in consumer._poll():
-        assert Lock(msg.lock_long_name, backend=rolling_broker.backend).held
+        assert Lock(
+            msg.linked_lock["name"],
+            backend=rolling_broker.backend,
+            owner_id=msg.linked_lock["owner_id"],
+        ).held
         actual.add(msg.uuid)
 
     expected = {m.uuid for m in messages}

@@ -104,7 +104,7 @@ class BaseWorkerPool(Consumer, ABC):
             return True
 
     def _broker_retry_callback(self, message: Message) -> None:
-        result = message.unlink_lock(
+        result = message.release_lock(
             missing_ok=True,
             target_backend=self.broker.backend,
         )
@@ -167,7 +167,7 @@ class BaseWorkerPool(Consumer, ABC):
                     continue
 
                 # Saturated: free message & retry later
-                message.unlink_lock(
+                message.release_lock(
                     missing_ok=True,
                     target_backend=self.broker.backend,
                 )
