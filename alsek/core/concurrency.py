@@ -106,7 +106,7 @@ class Lock:
 
     @property
     def held(self) -> bool:
-        """If the lock is held by the current host."""
+        """If the lock is held by the current owner."""
         return self.holder == self.owner_id
 
     def acquire(
@@ -120,11 +120,11 @@ class Lock:
             wait (int, optional): the amount of time wait to acquire
                 the lock (in seconds). If ``None`` do not block.
             already_acquired_ok (bool): if ``True`` do not raise if the lock
-                is already held by the current host.
+                is already held by the current owner.
 
         Returns:
             acquired (bool): ``True`` if the message is
-                acquired or already acquired by the current host.
+                acquired or already acquired by the current owner.
 
         """
         try:
