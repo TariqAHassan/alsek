@@ -85,7 +85,7 @@ class Lock:
 
         self._lock = redis_lock.Lock(
             backend.conn,
-            name=name,
+            name=self.full_name,
             expire=None if ttl is None else round(ttl / 1000),
             id=self.owner_id,
         )
@@ -98,6 +98,10 @@ class Lock:
             ttl=self.ttl,
             auto_release=self.auto_release,
         )
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.backend.namespace}:{self.name}"
 
     @property
     def holder(self) -> Optional[str]:
