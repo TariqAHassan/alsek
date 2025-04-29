@@ -91,6 +91,7 @@ class BaseWorkerPool(Consumer, ABC):
         self._can_run: bool = True
 
         self._seen_messages: dict[str, int] = dict()
+        self.broker.retry_callback = self._broker_retry_callback
         self.broker.remove_callback = self._broker_remove_callback
 
     def _novel_message(self, message: Message) -> bool:
@@ -102,8 +103,18 @@ class BaseWorkerPool(Consumer, ABC):
         else:
             return True
 
+    def _broker_retry_callback(self, message: Message) -> None:
+        result = message.unlink_lock(
+            missing_ok=True,
+            target_backend=self.broker.backend,
+        )
+        if result:
+            log.info("Released lock for %s.", message.summary)
+
     def _broker_remove_callback(self, message: Message) -> None:
-        self._seen_messages.pop(get_message_name(message), None)
+        result = self._seen_messages.pop(get_message_name(message), None)
+        if result:
+            log.debug("Cleared from seen messages: %s.", message.summary)
 
     @property
     def _slot_wait_interval_seconds(self) -> float:

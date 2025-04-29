@@ -42,6 +42,7 @@ class Broker:
         if self.backend.IS_ASYNC:
             raise AttributeError("Asynchronous backends are not yet supported")
 
+        self.retry_callback: Optional[Callable[[Message], None]] = None
         self.remove_callback: Optional[Callable[[Message], None]] = None
 
     def __repr__(self) -> str:
@@ -117,6 +118,8 @@ class Broker:
 
         message.increment()
         self.backend.set(get_message_name(message), value=message.data)
+        if self.retry_callback:
+            self.retry_callback(message)
         log.info(
             "Retrying %s in %s ms...",
             message.summary,
