@@ -20,7 +20,6 @@ from alsek.storage.backends import Backend
 from alsek.storage.backends.redis import RedisBackend
 from alsek.utils.printing import auto_repr
 
-# Mutex locks operate at the host-level only.
 CURRENT_HOST_OWNER_ID = f"lock:{gethostname()}"
 
 
