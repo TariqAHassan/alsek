@@ -87,7 +87,7 @@ def _handle_failure(
     task.update_status(message, status=TaskStatus.FAILED)
 
 
-def _retry_future_handler(
+def _error_encountered_future_handler(
     task: Task,
     message: Message,
     exception: BaseException,
@@ -301,7 +301,7 @@ class ThreadTaskFuture(TaskFuture):
         if self._wrapper_exit:
             log.debug("Thread task future finished after termination.")
         elif exception is not None:
-            _retry_future_handler(
+            _error_encountered_future_handler(
                 task=self.task,
                 message=self.message,
                 exception=exception,
@@ -337,7 +337,7 @@ class ThreadTaskFuture(TaskFuture):
         thread_raise(self._thread.ident, exception=exception)
         if not self._wrapper_exit:
             self._wrapper_exit = True
-            _retry_future_handler(
+            _error_encountered_future_handler(
                 self.task,
                 message=self.message,
                 exception=exception(f"Stopped thread {self._thread.ident}"),
@@ -416,7 +416,7 @@ class ProcessTaskFuture(TaskFuture):
         if not wrapper_exit_queue.empty():
             log.debug("Process task future finished after termination.")
         elif exception is not None:
-            _retry_future_handler(
+            _error_encountered_future_handler(
                 task,
                 message=message,
                 exception=exception,
@@ -454,4 +454,4 @@ class ProcessTaskFuture(TaskFuture):
                 raise exception(f"Stopped process {self._process.ident}")  # type: ignore
             except BaseException as error:
                 log.error("Error processing %s.", self.message.summary, exc_info=True)
-                _retry_future_handler(self.task, self.message, exception=error)
+                _error_encountered_future_handler(self.task, self.message, exception=error)
