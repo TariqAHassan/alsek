@@ -10,18 +10,31 @@ import os
 import threading
 from socket import gethostname
 from types import TracebackType
-from typing import Optional, Type, cast
+from typing import Optional, Type, cast, Any
 
+import redis_lock
+from sympy.core.cache import cached_property
+
+from socket import gethostname
 from alsek.storage.backends import Backend
+from alsek.storage.backends.redis import RedisBackend
 from alsek.utils.printing import auto_repr
 
+# Mutex locks operate at the host-level only.
+MY_HOST_LOCK_OWNER_ID = f"lock:{gethostname()}"
 
-def _make_lock_name() -> str:
-    return f"{gethostname()}:{os.getpid()}:{threading.get_ident()}"
+
+def _get_process_lock_owner_id() -> str:
+    return f"{MY_HOST_LOCK_OWNER_ID}:{os.getpid()}"
+
+
+def _get_thread_lock_owner_id() -> str:
+    return f"{_get_process_lock_owner_id()}:{threading.get_ident()}"
 
 
 class Lock:
-    """Distributed mutual exclusion (MUTEX) lock.
+    """Distributed mutual exclusion (MUTEX) lock for controlling
+    concurrency accross machines.
 
     Args:
         name (str): name of the lock
@@ -30,6 +43,8 @@ class Lock:
             If ``None``, the lock will not expire automatically.
         auto_release (bool): if ``True`` automatically release
             the lock on context exit.
+        owner_id (str): unique identifier for the lock.
+            Do not change unless you know what you are doing.
 
     Warning:
         * Locks are global and do not consider queues, unless
@@ -44,7 +59,7 @@ class Lock:
         >>> backend = RedisBackend()
         ...
         >>> with Lock("mutex", backend=backend) as lock:
-        >>>     if lock.acquire(strict=False):
+        >>>     if lock.acquire():
         >>>         print("Acquired lock.")
         >>>     else:
         >>>         print("Did not acquire lock.")
@@ -57,11 +72,23 @@ class Lock:
         backend: Backend,
         ttl: Optional[int] = 60 * 60 * 1000,
         auto_release: bool = True,
+        owner_id: str = MY_HOST_LOCK_OWNER_ID,
     ) -> None:
         self.name = name
         self.backend = backend
         self.ttl = ttl
         self.auto_release = auto_release
+        self.owner_id = owner_id
+
+        if not isinstance(backend, RedisBackend):
+            raise NotImplementedError("Only RedisBackend is supported.")
+
+        self._lock = redis_lock.Lock(
+            backend.conn,
+            name=name,
+            expire=None if ttl is None else round(ttl / 1000),
+            id=self.owner_id,
+        )
 
     def __repr__(self) -> str:
         return auto_repr(
@@ -83,50 +110,38 @@ class Lock:
     @property
     def holder(self) -> Optional[str]:
         """Name of the host that currently holds the lock, if any."""
-        return cast(Optional[str], self.backend.get(self.long_name))
-
-    @property
-    def _my_holder_id(self) -> Optional[str]:
-        """ID of the host that currently holds the lock, if any."""
-        return _make_lock_name()
+        return self._lock.get_owner_id()
 
     @property
     def held(self) -> bool:
-        """If the lock is held by the current host/process/thread."""
-        return self.holder == self._my_holder_id
+        """If the lock is held by the current host."""
+        return self.holder == MY_HOST_LOCK_OWNER_ID
 
-    def acquire(self, strict: bool = True) -> bool:
+    def acquire(
+        self,
+        wait: Optional[int] = None,
+        already_aquired_ok: bool = True,
+    ) -> bool:
         """Try to acquire the lock.
 
         Args:
-            strict (bool): if ``True`` return ``False`` if
-                the lock is already held.
+            wait (int, optional): the amount of time wait to acquire
+                the lock (in seconds). If ``None`` do not block.
+            already_aquired_ok (bool): if ``True`` do not raise if the lock
+                is already held by the current host.
 
         Returns:
             acquired (bool): ``True`` if the message is
-                acquired or already acquired by the current
-                host.
-
-        Warning:
-            * ``True`` is only returned if execution of this method
-              resulted in acquisition of the lock. This means that
-              ``False`` will be returned if the current host already
-              holds the lock.
+                acquired or already acquired by the current host.
 
         """
-        if self.held:
-            return not strict
-
         try:
-            self.backend.set(
-                self.long_name,
-                value=self._my_holder_id,
-                nx=True,
-                ttl=self.ttl,
-            )
-            return True
-        except KeyError:
-            return False
+            return self._lock.acquire(blocking=bool(wait), timeout=wait)
+        except redis_lock.AlreadyAcquired as error:
+            if already_aquired_ok:
+                return True
+            else:
+                raise error
 
     def release(self) -> bool:
         """Release the lock.
@@ -136,10 +151,10 @@ class Lock:
                 found and released.
 
         """
-        if self.held:
-            self.backend.delete(self.long_name, missing_ok=True)
+        try:
+            self._lock.release()
             return True
-        else:
+        except redis_lock.NotAcquired:
             return False
 
     def __enter__(self) -> Lock:
@@ -172,3 +187,21 @@ class Lock:
         """
         if self.auto_release:
             self.release()
+
+
+class ProcessLock(Lock):
+    """Distributed mutual exclusion (MUTEX) lock for controlling
+    concurrency accross processes on the same host.
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs, owner_id=_get_process_lock_owner_id())
+
+
+class ThreadLock(Lock):
+    """Distributed mutual exclusion (MUTEX) lock for controlling
+    concurrency accross processes and threads on the same host.
+    """
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs, owner_id=_get_thread_lock_owner_id())
