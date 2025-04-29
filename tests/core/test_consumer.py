@@ -10,21 +10,21 @@ import pytest
 
 from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
-from alsek.core.consumer import Consumer, Message, _ConsumptionMutex
+from alsek.core.consumer import Consumer, Message, MessageMutex
 from alsek.storage.backends import Backend
 from alsek.utils.namespacing import get_message_name
 
 
 def test_consumption_mutex_acquisition(rolling_backend: Backend) -> None:
     message = Message("task")
-    with _ConsumptionMutex(message, backend=rolling_backend) as lock:
+    with MessageMutex(message, backend=rolling_backend) as lock:
         assert lock.acquire()
     assert lock.held
 
 
 def test_consumption_mutex_settings(rolling_backend: Backend) -> None:
     message = Message("task")
-    with _ConsumptionMutex(message, backend=rolling_backend) as lock:
+    with MessageMutex(message, backend=rolling_backend) as lock:
         assert lock.name == message.uuid
         assert lock.ttl >= message.timeout
 

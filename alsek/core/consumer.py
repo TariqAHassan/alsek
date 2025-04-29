@@ -14,11 +14,15 @@ from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
-from alsek.utils.namespacing import get_priority_namespace, get_subnamespace
+from alsek.utils.namespacing import (
+    get_priority_namespace,
+    get_subnamespace,
+    get_message_name,
+)
 from alsek.utils.system import StopSignalListener
 
 
-class _ConsumptionMutex(Lock):
+class MessageMutex(Lock):
     def __init__(
         self,
         message: Message,
@@ -26,7 +30,7 @@ class _ConsumptionMutex(Lock):
         ttl_buffer: int = 90 * 1000,
     ) -> None:
         super().__init__(
-            name=message.uuid,
+            name=get_message_name(message),
             backend=backend,
             ttl=message.timeout + ttl_buffer,
             auto_release=False,
@@ -127,7 +131,7 @@ class Consumer:
 
                     message = Message(**message_data)
                     if message.ready and not self.stop_signal.received:
-                        with _ConsumptionMutex(message, self.broker.backend) as lock:
+                        with MessageMutex(message, self.broker.backend) as lock:
                             if lock.acquire(strict=False):
                                 output.append(message.link_lock(lock, override=True))
 
