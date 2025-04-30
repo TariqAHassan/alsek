@@ -79,14 +79,12 @@ class Lock:
         self.backend = backend
         self.ttl = ttl
         self.auto_release = auto_release
-        self.owner_id = owner_id
+        self._owner_id = owner_id
 
         if not isinstance(backend, RedisBackend):
             raise NotImplementedError("Only RedisBackend is supported.")
-        elif not self.name:
-            raise ValueError("`name` must be provided.")
-        elif not self.owner_id:
-            raise ValueError("`owner_id` must be provided.")
+
+        self.validate()
 
         self._lock = redis_lock.Lock(
             backend.conn,
@@ -94,6 +92,16 @@ class Lock:
             expire=None if ttl is None else round(ttl / 1000),
             id=self.owner_id,
         )
+
+    def validate(self) -> None:
+        if not self.name:
+            raise ValueError("`name` must be provided.")
+        elif not self.owner_id:
+            raise ValueError("`owner_id` must be provided.")
+
+    @property
+    def owner_id(self) -> str:
+        return self._owner_id
 
     def __repr__(self) -> str:
         return auto_repr(
@@ -209,7 +217,18 @@ class ProcessLock(Lock):
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs, owner_id=_get_process_lock_owner_id())
+        super().__init__(*args, **kwargs, owner_id="")
+
+    def validate(self) -> None:
+        if not self.name:
+            raise ValueError("`name` must be provided.")
+
+    @property
+    def owner_id(self) -> str:
+        # We compute this "fresh" every time so that
+        # It's always accurate even if the lock is moved
+        # to a different process than it was created in.
+        return _get_process_lock_owner_id()
 
 
 class ThreadLock(Lock):
@@ -218,4 +237,15 @@ class ThreadLock(Lock):
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs, owner_id=_get_thread_lock_owner_id())
+        super().__init__(*args, **kwargs, owner_id="")
+
+    def validate(self) -> None:
+        if not self.name:
+            raise ValueError("`name` must be provided.")
+
+    @property
+    def owner_id(self) -> str:
+        # We compute this "fresh" every time so that
+        # It's always accurate even if the lock is moved
+        # to a different thread than it was created in.
+        return _get_thread_lock_owner_id()
