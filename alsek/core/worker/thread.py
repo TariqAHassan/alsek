@@ -85,26 +85,27 @@ class ThreadsInProcessGroup:
         on_suppress=lambda error: log.info("Keyboard Interrupt Detected"),
     )
     def run(self) -> None:
-        while not self.shutdown_event.is_set():
-            # 1. reap finished / timed-out futures
-            self._prune()
+        try:
+            while not self.shutdown_event.is_set():
+                # 1. reap finished / timed-out futures
+                self._prune()
 
-            # 2. Throttle if thread slots are full
-            if not self._has_capacity():
-                # Wait *either* for a slot OR the shutdown flag
-                self.shutdown_event.wait(self.slot_wait_interval_seconds)
-                continue
+                # 2. Throttle if thread slots are full
+                if not self._has_capacity():
+                    # Wait *either* for a slot OR the shutdown flag
+                    self.shutdown_event.wait(self.slot_wait_interval_seconds)
+                    continue
 
-            # 3. Try to pull one unit of work
-            try:
-                payload = self.q.get(timeout=self.slot_wait_interval_seconds)
-            except queue.Empty:
-                continue
+                # 3. Try to pull one unit of work
+                try:
+                    payload = self.q.get(timeout=self.slot_wait_interval_seconds)
+                except queue.Empty:
+                    continue
 
-            # 4. Launch a new ThreadTaskFuture
-            self._spawn_future(payload)
-
-        self._stop_all_live_futures()
+                # 4. Launch a new ThreadTaskFuture
+                self._spawn_future(payload)
+        finally:
+            self._stop_all_live_futures()
 
 
 def _start_thread_worker(
