@@ -4,7 +4,7 @@
 
 """
 
-from typing import Any, Iterable, Optional, Union
+from typing import Optional, Union
 
 import pytest
 
