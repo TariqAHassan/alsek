@@ -18,6 +18,7 @@ from redis import Redis
 
 from alsek.cli.cli import main as alsek_cli
 from alsek.core.broker import Broker
+from alsek.core.concurrency import Lock, ProcessLock, ThreadLock
 from alsek.core.message import Message
 from alsek.core.status import StatusTracker
 from alsek.core.task import task
@@ -116,6 +117,27 @@ def rolling_backend(
         return RedisBackend(custom_redisdb)
     else:
         raise ValueError(f"Unknown backend '{request.param}'")
+
+
+@pytest.fixture(
+    params=[
+        Lock.__name__,
+        ProcessLock.__name__,
+        ThreadLock.__name__,
+    ]
+)
+def rolling_lock(
+    request: SubRequest,
+    rolling_backend: Backend,
+) -> Lock:
+    if request.param == Lock.__name__:
+        return Lock("test_lock", rolling_backend)
+    elif request.param == ProcessLock.__name__:
+        return ProcessLock("test_lock", rolling_backend)
+    elif request.param == ThreadLock.__name__:
+        return ThreadLock("test_lock", rolling_backend)
+    else:
+        raise ValueError(f"Unknown lock '{request.param}'")
 
 
 @pytest.fixture()

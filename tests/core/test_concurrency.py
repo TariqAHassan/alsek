@@ -18,9 +18,12 @@ from alsek.core.concurrency import Lock, ProcessLock, ThreadLock
 from alsek.storage.backends import Backend
 
 
-def test_repr(rolling_backend: Backend) -> None:
-    lock = Lock("lock", backend=rolling_backend)
-    assert isinstance(repr(lock), str)
+def test_repr(rolling_lock: Lock) -> None:
+    assert isinstance(repr(rolling_lock), str)
+
+
+def test_long_name(rolling_lock: Lock) -> None:
+    assert rolling_lock.owner_id.startswith("lock:")
 
 
 @pytest.mark.parametrize("do_acquire", [True, False])
