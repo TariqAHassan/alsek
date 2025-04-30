@@ -6,6 +6,8 @@
 
 from typing import Iterable, Optional, Union
 
+import redis
+
 from alsek.core.backoff import Backoff, ConstantBackoff, LinearBackoff
 from alsek.core.broker import Broker
 from alsek.core.concurrency import ProcessLock
@@ -134,8 +136,11 @@ class Consumer:
 
         try:
             main_loop()
-        except BaseException as error:
+        except KeyboardInterrupt:
             pass
+        except redis.exceptions.ConnectionError as error:
+            if not self.stop_signal.received:
+                raise error
 
         self._empty_passes = 0 if output else self._empty_passes + 1
         return _dedup_messages(output)
