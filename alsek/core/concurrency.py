@@ -26,11 +26,11 @@ CURRENT_HOST_OWNER_ID = f"lock:{gethostname()}"
 
 
 def _get_process_lock_owner_id() -> str:
-    return f"{CURRENT_HOST_OWNER_ID}:{os.getpid()}"
+    return f"{CURRENT_HOST_OWNER_ID}:process:{os.getpid()}"
 
 
 def _get_thread_lock_owner_id() -> str:
-    return f"{_get_process_lock_owner_id()}:{threading.get_ident()}"
+    return f"{_get_process_lock_owner_id()}:thread:{threading.get_ident()}"
 
 
 class Lock:
