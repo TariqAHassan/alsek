@@ -8,7 +8,7 @@ from typing import Iterable, Optional, Union
 
 from alsek.core.backoff import Backoff, ConstantBackoff, LinearBackoff
 from alsek.core.broker import Broker
-from alsek.core.concurrency import Lock
+from alsek.core.concurrency import ProcessLock
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
 from alsek.utils.namespacing import (
@@ -19,7 +19,7 @@ from alsek.utils.namespacing import (
 from alsek.utils.system import StopSignalListener
 
 
-class MessageMutex(Lock):
+class MessageMutex(ProcessLock):
     def __init__(
         self,
         message: Message,
