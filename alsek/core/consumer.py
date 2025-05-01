@@ -14,9 +14,9 @@ from alsek.core.concurrency import ProcessLock
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
 from alsek.utils.namespacing import (
+    get_message_signature,
     get_priority_namespace,
     get_subnamespace,
-    get_message_signature,
 )
 from alsek.utils.system import StopSignalListener
 

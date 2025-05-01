@@ -454,4 +454,6 @@ class ProcessTaskFuture(TaskFuture):
                 raise exception(f"Stopped process {self._process.ident}")  # type: ignore
             except BaseException as error:
                 log.error("Error processing %s.", self.message.summary, exc_info=True)
-                _error_encountered_future_handler(self.task, self.message, exception=error)
+                _error_encountered_future_handler(
+                    self.task, self.message, exception=error
+                )

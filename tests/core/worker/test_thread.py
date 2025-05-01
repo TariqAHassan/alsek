@@ -722,22 +722,25 @@ def test_pool_elastic_scale_up_and_down(rolling_broker: Broker, monkeypatch):
         len(pool._progress_groups) == 0
     ), f"Expected 0 process groups after shutdown, found {len(pool._progress_groups)}"
 
+
 # ------------------------------------------------------------------ #
 # 15. Test shut down of ProcessGroup causes TerminationError
 # ------------------------------------------------------------------ #
+
 
 @pytest.mark.timeout(15)
 @pytest.mark.flaky(max_runs=2)
 def test_process_shutdown_causes_termination_error(rolling_broker: Broker) -> None:
     """Test that a task receives a TerminationError when its process group is shut down."""
+
     # Create a task that runs indefinitely with a sleep loop
     def _endless_task() -> None:
         while True:
             time.sleep(0.05)
-    
+
     status_tracker = StatusTracker(rolling_broker.backend)
     result_store = ResultStore(rolling_broker.backend)
-    
+
     endless_task = task(
         rolling_broker,
         name="endless_task",
@@ -746,46 +749,42 @@ def test_process_shutdown_causes_termination_error(rolling_broker: Broker) -> No
         status_tracker=status_tracker,
         result_store=result_store,
     )(_endless_task)
-    
+
     # Generate a message for the task
     msg = endless_task.generate()
-    
+
     # Create a worker pool with a single process and thread
-    pool = ThreadWorkerPool(
-        tasks=[endless_task], 
-        n_threads=1, 
-        n_processes=1
-    )
-    
+    pool = ThreadWorkerPool(tasks=[endless_task], n_threads=1, n_processes=1)
+
     # Run the pool in a background thread
     runner = threading.Thread(target=pool.run, daemon=True)
     runner.start()
-    
+
     # Wait for the task to start running
     assert status_tracker.wait_for(
         message=msg,
         status=TaskStatus.RUNNING,
         timeout=5,
     )
-    
+
     # Now shut down the process group directly (without using pool.stop_signal)
     # to simulate a more abrupt termination
     pool._progress_groups[0].stop(timeout=0.1)
-    
+
     # Wait for the task to complete with a terminal status
     assert status_tracker.wait_for(
         message=msg,
         status=TERMINAL_TASK_STATUSES,
         timeout=5,
     )
-    
+
     # Clean up the pool
     pool.stop_signal.exit_event.set()
     runner.join(timeout=2)
-    
+
     # Verify the task failed
     assert status_tracker.get(msg).status == TaskStatus.FAILED
-    
+
     # Verify we got a TerminationError
     task_result = rolling_broker.sync(msg)
     assert task_result.exception_details is not None

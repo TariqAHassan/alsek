@@ -8,14 +8,13 @@ from __future__ import annotations
 
 import os
 import threading
+from functools import cached_property
 from socket import gethostname
 from types import TracebackType
-from typing import Optional, Type, cast, Any, get_args, Literal
+from typing import Any, Literal, Optional, Type, cast, get_args
 
 import redis_lock
-from functools import cached_property
 
-from socket import gethostname
 from alsek.storage.backends import Backend
 from alsek.storage.backends.redis import RedisBackend
 from alsek.utils.printing import auto_repr

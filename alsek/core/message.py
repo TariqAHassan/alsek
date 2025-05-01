@@ -6,13 +6,13 @@
 
 from __future__ import annotations
 
+import logging
 from copy import deepcopy
-from typing import Any, Iterable, Optional, Union, TypedDict
+from typing import Any, Iterable, Optional, TypedDict, Union
 from uuid import uuid1
 
 import redis_lock
 
-import logging
 from alsek.core.backoff import ExponentialBackoff, settings2backoff
 from alsek.core.concurrency import Lock
 from alsek.defaults import DEFAULT_MECHANISM, DEFAULT_QUEUE, DEFAULT_TASK_TIMEOUT

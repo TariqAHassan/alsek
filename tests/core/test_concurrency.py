@@ -5,10 +5,10 @@
 """
 
 import multiprocessing as mp
+import os
 import threading
 from queue import Queue
 from typing import Any
-import os
 
 import dill
 import pytest
