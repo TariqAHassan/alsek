@@ -7,9 +7,9 @@
 import logging
 from typing import Optional
 
-from alsek._defaults import DEFAULT_TTL
 from alsek.core.concurrency import Lock
 from alsek.core.message import Message
+from alsek.defaults import DEFAULT_TTL
 from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsError
 from alsek.storage.backends import Backend
 from alsek.types import Empty
@@ -113,19 +113,19 @@ class Broker:
                 f"Message '{message.uuid}' not found in backend"
             )
 
-        message.increment()
+        # We release the lock before setting the messate data
+        # so that the `linked_lock` field on the message ie None.
+        message.release_lock(
+            not_linked_ok=True,
+            target_backend=self.backend,
+        )
+        message.increment_retries()
         self.backend.set(get_message_name(message), value=message.data)
-        self.nack(message)
         log.info(
             "Retrying %s in %s ms...",
             message.summary,
             format(message.get_backoff_duration(), ","),
         )
-
-    def _clear_lock(self, message: Message) -> None:
-        lock_name = message._unlink_lock(missing_ok=True)
-        if lock_name:
-            Lock(lock_name, backend=self.backend).release()
 
     @magic_logger(
         before=lambda message: log.info("Removing %s...", message.summary),
@@ -146,7 +146,10 @@ class Broker:
             unique_id=get_message_name(message),
         )
         self.backend.delete(get_message_name(message), missing_ok=True)
-        self._clear_lock(message)
+        message.release_lock(
+            not_linked_ok=True,
+            target_backend=self.backend,
+        )
 
     @magic_logger(
         before=lambda message: log.debug("Acking %s...", message.summary),
@@ -166,23 +169,6 @@ class Broker:
 
         """
         self.remove(message)
-
-    @magic_logger(  # noqa
-        before=lambda message: log.debug("Nacking %s...", message.summary),
-        after=lambda input_: log.debug("Nacked %s.", input_["message"].summary),
-    )
-    def nack(self, message: Message) -> None:
-        """Do not acknowledge a message and render it eligible
-        for redelivery.
-
-        Args:
-            message (Message): a message to not acknowledge
-
-        Returns:
-            None
-
-        """
-        self._clear_lock(message)
 
     @magic_logger(
         before=lambda message: log.info("Failing %s...", message.summary),
@@ -208,6 +194,22 @@ class Broker:
                 ttl=self.dlq_ttl,
             )
             log.debug("Added %s to DLQ.", message.summary)
+
+    @magic_logger(
+        before=lambda message: log.info("Failing %s...", message.summary),
+        after=lambda input_: log.info("Failed %s.", input_["message"].summary),
+    )
+    def in_dlq(self, message: Message) -> bool:
+        """Determine if a message is in the dead letter queue.
+
+        Args:
+            message (Message): an Alsek message
+
+        Returns:
+            bool: whether the message is in the DLQ.
+
+        """
+        return self.backend.exists(get_dlq_message_name(message))
 
     @magic_logger(
         before=lambda message: log.info("Syncing %s...", message.summary),

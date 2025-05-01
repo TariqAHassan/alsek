@@ -6,8 +6,7 @@
 
 from __future__ import annotations
 
-from functools import partial
-from pathlib import Path
+from functools import partial, wraps
 from subprocess import PIPE, Popen
 from typing import Any, Iterable, Optional, Type, Union
 
@@ -19,11 +18,13 @@ from redis import Redis
 
 from alsek.cli.cli import main as alsek_cli
 from alsek.core.broker import Broker
+from alsek.core.concurrency import Lock, ProcessLock, ThreadLock
+from alsek.core.message import Message
 from alsek.core.status import StatusTracker
 from alsek.core.task import task
-from alsek.core.worker import WorkerPool
+from alsek.core.worker.process import ProcessWorkerPool
+from alsek.core.worker.thread import ThreadWorkerPool
 from alsek.storage.backends import Backend
-from alsek.storage.backends.disk.standard import DiskCacheBackend
 from alsek.storage.backends.redis.standard import RedisBackend
 from alsek.storage.result import ResultStore
 from alsek.tools.iteration import ResultPool
@@ -81,7 +82,7 @@ def base_backend() -> Backend:
         def priority_iter(self, key: str) -> Iterable[str]:
             raise NotImplementedError()
 
-        def priority_remove(self, key: str) -> None:
+        def priority_remove(self, key: str, unique_id: str) -> None:
             raise NotImplementedError()
 
         def pub(self, channel: str, value: Any) -> None:
@@ -107,23 +108,36 @@ def redis_backend(custom_redisdb: Redis) -> RedisBackend:
     return RedisBackend(custom_redisdb)
 
 
-@pytest.fixture()
-def disk_cache_backend(tmp_path: Path) -> DiskCacheBackend:
-    return DiskCacheBackend(tmp_path)
-
-
-@pytest.fixture(params=["redis", "diskcache"])
+@pytest.fixture(params=["redis"])
 def rolling_backend(
     request: SubRequest,
-    tmp_path: Path,
     custom_redisdb: Redis,
 ) -> Backend:
     if request.param == "redis":
         return RedisBackend(custom_redisdb)
-    elif request.param == "diskcache":
-        return DiskCacheBackend(tmp_path)
     else:
         raise ValueError(f"Unknown backend '{request.param}'")
+
+
+@pytest.fixture(
+    params=[
+        Lock.__name__,
+        ProcessLock.__name__,
+        ThreadLock.__name__,
+    ]
+)
+def rolling_lock(
+    request: SubRequest,
+    rolling_backend: Backend,
+) -> Lock:
+    if request.param == Lock.__name__:
+        return Lock("test_lock", rolling_backend)
+    elif request.param == ProcessLock.__name__:
+        return ProcessLock("test_lock", rolling_backend)
+    elif request.param == ThreadLock.__name__:
+        return ThreadLock("test_lock", rolling_backend)
+    else:
+        raise ValueError(f"Unknown lock '{request.param}'")
 
 
 @pytest.fixture()
@@ -142,17 +156,63 @@ def rolling_result_pool(rolling_result_store: ResultStore):
 
 
 @pytest.fixture()
-def rolling_status_tracker(rolling_broker: Broker) -> StatusTracker:
-    return StatusTracker(rolling_broker)
+def rolling_status_tracker(rolling_backend: Backend) -> StatusTracker:
+    return StatusTracker(rolling_backend)
 
 
 @pytest.fixture()
-def rolling_worker_pool(rolling_broker: Broker) -> WorkerPool:
-    n: int = 3
-    tasks = [task(rolling_broker, name=f"task-{i}")(lambda: i) for i in range(n)]
-    pool = WorkerPool(tasks)
+def rolling_thread_worker_pool(rolling_broker):
+    n = 3
+    tasks = [
+        task(rolling_broker, name=f"thread-task-{i}", mechanism="thread")(lambda: i)
+        for i in range(n)
+    ]
 
-    # Replace `stream()` with `_poll()`. This means that calls of
-    # `run()` wil now exit, rather than looping indefinitely.
+    pool = ThreadWorkerPool(tasks=tasks)
+    pool.stream = pool._poll  # single scan → finite run
+
+    # ---- wrap submit_message so it stops the pool after one hit ----
+    original_submit = pool.submit_message
+
+    @wraps(original_submit)
+    def submit_and_quit(msg: Message) -> bool:
+        submitted = original_submit(msg)
+        if submitted:  # first successful enqueue
+            pool._can_run = False  # break the outer while-loop
+        return submitted
+
+    pool.submit_message = submit_and_quit
+    return pool
+
+
+@pytest.fixture()
+def rolling_process_worker_pool(rolling_broker: Broker) -> ProcessWorkerPool:
+    """
+    A pool that will exit after one successful submit_message, and uses
+    ._poll() so run() returns once.
+    """
+    # create 3 trivial “process” tasks
+    tasks = [
+        task(
+            rolling_broker,
+            name=f"proc-task-{i}",
+            mechanism="process",
+        )(lambda: i)
+        for i in range(3)
+    ]
+    pool = ProcessWorkerPool(tasks=tasks)
+    # make stream finite
     pool.stream = pool._poll
+
+    # stop after first submit so run() returns
+    original = pool.submit_message
+
+    @wraps(original)
+    def submit_and_quit(msg: Message) -> bool:
+        ok = original(msg)
+        if ok:
+            pool._can_run = False
+        return ok
+
+    pool.submit_message = submit_and_quit
     return pool

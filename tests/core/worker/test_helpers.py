@@ -4,14 +4,14 @@
 
 """
 
-from typing import Collection, Optional, Union
+from typing import Optional, Union
 
 import pytest
 
-from alsek._defaults import DEFAULT_QUEUE
 from alsek.core.broker import Broker
 from alsek.core.task import Task, task
-from alsek.core.worker import _derive_consumer_subset, _extract_broker
+from alsek.core.worker._helpers import derive_consumer_subset, extract_broker  # noqa
+from alsek.defaults import DEFAULT_QUEUE
 from alsek.exceptions import MultipleBrokersError, NoTasksFoundError
 from alsek.storage.backends import Backend
 
@@ -22,12 +22,12 @@ def _task_factory(name: str, broker: Broker, queue: Optional[str] = None) -> Tas
 
 def test_extract_broker_no_tasks(rolling_broker: Broker) -> None:
     with pytest.raises(NoTasksFoundError):
-        assert _extract_broker([])
+        assert extract_broker([])
 
 
 def test_extract_broker_single_broker(rolling_broker: Broker) -> None:
     tasks = [task(rolling_broker)(lambda: 1) for _ in range(3)]
-    assert _extract_broker(tasks) == rolling_broker
+    assert extract_broker(tasks) == rolling_broker
 
 
 def test_extract_broker_multi_broker(rolling_backend: Backend) -> None:
@@ -36,7 +36,7 @@ def test_extract_broker_multi_broker(rolling_backend: Backend) -> None:
 
     tasks = [task(broker_1)(lambda: 1), task(broker_2)(lambda: 1)]
     with pytest.raises(MultipleBrokersError):
-        assert _extract_broker(tasks)
+        assert extract_broker(tasks)
 
 
 @pytest.mark.parametrize(
@@ -84,7 +84,7 @@ def test_extract_broker_multi_broker(rolling_backend: Backend) -> None:
     ],
 )
 def test_derive_consumer_subset(
-    task_names: Collection[Task],
+    task_names: list[Task],
     queues: Optional[list[str]],
     task_specific_mode: bool,
     expected: Union[dict[str, list[str]], BaseException],
@@ -99,7 +99,7 @@ def test_derive_consumer_subset(
         tasks = [_task_factory(n, broker=rolling_broker) for n in task_names]
 
     if isinstance(expected, (dict, list)):
-        actual = _derive_consumer_subset(
+        actual = derive_consumer_subset(
             tasks=tasks,
             queues=queues,
             task_specific_mode=task_specific_mode,
@@ -110,7 +110,7 @@ def test_derive_consumer_subset(
             assert sorted(actual) == sorted(expected)
     else:
         with pytest.raises(expected):
-            _derive_consumer_subset(
+            derive_consumer_subset(
                 tasks=tasks,
                 queues=queues,
                 task_specific_mode=task_specific_mode,

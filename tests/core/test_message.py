@@ -124,18 +124,23 @@ def test_ttr(message: Message, ready_now: bool) -> None:
 
 def test_link_lock(rolling_backend: Backend) -> None:
     lock = Lock("lock", rolling_backend)
-    msg = Message("task")._link_lock(lock)
+    msg = Message("task").link_lock(lock)
 
-    assert msg._lock == lock.long_name
+    assert msg.linked_lock
+    assert msg.linked_lock["name"] == lock.name
+    assert msg.linked_lock["owner_id"] == lock.owner_id
 
 
 def test_release_lock(rolling_backend: Backend) -> None:
     lock = Lock("lock", rolling_backend)
-    msg = Message("task")._link_lock(lock)
+    lock.acquire()
+    msg = Message("task").link_lock(lock)
 
-    assert msg._lock == lock.long_name
-    msg._unlink_lock(missing_ok=False)
-    assert msg._lock is None
+    assert msg.linked_lock
+    assert msg.linked_lock["name"] == lock.name
+    assert msg.linked_lock["owner_id"] == lock.owner_id
+    msg.release_lock(not_linked_ok=False, target_backend=rolling_backend)
+    assert msg.linked_lock is None
 
 
 def test_clone() -> None:
@@ -164,12 +169,12 @@ def test_duplicate(new_uuid: Optional[str]) -> None:
     assert msg.uuid != msg.duplicate(new_uuid).uuid
 
 
-def test_increment() -> None:
+def test_increment_retries() -> None:
     msg = Message("task")
     original_retries = copy.deepcopy(msg.retries)
     original_updated_at = copy.deepcopy(msg.updated_at)
 
     time.sleep(0.1)
-    msg.increment()
+    msg.increment_retries()
     assert msg.retries == 1
     assert msg.updated_at > original_updated_at

@@ -6,16 +6,22 @@
 
 from typing import Iterable, Optional, Union
 
+import redis
+
 from alsek.core.backoff import Backoff, ConstantBackoff, LinearBackoff
 from alsek.core.broker import Broker
-from alsek.core.concurrency import Lock
+from alsek.core.concurrency import ProcessLock
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
-from alsek.utils.namespacing import get_priority_namespace, get_subnamespace
+from alsek.utils.namespacing import (
+    get_priority_namespace,
+    get_subnamespace,
+    get_message_signature,
+)
 from alsek.utils.system import StopSignalListener
 
 
-class _ConsumptionMutex(Lock):
+class MessageMutex(ProcessLock):
     def __init__(
         self,
         message: Message,
@@ -23,7 +29,7 @@ class _ConsumptionMutex(Lock):
         ttl_buffer: int = 90 * 1000,
     ) -> None:
         super().__init__(
-            name=message.uuid,
+            name=get_message_signature(message),
             backend=backend,
             ttl=message.timeout + ttl_buffer,
             auto_release=False,
@@ -97,29 +103,44 @@ class Consumer:
             ]
 
         for s in subnamespaces:
-            yield from self.broker.backend.scan(f"{get_priority_namespace(s)}*")
+            if self.stop_signal.received:
+                break
+            for i in self.broker.backend.scan(f"{get_priority_namespace(s)}*"):
+                if self.stop_signal.received:
+                    break
+                yield i
 
     def _poll(self) -> list[Message]:
         # NOTE: with this approach, we 'drain' / exhaust queues in
-        #       the order they're privided, and then drain the next.
+        #       the order they're provided, and then drain the next.
         #       So if we had queues A,B,C we'd drain A, then drain B
         #       and, finally, drain C.
         # ToDo: implement a 'flat' option that moves to the next queue
         #       So, A then B then C, round and round.
         output: list[Message] = list()
-        for s in self._scan_subnamespaces():
-            for name in self.broker.backend.priority_iter(s):
-                message_data = self.broker.backend.get(name)
-                if message_data is None:
-                    # Message data can be None if it has been deleted (by a TTL or
-                    # another worker) between the `priority_iter()` and `get()` operations.
-                    continue
 
-                message = Message(**message_data)
-                if message.ready:
-                    with _ConsumptionMutex(message, self.broker.backend) as lock:
-                        if lock.acquire(strict=False):
-                            output.append(message._link_lock(lock, override=True))
+        def main_loop() -> None:
+            for s in self._scan_subnamespaces():
+                for name in self.broker.backend.priority_iter(s):
+                    message_data = self.broker.backend.get(name)
+                    if message_data is None:
+                        # Message data can be None if it has been deleted (by a TTL or
+                        # another worker) between the `priority_iter()` and `get()` operations.
+                        continue
+
+                    message = Message(**message_data)
+                    if message.ready and not self.stop_signal.received:
+                        with MessageMutex(message, self.broker.backend) as lock:
+                            if lock.acquire(if_already_acquired="return_false"):
+                                output.append(message.link_lock(lock, override=True))
+
+        try:
+            main_loop()
+        except KeyboardInterrupt:
+            pass
+        except redis.exceptions.ConnectionError as error:
+            if not self.stop_signal.received:
+                raise error
 
         self._empty_passes = 0 if output else self._empty_passes + 1
         return _dedup_messages(output)

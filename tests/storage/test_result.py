@@ -190,3 +190,22 @@ def test_delete(rolling_result_store: ResultStore) -> None:
     assert rolling_result_store.exists(message)
     rolling_result_store.delete(message)
     assert not rolling_result_store.exists(message)
+
+
+def test_result_store_serialise_roundtrip(rolling_result_store: ResultStore) -> None:
+    """
+    1.  Serialise the existing ResultStore → dict
+    2.  Rebuild a fresh ResultStore from that dict
+    3.  Verify it talks to the *same* backend by writing with one
+        instance and reading with the other.
+    """
+    # ---------- 1. round-trip ----------
+    blob = rolling_result_store.serialize()
+    rebuilt = ResultStore.deserialize(blob)
+    assert isinstance(rebuilt, ResultStore)
+
+    # ---------- 2. shared-backend sanity check ----------
+    msg = Message("task")
+    rolling_result_store.set(msg, result=42)
+    # if the backend wasn’t shared this would raise KeyError
+    assert rebuilt.get(msg) == 42

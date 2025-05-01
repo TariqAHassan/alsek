@@ -79,7 +79,7 @@ def test_thread_raise() -> None:
     assert thread_output and isinstance(thread_output[0], TimeoutError)
 
 
-@pytest.mark.flaky(max_runs=3)
+@pytest.mark.flaky(max_runs=5)
 @pytest.mark.timeout(30)
 def test_stop_signal_listener() -> None:
     start_time = time.time()

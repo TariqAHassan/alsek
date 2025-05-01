@@ -67,26 +67,26 @@ Testing an application may require a worker pool to be brought online.
 A small example of how to do this with [pytest](https://docs.pytest.org/en/stable) 
 and multiprocessing is provided below.
 
-First, create a `conftest.py` file with a `background_worker_pool` fixture. 
+First, create a `conftest.py` file with a `background_worker_pool` fixture.
 
 ```python
 import pytest
 from multiprocessing import Process
 
-from alsek.core.worker import WorkerPool
+from alsek.core.worker.thread import ThreadWorkerPool
 
 from my_application.tasks import task_1, task_2
 
 
 def _run_pool() -> None:
-    WorkerPool([task_1, task_2], backoff=None).run()
+    ThreadWorkerPool([task_1, task_2], backoff=None).run()
 
 
 @pytest.fixture()
 def background_worker_pool() -> None:
     process = Process(target=_run_pool, daemon=True)
     process.start()
-    yield 
+    yield
     process.terminate()
 ```
 

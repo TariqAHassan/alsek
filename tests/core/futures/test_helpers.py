@@ -6,17 +6,17 @@
 
 import pytest
 
-from alsek._defaults import DEFAULT_MAX_RETRIES
 from alsek.core.broker import Broker
 from alsek.core.futures import (
     _complete_future_handler,
     _generate_callback_message,
     _process_future_decoder,
     _process_future_encoder,
-    _retry_future_handler,
+    _error_encountered_future_handler,
 )
 from alsek.core.message import Message
 from alsek.core.task import task
+from alsek.defaults import DEFAULT_MAX_RETRIES
 from alsek.storage.result import ResultStore
 
 
@@ -61,7 +61,7 @@ def test_retry_future_handler(
     testing_msg = testing_task.generate().update(retries=retries)
     rolling_broker.submit(testing_msg)
 
-    _retry_future_handler(testing_task, message=testing_msg, exception=BaseException())
+    _error_encountered_future_handler(testing_task, message=testing_msg, exception=BaseException())
     if retries < DEFAULT_MAX_RETRIES:
         assert testing_msg.retries == 1
     else:

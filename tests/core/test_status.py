@@ -4,12 +4,17 @@
 
 """
 
+import threading
+import time
+
 import pytest
 
+from alsek import Broker
 from alsek.core.message import Message
 from alsek.core.status import (
     TERMINAL_TASK_STATUSES,
     StatusTracker,
+    StatusTrackerIntegryScanner,
     TaskStatus,
     _name2message,
 )
@@ -131,14 +136,91 @@ def test_name2message(name, expected: tuple[str, str, str]) -> None:
     assert actual == expected
 
 
-def test_integrity_scan(rolling_status_tracker: StatusTracker) -> None:
+@pytest.mark.parametrize(
+    "status_arg, final_status, should_set, expected",
+    [
+        # single-status arg, status will be set → True
+        (TaskStatus.SUCCEEDED, TaskStatus.SUCCEEDED, True, True),
+        # iterable-status arg, status will be set to a matching terminal → True
+        ([TaskStatus.FAILED, TaskStatus.SUCCEEDED], TaskStatus.FAILED, True, True),
+        # status never set → timeout → False
+        (TaskStatus.SUCCEEDED, None, False, False),
+    ],
+)
+def test_wait_for_various_cases(
+    rolling_status_tracker: StatusTracker,
+    status_arg,
+    final_status,
+    should_set: bool,
+    expected: bool,
+) -> None:
+    msg = Message("task")
+    if should_set:
+        # delay then set the final_status
+        def _delayed_set() -> None:
+            time.sleep(0.05)
+            rolling_status_tracker.set(msg, status=final_status)  # type: ignore[arg-type]
+
+        threading.Thread(target=_delayed_set, daemon=True).start()
+
+    result = rolling_status_tracker.wait_for(
+        message=msg,
+        status=status_arg,
+        timeout=0.2,
+        poll_interval=0.01,
+    )
+    assert result is expected
+
+
+@pytest.mark.parametrize(
+    "bad_status",
+    [
+        "not-a-status",
+        123,
+        object(),
+    ],
+)
+def test_wait_for_invalid_status_types_raise(
+    rolling_status_tracker: StatusTracker,
+    bad_status,
+) -> None:
+    msg = Message("task", uuid="wf-invalid")
+    with pytest.raises(ValueError):
+        rolling_status_tracker.wait_for(message=msg, status=bad_status)  # type: ignore[arg-type]
+
+
+def test_integrity_scaner(rolling_status_tracker: StatusTracker) -> None:
     # Simulate a message expiring from the broker by setting the
     # status for a message that has never actually been added to the broker.
     message = Message("task1")
     rolling_status_tracker.set(message, status=TaskStatus.RUNNING)
+    broker = Broker(rolling_status_tracker.backend)
+    integry_scanner = StatusTrackerIntegryScanner(
+        status_tracker=rolling_status_tracker,
+        broker=broker,
+    )
 
     # Run a scan
-    rolling_status_tracker._integrity_scan()
+    integry_scanner.scan()
 
     # Check that the status of this message is now 'UNKNOWN'.
     assert rolling_status_tracker.get(message).status == TaskStatus.UNKNOWN
+
+
+def test_status_tracker_serialize_deserialize(
+    rolling_status_tracker: StatusTracker,
+) -> None:
+    # Serialize
+    serialized = rolling_status_tracker.serialize()
+
+    # Deserialize
+    rebuilt_tracker = StatusTracker.deserialize(serialized)
+
+    # Sanity check: rebuilt instance is a StatusTracker
+    assert isinstance(rebuilt_tracker, StatusTracker)
+
+    # Deep test: use it
+    message = Message("task", uuid="test-uuid")
+    rebuilt_tracker.set(message, status=TaskStatus.SUCCEEDED)
+    status = rebuilt_tracker.get(message).status
+    assert status == TaskStatus.SUCCEEDED

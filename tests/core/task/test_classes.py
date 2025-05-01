@@ -18,6 +18,7 @@ from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.core.task import Task, TriggerTask
 from alsek.exceptions import SchedulingError, ValidationError
+from alsek.storage.backends import Backend
 from alsek.storage.result import ResultStore
 from tests._helpers import sleeper
 
@@ -29,9 +30,9 @@ def test_task_serialization(
     task_class: Type[Task],
     rolling_broker: Broker,
 ) -> None:
-    task_data = task_class(lambda: 1, broker=rolling_broker)._serialize()
+    task_data = task_class(lambda: 1, broker=rolling_broker).serialize()
     Schema({"task": type, "settings": dict}).validate(task_data)
-    reconstructed_task = Task._deserialize(task_data)
+    reconstructed_task = Task.deserialize(task_data)
     assert isinstance(reconstructed_task, Task)
 
 
@@ -112,7 +113,7 @@ def test_task_revoke(rolling_broker: Broker) -> None:
 def test_generate_validation(
     with_result_store: bool,
     task_class: Type[Task],
-    rolling_backend: Broker,
+    rolling_backend: Backend,
 ) -> None:
     task = task_class(
         lambda: 1,

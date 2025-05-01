@@ -72,6 +72,19 @@ def get_message_name(message: Message) -> str:
     return f"{subnamespace}:{message.uuid}"
 
 
+def get_message_signature(message: Message) -> str:
+    """Get the signature for ``message`` in the backend.
+
+    Args:
+        message (Message): an Alsek message
+
+    Returns:
+        signature (str): message-specific signature.
+
+    """
+    return f"{get_message_name(message)}:retry:{message.retries}"
+
+
 def get_priority_namespace(subnamespace: str) -> str:
     """Get the namespace for a message's priority information.
 

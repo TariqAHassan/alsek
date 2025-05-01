@@ -5,8 +5,7 @@ Please feel free to feed the functions. 🙂
 
 ## Backends
 
-Alsek currently provides 'out of the box' support for two popular databases: [`Redis`](https://redis.io) 
-and [`Sqite`](https://www.sqlite.org) (via [`DiskCache`](http://www.grantjenks.com/docs/diskcache/index.html)).
+Alsek currently provides 'out of the box' support for [`Redis`](https://redis.io).
 
 #### Redis
 
@@ -18,24 +17,9 @@ from alsek.storage.backends.redis import RedisBackend
 backend = RedisBackend()
 ```
 
-#### DiskCache
-
-```python
-from alsek.storage.backends.disk import DiskCacheBackend
-
-backend = DiskCacheBackend()
-```
-
-!!! warning
-    ``DiskCache`` persists data to a local (Sqlite) database and does
-    not implement 'server-side' "if not exist" on `SET` (`nx`) support or
-    true priority capabilities. For these reasons, ``DiskCacheBackend()`` is
-    recommended for development and testing purposes only. (Multi-worker setups
-    in particular should not be used with this backend.)
-
 ### Lazy Initialization
 
-Both `DiskCacheBackend` and `RedisBackend` support lazy initialization.
+The `RedisBackend` supports lazy initialization.
 In this mode, an attempt to establish a connection with the database will be 
 deferred until the first time it is absolutely needed (e.g., for a `SET`, `GET`, 
 `DELETE`, etc.). This can be useful in applications such as REST APIs where the 
@@ -90,9 +74,9 @@ notable of which is explored here.
 
 ```python
 from alsek import Broker, task
-from alsek.storage.backends.disk import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 
-broker = Broker(DiskCacheBackend())
+broker = Broker(RedisBackend())
 
 @task(broker)
 def simple_task() -> int:
@@ -125,7 +109,7 @@ Message(
     previous_message_uuid=None,
     callback_message_data=None,
     backoff_settings={'algorithm': 'ExponentialBackoff', 'parameters': {'base': 4, 'factor': 10000, 'floor': 60000, 'ceiling': 3600000, 'zero_override': True}},
-    mechanism='process',
+    mechanism='thread',
 )
 ```
 
@@ -174,8 +158,6 @@ Notably, `Broker` also exposes:
 
  * `ack()`: acknowledge the message. (This is a convenience method and is 
     functionally the same as `remove()`.)
- * `nack()`: do not acknowledge the message and render it eligible
-    for redelivery.
 
 ## Tasks
 
@@ -286,10 +268,10 @@ Alsek supports cron, date as well as interval triggers. Let's explore this using
 
 ```python
 from alsek import Broker, task
-from alsek.storage.backends.disk import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 from apscheduler.triggers.interval import IntervalTrigger
 
-broker = Broker(DiskCacheBackend())
+broker = Broker(RedisBackend())
 
 @task(broker, trigger=IntervalTrigger(hours=1))
 def check_system_usage() -> int:
@@ -338,9 +320,9 @@ The message itself will be passed to `task`s which include a `message` parameter
 
 ```python
 from alsek import Broker, Message, task
-from alsek.storage.backends.disk import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 
-broker = Broker(DiskCacheBackend())
+broker = Broker(RedisBackend())
 
 @task(broker)
 def my_task(message: Message) -> None:  # note: type hints are optional
@@ -362,9 +344,9 @@ To see this, let's contrive two simple tasks: `add_1()` and `print_result()`:
 
 ```python
 from alsek import Broker, Message, task
-from alsek.storage.backends.disk import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 
-broker = Broker(DiskCacheBackend())
+broker = Broker(RedisBackend())
 
 @task(broker)
 def add_1(number: int) -> int:
@@ -573,7 +555,7 @@ def task_c() -> int:
     Here, an incident is a failed attempt to process the message.
 
 !!! note
-    Setting `backoff=None` is functionally equlivant to 
+    Setting `backoff=None` is functionally equivalent to 
     ``ConstantBackoff(constant=0, floor=0, ceiling=0, zero_override=True)``.
 
 
@@ -588,7 +570,7 @@ from alsek.storage.backends.redis import RedisBackend
 backend = RedisBackend("<connection_url>")
 
 broker = Broker(backend)
-status_tracker = StatusTracker(broker)
+status_tracker = StatusTracker(backend)
 
 @task(broker, status_tracker=status_tracker)
 def sum_n(n: int) -> int:
@@ -613,9 +595,9 @@ and can be any one of the following:
   * `<TaskStatus.SUCCEEDED: 5>`
 
 !!! note
-    By default, `StatusTracker()` will periodically scan for message statuses
-    which have become invalid. Specifically, a scan will be performed to
-    check for messages with statuses which are non-terminal (i.e., not 
+    `StatusTracker()` can be paired with `StatusTrackerIntegryScanner()`, which
+    will periodically scan for message statuses which have become invalid. Specifically, 
+    a scan will be performed to check for messages with statuses which are non-terminal (i.e., not 
     ``TaskStatus.FAILED`` or ``TaskStatus.SUCCEEDED``) and no longer exist
     in the broker. Any messages meeting these criteria will have their status
     updated to ``TaskStatus.UNKNOWN``.  Status information can become corrupt in 
@@ -624,8 +606,7 @@ and can be any one of the following:
     is never subsequently retried.
 
     The frequency of status integrity scans can be changed by altering the
-    ``integrity_scan_trigger`` parameter of `StatusTracker()`. Alternatively,
-    these scans can be disabled by setting ``integrity_scan_trigger=None``.
+    ``trigger`` parameter of `StatusTrackerIntegryScanner()`..
 
 ## Result Storage
 
@@ -646,34 +627,6 @@ result_store = ResultStore(backend)
 @task(broker, result_store=result_store)
 def valuable_output() -> Dict[str, int]:
     return {"a": 1, "b": 2, "c": 3}
-```
-
-We are also free to use different backends for `Broker` and `ResultStore`.
-This is illustrated in the example below.
-
-```python
-from typing import Dict
-
-from alsek import Broker, task
-from alsek.storage.backends.redis import RedisBackend
-from alsek.storage.backends.disk import DiskCacheBackend
-from alsek.storage.result import ResultStore
-
-redis_backend = RedisBackend()
-disk_cache_backend = DiskCacheBackend()
-
-broker = Broker(redis_backend)
-result_store = ResultStore(disk_cache_backend)
-
-@task(broker, result_store=result_store)
-def valuable_output() -> Dict[str, int]:
-    return {"a": 1, "b": 2, "c": 3}
-
-message = valuable_output.generate()
-result = result_store.get(message)
-
-print(result)
-# {"a": 1, "b": 2, "c": 3}
 ```
 
 !!! warning
@@ -697,10 +650,10 @@ from random import randint
 from apscheduler.triggers.interval import IntervalTrigger
 
 from alsek import Broker, task
-from alsek.storage.backends.disk import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 from alsek.storage.result import ResultStore
 
-backend = DiskCacheBackend
+backend = RedisBackend()
 broker = Broker(backend)
 result_storage = ResultStore(backend)
 
@@ -781,9 +734,9 @@ simultaneity across a distributed application to a single task, as shown here:
 
 ```python
 from alsek import Lock, task
-from alsek.storage.backends.disk import DiskCacheBackend
+from alsek.storage.backends.redis.standard import RedisBackend
 
-backend = DiskCacheBackend()
+backend = RedisBackend()
 
 @task(...)
 def send_data() -> None:
@@ -821,10 +774,98 @@ for message in consumer.stream():
     Consumers backoff following one or more passes over the backend that 
     do not yield any ready messages. By default, `LinearBackoff()` is used.
 
+
+## Worker Pools
+
+Alsek provides two distinct worker pool implementations for processing tasks: `ThreadWorkerPool` and `ProcessWorkerPool`. Each offers different performance characteristics and scaling capabilities.
+
+### Thread Worker Pool
+
+The `ThreadWorkerPool` uses a hierarchical architecture with process groups that each manage multiple threads:
+
+```python
+from alsek import Broker
+from alsek.core.worker.thread import ThreadWorkerPool
+from alsek.storage.backends.redis import RedisBackend
+
+backend = RedisBackend()
+broker = Broker(backend)
+
+pool = ThreadWorkerPool(
+    tasks=[task_a, task_b],  # tasks to process
+    n_threads=8,             # threads per process group
+    n_processes=4,           # maximum number of process groups
+)
+pool.run()
+```
+
+Key features of the `ThreadWorkerPool`:
+
+* **Elastic Scaling**: Automatically creates new process groups as needed and prunes them when they're no longer required
+* **Hierarchical Design**: Each process group manages its own set of threads
+* **Total Capacity**: The maximum number of concurrent tasks is `n_threads × n_processes`
+* **Resource Efficiency**: Ideal for I/O-bound tasks or when lower overhead is desired
+
+The `ThreadWorkerPool` will dynamically scale up to `n_processes` process groups, each managing up to `n_threads` threads, for a maximum capacity of `n_threads × n_processes`. When a message needs to be processed, it is assigned to an available process group, which then executes it on one of its threads.
+
+### Process Worker Pool
+
+The `ProcessWorkerPool` uses a direct approach where each task runs in its own dedicated process:
+
+```python
+from alsek import Broker
+from alsek.core.worker.process import ProcessWorkerPool
+from alsek.storage.backends.redis import RedisBackend
+
+backend = RedisBackend()
+broker = Broker(backend)
+
+pool = ProcessWorkerPool(
+    tasks=[task_a, task_b],  # tasks to process
+    n_processes=4,           # maximum number of processes
+    prune_interval=100,      # milliseconds between prune scans
+)
+pool.run()
+```
+
+Key features of the `ProcessWorkerPool`:
+
+* **Process Isolation**: Each task runs in its own dedicated process
+* **Fixed Capacity**: Limited to a maximum of `n_processes` concurrent tasks
+* **Background Pruning**: Uses a background scheduler to periodically prune spent futures
+* **Resource Safety**: Ideal for CPU-bound tasks or when process isolation is necessary
+
+The `ProcessWorkerPool` will execute each task in its own dedicated process, up to the maximum of `n_processes` concurrent processes. This offers stronger isolation between tasks but with slightly higher overhead compared to threads.
+
+### Performance Considerations
+
+When choosing between worker pool types, consider:
+
+1. **I/O vs CPU Bound Tasks**: For I/O-bound tasks (e.g., network requests, database operations), `ThreadWorkerPool` often offers better performance. For CPU-bound tasks, `ProcessWorkerPool` can better utilize multiple cores.
+
+2. **Memory Usage**: `ThreadWorkerPool` is typically more memory-efficient as threads share memory within their process group.
+
+3. **Isolation Needs**: If tasks need strong isolation from each other, `ProcessWorkerPool` provides better separation.
+
+4. **Elasticity**: If your workload has variable demand, `ThreadWorkerPool`'s elastic scaling may be more efficient.
+
+5. **Shutdown Reliability**: `ProcessWorkerPool` offers more robust shutdown logic since it can directly terminate processes, avoiding potential GIL-related issues where a thread might never relinquish control and prevent proper shutdown (see above).
+
+!!! note
+    Both worker pool types use timeouts to manage hanging tasks and provide similar retry and backoff capabilities.
+
+!!! warning
+    For tasks using `mechanism='thread'`, be aware of Python's Global Interpreter Lock (GIL) which can limit true parallelism within a single process group.
+
 ## CLI
 
 Alsek's command line interface (CLI) provides an easy way to bring a pool of
 workers online to process tasks for which we can provide the definition. 
+
+Alsek offers two types of worker pools:
+
+* `thread-pool`: Uses a hierarchical architecture with process groups that each manage multiple threads
+* `process-pool`: Uses a direct approach where each task runs in its own process
 
 Each worker pool relies on a `Consumer` to pull messages written to the backend by the `Broker`. 
 When the worker pool reaches capacity, it will pause the stream of data from the consumer. 
@@ -841,7 +882,11 @@ is located in the current working directory in a file titled `my_task.py`.
 Then, starting a worker pool against this task can be accomplished by running:
 
 ```shell
-alsek my_tasks
+# For a process-based worker pool
+alsek process_pool my_tasks
+
+# For a thread-based worker pool
+alsek thread_pool my_tasks
 ```
 
 #### Nested files
@@ -859,7 +904,7 @@ Starting a pool with this kind of structure can be accomplished by passing
 the dot-separated "path" to the file: 
 
 ```shell
-alsek my_project.my_tasks
+alsek process_pool my_project.my_tasks
 ```
 
 #### Recursive
@@ -868,36 +913,69 @@ We can also simply specify the directory where the task definitions live,
 and it will be scanned recursively in order to recover _all_ task definitions.
 
 ```shell
-alsek my_project
+alsek thread_pool my_project
 ```
 
 ### Advanced options
 
 Alsek's CLI includes several dials to achieve fine-grain control over the worker pool.
-We won't cover all of them here, but there are at least three worth highlighting.
+We won't cover all of them here, but there are at least a few worth highlighting.
 
-The first is the `-qu`/`--queues` option. This allows one to limit the queues
-which will be consumed by the worker pool. It can be set using a comma-separated list.
+#### Queue Selection
+
+The `-qu`/`--queues` option allows you to limit the queues which will be consumed by the worker pool. 
+It can be set using a comma-separated list.
 
 ```shell
-alsek my_project -qu queue_a
+alsek process_pool my_project -qu queue_a
 ```
 
 ```shell
-alsek my_project -qu queue_a,queue_b,queue_z
+alsek thread_pool my_project -qu queue_a,queue_b,queue_z
 ```
 
-The `--max_threads` and `--max_processes` options are also noteworthy.
-These options provide control over the maximum number of threads and 
-processes that can run on the worker pool, respectively. The total number 
-of workers in the pool is determined by the sum of these two numbers.
+#### Worker Capacity
+
+##### Thread-based Worker Pools
+
+For thread-based worker pools, you can control both the number of threads per process group and 
+the maximum number of process groups:
 
 ```shell
-alsek my_project --max_threads 8
+# Configure 8 threads per process group
+alsek thread-pool my_project --n_threads 8
+
+# Configure a maximum of 4 process groups
+alsek thread-pool my_project --n_processes 4
 ```
 
+The total maximum capacity of a thread-based worker pool is `n_threads × n_processes`.
+
+Thread pools support elastic scaling, automatically creating new process groups up to the configured maximum
+as needed, and pruning them when no longer needed.
+
+##### Process-based Worker Pools
+
+For process-based worker pools, you can control the maximum number of concurrent processes:
+
 ```shell
-alsek my_project --max_processes 2
+# Configure a maximum of 4 processes
+alsek process-pool my_project --n_processes 4
+```
+
+#### Performance Tuning
+
+Both worker pool types support additional performance tuning options:
+
+```shell
+# Configure slot wait interval (milliseconds to wait when pool is full)
+alsek thread_pool my_project --slot_wait_interval 50
+
+# For process-based worker pools, configure prune interval
+alsek process_pool my_project --prune_interval 100
+
+# For thread-based worker pools, wait for thread exit to mark as complete
+alsek thread_pool my_project --complete_only_on_thread_exit
 ```
 
 !!! note

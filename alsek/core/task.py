@@ -19,17 +19,17 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from alsek._defaults import (
+from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
+from alsek.core.broker import Broker
+from alsek.core.message import Message
+from alsek.core.status import TERMINAL_TASK_STATUSES, StatusTracker, TaskStatus
+from alsek.defaults import (
     DEFAULT_MAX_RETRIES,
     DEFAULT_MECHANISM,
     DEFAULT_QUEUE,
     DEFAULT_TASK_TIMEOUT,
     DEFAULT_TTL,
 )
-from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
-from alsek.core.broker import Broker
-from alsek.core.message import Message
-from alsek.core.status import TERMINAL_TASK_STATUSES, StatusTracker, TaskStatus
 from alsek.exceptions import RevokedError, SchedulingError, ValidationError
 from alsek.storage.result import ResultStore
 from alsek.types import SUPPORTED_MECHANISMS, SupportedMechanismType
@@ -173,20 +173,44 @@ class Task:
 
         self._deferred: bool = False
 
-    def _serialize(self) -> dict[str, Any]:
+    def serialize(self) -> dict[str, Any]:
         settings = gather_init_params(self, ignore=("broker",))
+
+        # Broker
         settings["broker"] = gather_init_params(self.broker, ignore=("backend",))
-        settings["broker"]["backend"] = self.broker.backend._encode()
+        settings["broker"]["backend"] = self.broker.backend.encode()
+
+        # Status Tracker
+        if self.status_tracker:
+            settings["status_tracker"] = self.status_tracker.serialize()
+
+        # Result Store
+        if self.result_store:
+            settings["result_store"] = self.result_store.serialize()
+
         return dict(task=self.__class__, settings=settings)
 
     @staticmethod
-    def _deserialize(data: dict[str, Any]) -> Task:
+    def deserialize(data: dict[str, Any]) -> Task:
         def unwind_settings(settings: dict[str, Any]) -> dict[str, Any]:
             backend_data = dill.loads(settings["broker"]["backend"])
+
+            # Broker
             settings["broker"]["backend"] = backend_data["backend"]._from_settings(
                 backend_data["settings"]
             )
             settings["broker"] = Broker(**settings["broker"])
+
+            # Status Tracker
+            if status_tracker_settings := settings.get("status_tracker"):
+                settings["status_tracker"] = StatusTracker.deserialize(status_tracker_settings)  # fmt: skip
+
+            # Result Store
+            if result_store_settings := settings.get("result_store"):
+                settings["result_store"] = ResultStore.deserialize(
+                    result_store_settings
+                )
+
             return settings
 
         rebuilt_task = data["task"](**unwind_settings(data["settings"]))
@@ -213,7 +237,17 @@ class Task:
     def __call__(self, *args: Any, **kwargs: Any) -> Any:
         return self.function(*args, **kwargs)
 
-    def _update_status(self, message: Message, status: TaskStatus) -> None:
+    def update_status(self, message: Message, status: TaskStatus) -> None:
+        """Update the status of a message.
+
+        Args:
+            message (Message): message to update the status of.
+            status (TaskStatus): status to update the message to.
+
+        Returns:
+            None
+
+        """
         if self.status_tracker:
             log.debug(f"Setting status of '{message.uuid}' to {status}...")
             self.status_tracker.set(message, status=status)
@@ -353,7 +387,7 @@ class Task:
             self.cancel_defer()
         elif submit:
             self._submit(message, **options)
-            self._update_status(message, status=TaskStatus.SUBMITTED)
+            self.update_status(message, status=TaskStatus.SUBMITTED)
             self.on_submit(message)
         return message
 
@@ -536,7 +570,7 @@ class Task:
             log.info("Message is already terminal: %s", message.summary)
             return
         elif skip_if_running and not self.status_tracker:
-            raise AttributeError("`skip_if_running` requires `status_tracker` to be set")
+            raise AttributeError("`skip_if_running` requires `status_tracker` to be set")  # fmt: skip
         elif skip_if_running and (
             (status_update := self.status_tracker.get(message))
             and status_update.status == TaskStatus.RUNNING
@@ -556,7 +590,7 @@ class Task:
                 traceback=None,
             ).as_dict()
         )
-        self._update_status(message, status=TaskStatus.FAILED)
+        self.update_status(message, status=TaskStatus.FAILED)
         self.broker.fail(message)
 
     def is_revoked(self, message: Message) -> bool:
@@ -642,8 +676,8 @@ class TriggerTask(Task):
         self.scheduler = BackgroundScheduler()
         self.scheduler.start()
 
-    def _serialize(self) -> dict[str, Any]:
-        serialized_task = super()._serialize()
+    def serialize(self) -> dict[str, Any]:
+        serialized_task = super().serialize()
         serialized_task["settings"]["trigger"] = self.trigger
         return serialized_task
 
@@ -660,7 +694,7 @@ class TriggerTask(Task):
                 message=message,
                 broker=self.broker,
                 on_submit=self.on_submit,
-                callback_op=partial(self._update_status, status=TaskStatus.SUBMITTED),
+                callback_op=partial(self.update_status, status=TaskStatus.SUBMITTED),
                 options=options,
             ),
             trigger=self.trigger,
@@ -773,9 +807,9 @@ def task(
 
     Examples:
         >>> from alsek import Broker, task
-        >>> from alsek.storage.backends.disk import DiskCacheBackend
+        >>> from alsek.storage.backends.redis.standard import RedisBackend
 
-        >>> backend = DiskCacheBackend()
+        >>> backend = RedisBackend()
         >>> broker = Broker(backend)
 
         >>> @task(broker)

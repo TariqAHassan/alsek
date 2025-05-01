@@ -7,38 +7,26 @@
 from __future__ import annotations
 
 import logging
-import os
 from abc import ABC, abstractmethod
 from copy import deepcopy
 from platform import python_implementation
-from threading import Event, Thread
+from threading import Thread
 from typing import Any, Type, cast
 
 import dill
 
 from alsek import Message
+from alsek.core import Event, Process, Queue
 from alsek.core.status import TaskStatus
 from alsek.core.task import Task
-from alsek.exceptions import RevokedError
+from alsek.exceptions import RevokedError, TerminationError
+from alsek.utils.decorators import suppress_exception
 from alsek.utils.logging import get_logger, setup_logging
 from alsek.utils.parsing import parse_exception
 from alsek.utils.system import thread_raise
 from alsek.utils.temporal import utcnow_timestamp_ms
 
 log = logging.getLogger(__name__)
-
-MULTIPROCESSING_BACKEND = os.getenv("ALSEK_MULTIPROCESSING_BACKEND", "standard").strip()
-
-if MULTIPROCESSING_BACKEND == "standard":
-    from multiprocessing import Process, Queue
-
-    log.info("Using standard multiprocessing backend.")
-elif MULTIPROCESSING_BACKEND == "torch":
-    from torch.multiprocessing import Process, Queue  # type: ignore
-
-    log.info("Using torch multiprocessing backend.")
-else:
-    raise ImportError(f"Invalid multiprocessing backend '{MULTIPROCESSING_BACKEND}'")
 
 
 def _generate_callback_message(
@@ -55,37 +43,86 @@ def _generate_callback_message(
 
 
 def _process_future_encoder(task: Task, message: Message) -> bytes:
-    return cast(bytes, dill.dumps((task._serialize(), message)))
+    return cast(bytes, dill.dumps((task.serialize(), message)))
 
 
 def _process_future_decoder(encoded_data: bytes) -> tuple[Task, Message]:
     task_data, message = dill.loads(encoded_data)
-    return Task._deserialize(task_data), cast(Message, message)
+    return Task.deserialize(task_data), cast(Message, message)
 
 
-def _retry_future_handler(
+def _handle_retry(
     task: Task,
     message: Message,
     exception: BaseException,
+    update_exception_on_message: bool = True,
+) -> None:
+    if update_exception_on_message:
+        message.update(exception_details=parse_exception(exception).as_dict())
+
+    try:
+        task.on_retry(message, exception=exception)
+    except BaseException:  # noqa
+        log.critical("Error encountered with `on_retry()`", exc_info=True)
+
+    task.broker.retry(message)
+    task.update_status(message, status=TaskStatus.RETRYING)
+
+
+def _handle_failure(
+    task: Task,
+    message: Message,
+    exception: BaseException,
+    update_exception_on_message: bool = True,
+) -> None:
+    if update_exception_on_message:
+        message.update(exception_details=parse_exception(exception).as_dict())
+
+    try:
+        task.on_failure(message, exception=exception)
+    except BaseException:  # noqa
+        log.critical("Error encountered with `on_failure()`", exc_info=True)
+
+    task.broker.fail(message)
+    task.update_status(message, status=TaskStatus.FAILED)
+
+
+def _error_encountered_future_handler(
+    task: Task,
+    message: Message,
+    exception: BaseException,
+    update_exception_on_message: bool = True,
 ) -> None:
     if task.is_revoked(message):
-        task.on_revocation(message, exception=exception, result=None)
+        try:
+            task.on_revocation(message, exception=exception, result=None)
+        except BaseException:  # noqa
+            log.critical("Error encountered with `on_revocation()`", exc_info=True)
         return None
 
     if task.do_retry(message, exception=exception):
-        task.on_retry(message, exception=exception)
-        task.broker.retry(message)
-        task._update_status(message, status=TaskStatus.RETRYING)
-    else:
+        _handle_retry(
+            task=task,
+            message=message,
+            exception=exception,
+            update_exception_on_message=update_exception_on_message,
+        )
+    elif not task.broker.in_dlq(message):
         log.error("Retries exhausted for %s.", message.summary)
-        task.broker.fail(message)
-        task._update_status(message, status=TaskStatus.FAILED)
-        task.on_failure(message, exception=exception)
+        _handle_failure(
+            task=task,
+            message=message,
+            exception=exception,
+            update_exception_on_message=update_exception_on_message,
+        )
 
 
 def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
     if task.is_revoked(message):
-        task.on_revocation(message, exception=None, result=result)
+        try:
+            task.on_revocation(message, exception=None, result=result)
+        except BaseException:  # noqa
+            log.critical("Error encountered with `on_revocation()`", exc_info=True)
         return None
 
     if task.result_store:
@@ -100,8 +137,11 @@ def _complete_future_handler(task: Task, message: Message, result: Any) -> None:
             )
         )
     task.broker.ack(message)
-    task._update_status(message, status=TaskStatus.SUCCEEDED)
-    task.on_success(message, result=result)
+    task.update_status(message, status=TaskStatus.SUCCEEDED)
+    try:
+        task.on_success(message, result=result)
+    except BaseException:  # noqa
+        log.critical("Error encountered with `on_success()`", exc_info=True)
 
 
 class TaskFuture(ABC):
@@ -152,13 +192,23 @@ class TaskFuture(ABC):
         """
         raise NotImplementedError()
 
+    @suppress_exception(
+        TerminationError,
+        on_suppress=lambda error: log.info("Termination Detected"),
+    )
     def _revocation_scan(self, check_interval: int | float = 0.5) -> None:
         while not self.complete and not self._revocation_stop_event.is_set():
             if self.task.is_revoked(self.message):
                 log.info(
-                    "Evicting '%s' due to task revocation...", self.message.summary
+                    "Evicting '%s' due to task revocation...",
+                    self.message.summary,
                 )
                 self.stop(RevokedError)
+                _handle_failure(
+                    task=self.task,
+                    message=self.message,
+                    exception=RevokedError(f"Task '{self.task.name}' was revoked."),
+                )
                 log.info("Evicted '%s'.", self.message.summary)
                 break
             self._revocation_stop_event.wait(check_interval)
@@ -187,10 +237,10 @@ class ThreadTaskFuture(TaskFuture):
             as complete when the thread formally exits (i.e., is not alive).
             Pro: more rigorous — avoids marking the task complete until the thread fully terminates.
             Useful when you need strict control over thread lifecycle (e.g., for resource management).
-            Con: may lead to hanging if the thread doesn’t terminate quickly (e.g., when using
-            `thread_raise()` during revocation). Can also temporarily result in more than the
-            allotted number of threads running, since a future is only removed from the pool
-            after the thread is confirmed dead.
+            Con: may lead to hanging if the thread doesn't terminate quickly (e.g., when using
+            `thread_raise()` during revocation). This can also temporarily result in more than the
+            allotted number of threads running, because it entails treating a thread as
+            expired regardless of its actual status.
 
     """
 
@@ -225,7 +275,7 @@ class ThreadTaskFuture(TaskFuture):
 
     def _wrapper(self) -> None:
         log.info("Received %s...", self.message.summary)
-        self.task._update_status(self.message, status=TaskStatus.RUNNING)
+        self.task.update_status(self.message, status=TaskStatus.RUNNING)
 
         result, exception = None, None
         try:
@@ -251,7 +301,11 @@ class ThreadTaskFuture(TaskFuture):
         if self._wrapper_exit:
             log.debug("Thread task future finished after termination.")
         elif exception is not None:
-            _retry_future_handler(self.task, self.message, exception=exception)
+            _error_encountered_future_handler(
+                task=self.task,
+                message=self.message,
+                exception=exception,
+            )
         else:
             _complete_future_handler(self.task, self.message, result=result)
 
@@ -283,7 +337,7 @@ class ThreadTaskFuture(TaskFuture):
         thread_raise(self._thread.ident, exception=exception)
         if not self._wrapper_exit:
             self._wrapper_exit = True
-            _retry_future_handler(
+            _error_encountered_future_handler(
                 self.task,
                 message=self.message,
                 exception=exception(f"Stopped thread {self._thread.ident}"),
@@ -336,7 +390,7 @@ class ProcessTaskFuture(TaskFuture):
         setup_logging(log_level)
         task, message = _process_future_decoder(encoded_data)
         log.info("Received %s...", message.summary)
-        task._update_status(message, status=TaskStatus.RUNNING)
+        task.update_status(message, status=TaskStatus.RUNNING)
 
         result, exception = None, None
         try:
@@ -362,7 +416,12 @@ class ProcessTaskFuture(TaskFuture):
         if not wrapper_exit_queue.empty():
             log.debug("Process task future finished after termination.")
         elif exception is not None:
-            _retry_future_handler(task, message=message, exception=exception)
+            _error_encountered_future_handler(
+                task,
+                message=message,
+                exception=exception,
+                update_exception_on_message=False,
+            )
         else:
             _complete_future_handler(task, message=message, result=result)
 
@@ -395,4 +454,4 @@ class ProcessTaskFuture(TaskFuture):
                 raise exception(f"Stopped process {self._process.ident}")  # type: ignore
             except BaseException as error:
                 log.error("Error processing %s.", self.message.summary, exc_info=True)
-                _retry_future_handler(self.task, self.message, exception=error)
+                _error_encountered_future_handler(self.task, self.message, exception=error)

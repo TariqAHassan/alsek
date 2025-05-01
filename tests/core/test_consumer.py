@@ -4,31 +4,28 @@
 
 """
 
-from typing import Any, Iterable, Optional, Union
+from typing import Optional, Union
 
 import pytest
 
 from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
-from alsek.core.consumer import Consumer, Message, _ConsumptionMutex
+from alsek.core.consumer import Consumer, Message, MessageMutex
 from alsek.storage.backends import Backend
-from alsek.utils.namespacing import (
-    get_message_name,
-    get_priority_namespace_from_message,
-)
+from alsek.utils.namespacing import get_message_name, get_message_signature
 
 
-def test_consumption_mutex_acquisition(rolling_backend: Backend) -> None:
+def test_message_mutex_acquisition(rolling_backend: Backend) -> None:
     message = Message("task")
-    with _ConsumptionMutex(message, backend=rolling_backend) as lock:
+    with MessageMutex(message, backend=rolling_backend) as lock:
         assert lock.acquire()
     assert lock.held
 
 
-def test_consumption_mutex_settings(rolling_backend: Backend) -> None:
+def test_message_mutex_settings(rolling_backend: Backend) -> None:
     message = Message("task")
-    with _ConsumptionMutex(message, backend=rolling_backend) as lock:
-        assert lock.name == message.uuid
+    with MessageMutex(message, backend=rolling_backend) as lock:
+        assert lock.name == get_message_signature(message)
         assert lock.ttl >= message.timeout
 
 
@@ -81,7 +78,11 @@ def test_poll(messages_to_add: int, rolling_broker: Broker) -> None:
 
     actual = set()
     for msg in consumer._poll():
-        assert Lock(msg._lock, backend=rolling_broker.backend).held
+        assert Lock(
+            msg.linked_lock["name"],
+            backend=rolling_broker.backend,
+            owner_id=msg.linked_lock["owner_id"],
+        ).held
         actual.add(msg.uuid)
 
     expected = {m.uuid for m in messages}
@@ -115,11 +116,10 @@ def test_stream(messages_to_add: int, rolling_broker: Broker) -> None:
 
 
 if __name__ == "__main__":
-    from alsek.storage.backends.disk import DiskCacheBackend
     from alsek.storage.backends.redis import RedisBackend
 
     messages_to_add = 2
     subset = None
-    rolling_broker = Broker(DiskCacheBackend())
+    rolling_broker = Broker(RedisBackend())
     rolling_broker.backend.clear_namespace()
     sorted(rolling_broker.backend.scan("queues:*"))

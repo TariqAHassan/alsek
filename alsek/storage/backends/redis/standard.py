@@ -11,7 +11,7 @@ from typing import Any, Iterable, Optional, Type, Union, cast
 import dill
 from redis import ConnectionPool, Redis
 
-from alsek._defaults import DEFAULT_NAMESPACE
+from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.serialization import JsonSerializer, Serializer
 from alsek.types import Empty
@@ -86,7 +86,7 @@ class RedisBackend(Backend):
             serializer=self.serializer,
         )
 
-    def _encode(self) -> bytes:
+    def encode(self) -> bytes:
         data: dict[str, Any] = dict(
             backend=self.__class__,
             settings=gather_init_params(self, ignore=("conn",)),

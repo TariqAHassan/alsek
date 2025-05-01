@@ -13,7 +13,7 @@ from typing import Any, Callable, Iterable, Optional, Type, Union, cast
 
 import dill
 
-from alsek._defaults import DEFAULT_NAMESPACE
+from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.serialization import JsonSerializer, Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
@@ -75,7 +75,7 @@ class BaseBackend(ABC):
             serializer=self.serializer,
         )
 
-    def _encode(self) -> bytes:
+    def encode(self) -> bytes:
         data = dict(backend=self.__class__, settings=gather_init_params(self))
         return cast(bytes, dill.dumps(data))
 
