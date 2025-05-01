@@ -102,7 +102,7 @@ class BaseWorkerPool(Consumer, ABC):
             "s" if len(self.queues) > 1 else "",
         )
         for queue, tasks in _gather_task_names(self.tasks).items():
-            log.info(
+            log.debug(
                 "Tasks on queue '%s' by default: %s",
                 queue,
                 smart_join(sorted(tasks), limit=None),
