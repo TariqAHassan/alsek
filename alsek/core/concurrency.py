@@ -13,7 +13,7 @@ from types import TracebackType
 from typing import Optional, Type, cast, Any, get_args, Literal
 
 import redis_lock
-from sympy.core.cache import cached_property
+from functools import cached_property
 
 from socket import gethostname
 from alsek.storage.backends import Backend
