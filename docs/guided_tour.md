@@ -883,10 +883,10 @@ Then, starting a worker pool against this task can be accomplished by running:
 
 ```shell
 # For a process-based worker pool
-alsek process_pool my_tasks
+alsek process-pool my_tasks
 
 # For a thread-based worker pool
-alsek thread_pool my_tasks
+alsek thread-pool my_tasks
 ```
 
 #### Nested files
@@ -904,7 +904,7 @@ Starting a pool with this kind of structure can be accomplished by passing
 the dot-separated "path" to the file: 
 
 ```shell
-alsek process_pool my_project.my_tasks
+alsek process-pool my_project.my_tasks
 ```
 
 #### Recursive
@@ -913,7 +913,7 @@ We can also simply specify the directory where the task definitions live,
 and it will be scanned recursively in order to recover _all_ task definitions.
 
 ```shell
-alsek thread_pool my_project
+alsek thread-pool my_project
 ```
 
 ### Advanced options
@@ -927,11 +927,11 @@ The `-qu`/`--queues` option allows you to limit the queues which will be consume
 It can be set using a comma-separated list.
 
 ```shell
-alsek process_pool my_project -qu queue_a
+alsek process-pool my_project -qu queue_a
 ```
 
 ```shell
-alsek thread_pool my_project -qu queue_a,queue_b,queue_z
+alsek thread-pool my_project -qu queue_a,queue_b,queue_z
 ```
 
 #### Worker Capacity
@@ -969,13 +969,13 @@ Both worker pool types support additional performance tuning options:
 
 ```shell
 # Configure slot wait interval (milliseconds to wait when pool is full)
-alsek thread_pool my_project --slot_wait_interval 50
+alsek thread-pool my_project --slot_wait_interval 50
 
 # For process-based worker pools, configure prune interval
-alsek process_pool my_project --prune_interval 100
+alsek process-pool my_project --prune_interval 100
 
 # For thread-based worker pools, wait for thread exit to mark as complete
-alsek thread_pool my_project --complete_only_on_thread_exit
+alsek thread-pool my_project --complete_only_on_thread_exit
 ```
 
 !!! note
