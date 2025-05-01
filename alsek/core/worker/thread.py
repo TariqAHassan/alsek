@@ -256,7 +256,7 @@ class ThreadWorkerPool(BaseWorkerPool):
             "Starting thread-based worker pool with up to %s workers (%s max thread%s and %s max process%s)...",
             self.n_threads * self.n_processes,
             self.n_threads,
-            "" if self.n_threads == 1 else "es",
+            "" if self.n_threads == 1 else "s",
             self.n_processes,
             "" if self.n_processes == 1 else "es",
         )
