@@ -11,7 +11,7 @@ by setting `ALSEK_MULTIPROCESSING_BACKEND` to `'torch'` prior to starting the wo
 ```shell
 export ALSEK_MULTIPROCESSING_BACKEND=torch
 
-alsek my_project
+alsek thread-pool my_project
 ```
 
 ## Capturing Status Updates
