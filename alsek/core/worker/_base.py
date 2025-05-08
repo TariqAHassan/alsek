@@ -11,7 +11,7 @@ from abc import ABC, abstractmethod
 from collections import defaultdict
 from typing import Any, Optional
 
-from alsek import Message
+from alsek import Message, __version__
 from alsek.core.consumer import Consumer
 from alsek.core.task import Task
 from alsek.core.worker._helpers import (
@@ -107,6 +107,7 @@ class BaseWorkerPool(Consumer, ABC):
                 queue,
                 smart_join(sorted(tasks), limit=None),
             )
+        log.info("Running Alsek v%s.", __version__)
         log.info("Worker pool online.")
 
     @abstractmethod
