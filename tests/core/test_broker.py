@@ -183,5 +183,5 @@ def test_sync(fail: bool, rolling_broker: Broker) -> None:
     if fail:
         rolling_broker.fail(message)
 
-    actual = rolling_broker.sync(message)
+    actual = rolling_broker.sync_from_backend(message)
     assert isinstance(actual, Message)

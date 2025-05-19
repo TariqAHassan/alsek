@@ -262,7 +262,7 @@ def test_process_task_timeout_causes_failed_status(rolling_broker: Broker) -> No
 
     assert status.wait_for(msg, TaskStatus.FAILED, timeout=5)
     assert isinstance(
-        rolling_broker.sync(msg).exception_details.as_exception(), TimeoutError
+        rolling_broker.sync_from_backend(msg).exception_details.as_exception(), TimeoutError
     )
 
 
