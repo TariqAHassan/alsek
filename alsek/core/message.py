@@ -18,6 +18,7 @@ from alsek.core.concurrency import Lock
 from alsek.defaults import DEFAULT_MECHANISM, DEFAULT_QUEUE, DEFAULT_TASK_TIMEOUT
 from alsek.storage.backends import Backend
 from alsek.types import SupportedMechanismType
+from alsek.utils.helpers import dict_merge_update_into_origin
 from alsek.utils.parsing import ExceptionDetails
 from alsek.utils.printing import auto_repr
 from alsek.utils.temporal import fromtimestamp_ms, utcnow_timestamp_ms
@@ -354,6 +355,28 @@ class Message:
                 setattr(self, k, v)
             else:
                 raise KeyError(f"Unsupported key '{k}'")
+        return self
+
+    def add_to_metadata(self, **data: Any) -> Message:
+        """Adds metadata to the current instance by merging provided data into the
+        existing metadata. The function performs a non-inplace merge operation,
+        ensuring the original metadata is not directly altered unless returned
+        and reassigned.
+
+        Args:
+            **data: Key-value pairs to merge into the existing metadata.
+
+        Returns:
+            Message: The updated instance with the merged metadata.
+        """
+        if not data:
+            raise ValueError("No data provided to add to metadata.")
+
+        self.metadata = dict_merge_update_into_origin(
+            origin=self.metadata or dict(),
+            update=data,
+            inplace=False,
+        )
         return self
 
     def duplicate(self, uuid: Optional[str] = None) -> Message:
