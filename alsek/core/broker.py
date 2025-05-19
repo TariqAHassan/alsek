@@ -233,3 +233,46 @@ class Broker:
         except KeyError:
             data = self.backend.get(get_dlq_message_name(message), default=Empty)
         return Message(**data)
+
+    @magic_logger(
+        before=lambda message: log.info("Syncing %s to backend...", message.summary),
+        after=lambda input_: log.info(
+            "Synced %s to backend.", input_["message"].summary
+        ),
+    )
+    def sync_to_backend(self, message: Message) -> None:
+        """Synchronize the data persisted in the backend with the current state of
+        ``message`` held in memory.
+
+        This method is the logical inverse of ``sync_from_backend``; any changes
+        made to the ``message`` instance are written back to the backend so that
+        future reads reflect the most up-to-date information.
+
+        Args:
+            message (Message): an Alsek message whose current state should be
+                persisted.
+
+        Returns:
+            None
+
+        Warning:
+            * This method will mutate ``message`` by updating it
+              regardless of whether a lock is linked to it.
+              You are responsible for ensuring that any mutation
+              of the message's underlying data is only performed
+              by the lock owner.
+
+        """
+        # Determine which key (regular queue or DLQ) should be updated
+        if self.exists(message):
+            key = get_message_name(message)
+        elif self.in_dlq(message):
+            key = get_dlq_message_name(message)
+        else:
+            raise MessageDoesNotExistsError(
+                f"Message '{message.uuid}' not found in backend"
+            )
+
+        # Persist the updated message data. We intentionally omit a TTL value
+        # to preserve the existing expiry associated with ``key`` (if any).
+        self.backend.set(key, value=message.data)
