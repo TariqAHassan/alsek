@@ -148,8 +148,6 @@ class Message:
         else:
             self.created_at, self.updated_at = created_at, updated_at
 
-        self.linked_lock: Optional[LinkedLock] = None
-
     @property
     def exception_details(self) -> Optional[ExceptionDetails]:
         """information about any exception raised."""
