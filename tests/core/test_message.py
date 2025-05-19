@@ -12,7 +12,7 @@ import pytest
 
 from alsek.core.backoff import ConstantBackoff
 from alsek.core.concurrency import Lock
-from alsek.core.message import Message
+from alsek.core.message import Message, LinkedLock
 from alsek.storage.backends import Backend
 from alsek.utils.parsing import ExceptionDetails
 from alsek.utils.temporal import utcnow_timestamp_ms
@@ -39,6 +39,7 @@ from alsek.utils.temporal import utcnow_timestamp_ms
         Message("task", callback_message_data=Message("task").data),
         Message("task", backoff_settings=ConstantBackoff().settings),
         Message("task", mechanism="thread"),
+        Message("task", linked_lock=LinkedLock(name="lock", owner_id="uuid-0")),
     ],
 )
 def test_data(message: Message) -> None:
