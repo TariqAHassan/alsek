@@ -213,7 +213,10 @@ class Broker:
 
     @magic_logger(
         before=lambda message: log.info("Syncing from backend %s...", message.summary),
-        after=lambda input_: log.info("Synced from backend %s.", input_["message"].summary),
+        after=lambda input_: log.info(
+            "Synced from backend %s.",
+            input_["message"].summary,
+        ),
     )
     def sync_from_backend(self, message: Message) -> Message:
         """Synchronize a message's internal data with that in the backend.
