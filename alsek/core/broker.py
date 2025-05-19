@@ -215,7 +215,7 @@ class Broker:
         before=lambda message: log.info("Syncing %s...", message.summary),
         after=lambda input_: log.info("Synced %s.", input_["message"].summary),
     )
-    def sync(self, message: Message) -> Message:
+    def sync_from_backend(self, message: Message) -> Message:
         """Synchronize a message's internal data with that in the backend.
 
         Args:

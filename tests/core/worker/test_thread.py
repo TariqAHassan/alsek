@@ -600,9 +600,9 @@ def test_revocation_mid_flight(
 
     assert not outfile.exists()
     assert status_tracker.wait_for(msg, TaskStatus.FAILED, timeout=10)
-    assert rolling_broker.sync(msg).exception_details
+    assert rolling_broker.sync_from_backend(msg).exception_details
     assert isinstance(
-        rolling_broker.sync(msg).exception_details.as_exception(),
+        rolling_broker.sync_from_backend(msg).exception_details.as_exception(),
         RevokedError,
     )
 
@@ -786,7 +786,7 @@ def test_process_shutdown_causes_termination_error(rolling_broker: Broker) -> No
     assert status_tracker.get(msg).status == TaskStatus.FAILED
 
     # Verify we got a TerminationError
-    task_result = rolling_broker.sync(msg)
+    task_result = rolling_broker.sync_from_backend(msg)
     assert task_result.exception_details is not None
     exception = task_result.exception_details.as_exception()
     assert isinstance(exception, TerminationError)
