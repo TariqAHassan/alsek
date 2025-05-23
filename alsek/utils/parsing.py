@@ -54,7 +54,7 @@ class ExceptionDetails(NamedTuple):
         """Return parsed exception information as a Python exception.
 
         Args:
-            strict (bool): if ``True`` do no coerce failures to
+            strict (bool): if ``True`` do not coerce failures to
                 import the correct error
 
         Returns:
