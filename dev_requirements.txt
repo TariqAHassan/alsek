@@ -11,3 +11,5 @@ pytest_redis>=3.1.2
 pytest-timeout>=2.3.1
 schema==0.7.4
 typeguard>=4.3.0
+SQLAlchemy>=2.0.0
+psycopg2-binary>=2.9.0

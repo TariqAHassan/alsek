@@ -3,3 +3,5 @@ click==8.1.7
 dill>=0.3.9
 redis>=5.2.1
 python-redis-lock>=4.0.0
+SQLAlchemy>=2.0.0
+psycopg2-binary>=2.9.0
