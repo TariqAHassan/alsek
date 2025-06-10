@@ -121,11 +121,11 @@ class JsonSerializer(Serializer):
         if self.compression_level is None:
             return text
 
-        original = text.encode("utf-8")
-        compressed = gzip.compress(original, compresslevel=self.compression_level)
+        text_encoded = text.encode("utf-8")
+        compressed = gzip.compress(text_encoded, compresslevel=self.compression_level)
         return (
             b64encode(compressed).decode("utf-8")
-            if len(compressed) < len(original)
+            if len(compressed) < len(text_encoded)
             else text
         )
 
