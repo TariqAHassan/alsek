@@ -11,7 +11,7 @@ from functools import cached_property
 from typing import Optional, Union, cast, Iterator, Any, Type, Iterable
 
 import dill
-from sqlalchemy import Engine, create_engine, select, delete
+from sqlalchemy import Engine, create_engine, select, delete, text
 from sqlalchemy.orm import Session
 
 from alsek.defaults import DEFAULT_NAMESPACE
@@ -21,6 +21,7 @@ from alsek.storage.backends.postgres._tables import (
     KeyValue as KeyValueRecord,
     Priority as PriorityRecord,
 )
+from alsek.storage.backends.postgres._utils import PostgresPubSubListener
 from alsek.storage.serialization import Serializer, JsonSerializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
@@ -31,7 +32,7 @@ from alsek.utils.temporal import utcnow_timestamp_ms
 class PostgresBackend(Backend):
     """PostgreSQL backend powered by SQLAlchemy."""
 
-    SUPPORTS_PUBSUB: bool = False
+    SUPPORTS_PUBSUB: bool = True
 
     def __init__(
         self,
@@ -166,7 +167,11 @@ class PostgresBackend(Backend):
             )
             obj = session.scalars(stmt).first()
             if obj is None:
-                obj = PriorityRecord(key=full_key, unique_id=unique_id, priority=priority)
+                obj = PriorityRecord(
+                    key=full_key,
+                    unique_id=unique_id,
+                    priority=priority,
+                )
                 session.add(obj)
             else:
                 obj.priority = priority
@@ -204,6 +209,50 @@ class PostgresBackend(Backend):
             )
             session.execute(stmt)
             session.commit()
+
+    def pub(self, channel: str, value: Any) -> None:
+        """Publish a message to a PostgreSQL channel using NOTIFY.
+
+        Args:
+            channel (str): The channel name to publish to
+            value (Any): The value to publish (will be serialized)
+
+        Returns:
+            None
+
+        """
+        with self._session() as session:
+            # Serialize the value
+            serialized_value = self.serializer.forward(value)
+
+            # Use NOTIFY to publish the message
+            # PostgreSQL NOTIFY has a payload limit of 8000 bytes
+            if len(serialized_value) > 8000:
+                raise ValueError(
+                    "Message payload too large for PostgreSQL NOTIFY (max 8000 bytes)"
+                )
+
+            stmt = text("NOTIFY :channel, :payload")
+            session.execute(stmt, {"channel": channel, "payload": serialized_value})
+            session.commit()
+
+    def sub(self, channel: str) -> Iterable[str | dict[str, Any]]:
+        """Subscribe to a PostgreSQL channel using LISTEN.
+
+        Args:
+            channel (str): The channel name to subscribe to
+
+        Returns:
+            Iterable[str | dict[str, Any]]: An iterable of messages received on the channel
+
+        """
+        # Create a direct psycopg2 connection from the engine URL
+        listener = PostgresPubSubListener(
+            channel=channel,
+            url=self.engine.url,
+            serializer=self.serializer,
+        )
+        yield from listener.run()
 
     def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
         with self._session() as session:
