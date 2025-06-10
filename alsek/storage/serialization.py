@@ -16,7 +16,16 @@ from alsek.utils.printing import auto_repr
 
 
 class Serializer(ABC):
-    """Base Serializer Class."""
+    """Base Serializer Class.
+
+    Args:
+        compression_level (optional[int]): gzip compression level to use.
+            Set to ``None`` to disable compression.
+
+    Notes:
+        * Compression not guaranteed to reduce payload size
+
+    """
 
     def __init__(self, compression_level: Optional[int] = None) -> None:
         self.compression_level = compression_level
@@ -108,6 +117,32 @@ class Serializer(ABC):
 class JsonSerializer(Serializer):
     """JSON serialization."""
 
+    def _maybe_compress(self, text: str) -> str:
+        if self.compression_level is None:
+            return text
+
+        original = text.encode("utf-8")
+        compressed = gzip.compress(original, compresslevel=self.compression_level)
+        return (
+            b64encode(compressed).decode("utf-8")
+            if len(compressed) < len(original)
+            else text
+        )
+
+    @staticmethod
+    def _maybe_decompress(value: str) -> str:
+        try:
+            raw = b64decode(value.encode("utf-8"))
+        except Exception:  # not base64
+            return value
+
+        if raw.startswith(b"\x1f\x8b"):  # gzip magic bytes
+            try:
+                return gzip.decompress(raw).decode("utf-8")
+            except OSError:  # not actually gzipped
+                pass
+        return value
+
     def encode(self, value: str) -> str:
         """Encode a value using gzip if compression_level is set.
 
@@ -118,15 +153,7 @@ class JsonSerializer(Serializer):
             str: encoded value (base64 encoded) or original value
 
         """
-        if self.compression_level is None:
-            return value
-
-        # Compress and encode as base64
-        compressed = gzip.compress(
-            value.encode("utf-8"),
-            compresslevel=self.compression_level,
-        )
-        return b64encode(compressed).decode("utf-8")
+        return self._maybe_compress(value)
 
     def decode(self, value: Any) -> Any:
         """Decode the given value.
@@ -138,15 +165,9 @@ class JsonSerializer(Serializer):
             Any: decoded value
 
         """
-        if self.compression_level is None:
-            return value
-
-        try:
-            # Decode base64 and decompress
-            compressed_bytes = b64decode(value.encode("utf-8"))
-            return gzip.decompress(compressed_bytes).decode("utf-8")
-        except Exception:  # noqa
-            return value  # fallback
+        if value is None:
+            return None
+        return self._maybe_decompress(value)
 
     @staticmethod
     def forward_engine(obj: Any) -> Any:
@@ -180,7 +201,7 @@ class JsonSerializer(Serializer):
 class BinarySerializer(Serializer):
     """Binary serialization with optional gzip compression."""
 
-    def _compress(self, data: bytes) -> bytes:
+    def _maybe_compress(self, data: bytes) -> bytes:
         if self.compression_level is not None:
             compressed_data = gzip.compress(data, compresslevel=self.compression_level)
             return compressed_data if len(compressed_data) < len(data) else data
@@ -206,7 +227,7 @@ class BinarySerializer(Serializer):
             str: encoded value
 
         """
-        return b64encode(self._compress(value)).decode("utf-8")
+        return b64encode(self._maybe_compress(value)).decode("utf-8")
 
     def decode(self, value: str | None) -> Optional[bytes]:
         """Decode a value using gzip if compression_level is set.
