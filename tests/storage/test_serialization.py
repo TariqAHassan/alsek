@@ -4,7 +4,7 @@
 
 """
 
-from typing import Any
+from typing import Any, Optional
 
 import pytest
 
@@ -31,5 +31,13 @@ _expand_to_all_serializers = expand_params_factory(_ALL_SERIALIZERS)
         {"a": [1, 2, 3]},
     ),
 )
-def test_serializer(value: Any, serializer: Serializer) -> None:
-    assert serializer.reverse(serializer.forward(value)) == value
+@pytest.mark.parametrize(
+    "compression_level",
+    [None, *range(10)]
+)
+def test_serializer(value: Any, serializer: Serializer, compression_level: Optional[int]) -> None:
+    serializer.compression_level = compression_level
+
+    fwd = serializer.forward(value)
+    rev = serializer.reverse(fwd)
+    assert rev == value

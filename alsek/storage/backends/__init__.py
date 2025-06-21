@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 import re
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Iterable, Optional, Type, Union, cast
+from typing import Any, Callable, Iterable, Optional, Type, Union, cast, AsyncIterable
 
 import dill
 
@@ -63,10 +63,10 @@ class BaseBackend(ABC):
     def __init__(
         self,
         namespace: str = DEFAULT_NAMESPACE,
-        serializer: Serializer = JsonSerializer(),
+        serializer: Optional[Serializer] = None,
     ) -> None:
         self.namespace = namespace
-        self.serializer = serializer
+        self.serializer = serializer or JsonSerializer(compression_level=9)
 
     def __repr__(self) -> str:
         return auto_repr(
@@ -80,7 +80,7 @@ class BaseBackend(ABC):
         return cast(bytes, dill.dumps(data))
 
     @classmethod
-    def _from_settings(cls, settings: dict[str, Any]) -> Backend:
+    def _from_settings(cls, settings: dict[str, Any]) -> BaseBackend:
         return cls(**settings)
 
     def in_namespace(self, name: str) -> bool:
@@ -406,22 +406,22 @@ class AsyncBackend(BaseBackend, ABC):
     async def pub(self, channel: str, value: Any) -> None:
         raise NotImplementedError()
 
-    async def sub(self, channel: str) -> Iterable[str | dict[str, Any]]:
+    async def sub(self, channel: str) -> AsyncIterable[str | dict[str, Any]]:
         raise NotImplementedError()
 
     @abstractmethod
-    async def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
+    async def scan(self, pattern: Optional[str] = None) -> AsyncIterable[str]:
         raise NotImplementedError()
 
     async def count(self, pattern: Optional[str] = None) -> int:
         count = 0
-        async for _ in self.scan(pattern):
+        async for _ in self.scan(pattern):  # noqa
             count += 1
         return count
 
     async def clear_namespace(self, raise_on_error: bool = True) -> int:
         count = 0
-        async for name in self.scan():
+        async for name in self.scan():  # noqa
             try:
                 await self.delete(name, missing_ok=False)
                 count += 1
