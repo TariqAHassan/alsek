@@ -40,7 +40,7 @@ class PostgresAsyncBackend(AsyncBackend):
 
     def __init__(
         self,
-        engine: Union[str, AsyncEngine, LazyClient] = None,
+        engine: Union[str, AsyncEngine, LazyClient],
         namespace: str = DEFAULT_NAMESPACE,
         serializer: Optional[Serializer] = None,
     ) -> None:
