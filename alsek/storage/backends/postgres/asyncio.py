@@ -96,7 +96,6 @@ class PostgresAsyncBackend(AsyncBackend):
             backend=self.__class__,
             settings=gather_init_params(self, ignore=("engine",)),
         )
-        # For async engines, we need to handle the URL differently
         data["settings"]["engine"] = str(self.engine.url)
         return cast(bytes, dill.dumps(data))
 
