@@ -14,6 +14,7 @@ import dill
 from asyncpg.pgproto.pgproto import timedelta
 from sqlalchemy import Engine, create_engine, select, delete, text
 from sqlalchemy.orm import Session
+from sqlalchemy import URL
 
 from datetime import datetime
 from alsek.defaults import DEFAULT_NAMESPACE
@@ -39,7 +40,7 @@ class PostgresBackend(Backend):
 
     def __init__(
         self,
-        engine: Union[str, Engine, LazyClient],
+        engine: Union[str, URL, Engine, LazyClient],
         namespace: str = DEFAULT_NAMESPACE,
         serializer: Optional[Serializer] = None,
     ) -> None:
@@ -50,13 +51,13 @@ class PostgresBackend(Backend):
 
     @staticmethod
     def _connection_parser(
-        engine: Union[str, Engine, LazyClient]
+        engine: Union[str, URL, Engine, LazyClient]
     ) -> Union[Engine, LazyClient]:
         if isinstance(engine, LazyClient):
             return engine
         elif isinstance(engine, Engine):
             return engine
-        elif isinstance(engine, str):
+        elif isinstance(engine, (str, URL)):
             return create_engine(engine)
         else:
             raise ValueError(f"Unsupported `engine` {engine}")
