@@ -169,8 +169,8 @@ class PostgresBackend(Backend):
             session.commit()
 
     def priority_add(self, key: str, unique_id: str, priority: int | float) -> None:
+        full_key = self.full_name(key)
         with self.session() as session:
-            full_key = self.full_name(key)
             stmt = select(PriorityRecord).where(
                 PriorityRecord.id == full_key,
                 PriorityRecord.unique_id == unique_id,
@@ -188,20 +188,19 @@ class PostgresBackend(Backend):
             session.commit()
 
     def priority_get(self, key: str) -> Optional[str]:
+        full_key = self.full_name(key)
         with self.session() as session:
-            full_key = self.full_name(key)
             stmt = (
                 select(PriorityRecord)
                 .where(PriorityRecord.id == full_key)
                 .order_by(PriorityRecord.priority.asc())
-                .limit(1)
             )
             obj = session.scalars(stmt).one_or_none()
             return obj.unique_id if obj else None
 
     def priority_iter(self, key: str) -> Iterable[str]:
+        full_key = self.full_name(key)
         with self.session() as session:
-            full_key = self.full_name(key)
             stmt = (
                 select(PriorityRecord)
                 .where(PriorityRecord.id == full_key)
@@ -211,8 +210,8 @@ class PostgresBackend(Backend):
                 yield obj.unique_id
 
     def priority_remove(self, key: str, unique_id: str) -> None:
+        full_key = self.full_name(key)
         with self.session() as session:
-            full_key = self.full_name(key)
             stmt = delete(PriorityRecord).where(
                 PriorityRecord.id == full_key,
                 PriorityRecord.unique_id == unique_id,
