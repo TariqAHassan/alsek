@@ -103,14 +103,14 @@ class PostgresBackend(Backend):
 
     def exists(self, name: str) -> bool:
         with self.session() as session:
-            obj: Optional[KeyValueRecord] = session.get(
-                KeyValueRecord,
-                self.full_name(name),
+            stmt = select(1).where(
+                KeyValueRecord.id == self.full_name(name),
+                or_(
+                    KeyValueRecord.expires_at.is_(None),
+                    KeyValueRecord.expires_at > utcnow(),
+                ),
             )
-            if obj is None:
-                return False
-            else:
-                return not obj.is_expired
+            return session.scalars(stmt).first() is not None
 
     def set(
         self,

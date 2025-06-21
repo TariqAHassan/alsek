@@ -106,13 +106,15 @@ class PostgresAsyncBackend(AsyncBackend):
 
     async def exists(self, name: str) -> bool:
         async with self.session() as session:
-            obj: Optional[KeyValueRecord] = await session.get(
-                KeyValueRecord, self.full_name(name)
+            stmt = select(1).where(
+                KeyValueRecord.id == self.full_name(name),
+                or_(
+                    KeyValueRecord.expires_at.is_(None),
+                    KeyValueRecord.expires_at > utcnow(),
+                ),
             )
-            if obj is None:
-                return False
-            else:
-                return not obj.is_expired
+            result = await session.execute(stmt)
+            return result.scalars().first() is not None
 
     async def set(
         self,
