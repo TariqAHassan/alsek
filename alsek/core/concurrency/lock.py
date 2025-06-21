@@ -8,14 +8,13 @@ from __future__ import annotations
 
 import os
 import threading
-from functools import cached_property
 from socket import gethostname
 from types import TracebackType
-from abc import ABC, abstractmethod
-from typing import Literal, Optional, Type, get_args, Callable, Any
+from typing import Literal, Optional, Type, get_args, Any
 
 import redis_lock
 
+from alsek.core.concurrency._lock_interfaces import RedisLockInterface
 from alsek.storage.backends import Backend
 from alsek.storage.backends.redis import RedisBackend
 from alsek.utils.printing import auto_repr
@@ -31,78 +30,6 @@ def _get_process_lock_owner_id() -> str:
 
 def _get_thread_lock_owner_id() -> str:
     return f"{_get_process_lock_owner_id()}:thread:{threading.get_ident()}"
-
-
-def _resolve_owner_id(owner_id: str | Callable[[], str]) -> str:
-    if isinstance(owner_id, str):
-        return owner_id
-    elif callable(owner_id):
-        result = owner_id()
-        if isinstance(result, str):
-            return result
-        else:
-            raise TypeError(f"owner_id callable returned invalid result '{result}'")
-    else:
-        raise TypeError(f"Unable to handle type '{type(owner_id)}'")
-
-
-class LockInterface(ABC):
-    def __init__(
-        self,
-        name: str,
-        backend: RedisBackend,
-        ttl: Optional[int],
-        owner_id: str,  # noqa
-    ) -> None:
-        self.name = name
-        self.backend = backend
-        self.ttl = ttl
-        self.owner_id = owner_id
-
-        self.validate()
-
-    @property
-    def full_name(self) -> str:
-        return f"{self.backend.namespace}:{self.name}"
-
-    def validate(self) -> None:
-        if not self.name:
-            raise ValueError("`name` must be provided.")
-
-    @abstractmethod
-    def get_holder_id(self) -> str:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def acquire(self, blocking: bool = True, timeout: Optional[int] = None) -> bool:
-        raise NotImplementedError()
-
-    @abstractmethod
-    def release(self) -> None:
-        raise NotImplementedError()
-
-
-class RedisLockInterface(LockInterface):
-    @cached_property
-    def _engine(self) -> redis_lock.Lock:
-        return redis_lock.Lock(
-            self.backend.conn,
-            name=self.full_name,
-            expire=None if self.ttl is None else round(self.ttl / 1000),
-            id=self.owner_id,
-        )
-
-    def get_holder_id(self) -> str:
-        return self._engine.get_owner_id()
-
-    def acquire(self, blocking: bool = True, timeout: Optional[int] = None) -> bool:
-        return self._engine.acquire(
-            blocking=blocking,
-            timeout=timeout,
-        )
-
-    def release(self) -> None:
-        self._engine.release()
 
 
 class Lock:

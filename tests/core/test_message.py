@@ -11,7 +11,7 @@ from typing import Any, Optional
 import pytest
 
 from alsek.core.backoff import ConstantBackoff
-from alsek.core.concurrency import Lock
+from alsek.core.concurrency.lock import Lock
 from alsek.core.message import Message, LinkedLock
 from alsek.storage.backends import Backend
 from alsek.utils.parsing import ExceptionDetails

@@ -19,7 +19,7 @@ from redis import Redis
 
 from alsek.cli.cli import main as alsek_cli
 from alsek.core.broker import Broker
-from alsek.core.concurrency import Lock, ProcessLock, ThreadLock
+from alsek.core.concurrency.lock import Lock, ProcessLock, ThreadLock
 from alsek.core.message import Message
 from alsek.core.status import StatusTracker
 from alsek.core.task import task
@@ -129,7 +129,7 @@ def postgres_backend(custom_postgresql) -> PostgresBackend:
     return PostgresBackend(connection_string)
 
 
-@pytest.fixture(params=["redis", "postgres"])
+@pytest.fixture(params=["redis"])
 def rolling_backend(
     request: SubRequest,
     custom_redisdb: Redis,

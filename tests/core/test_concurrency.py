@@ -14,7 +14,7 @@ import dill
 import pytest
 import redis_lock
 
-from alsek.core.concurrency import Lock, ProcessLock, ThreadLock
+from alsek.core.concurrency.lock import Lock, ProcessLock, ThreadLock
 from alsek.storage.backends import Backend
 
 

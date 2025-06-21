@@ -9,7 +9,7 @@ from typing import Optional, Union
 import pytest
 
 from alsek.core.broker import Broker
-from alsek.core.concurrency import Lock
+from alsek.core.concurrency.lock import Lock
 from alsek.core.consumer import Consumer, Message, MessageMutex
 from alsek.storage.backends import Backend
 from alsek.utils.namespacing import get_message_name, get_message_signature

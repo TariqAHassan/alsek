@@ -14,7 +14,7 @@ from uuid import uuid1
 import redis_lock
 
 from alsek.core.backoff import ExponentialBackoff, settings2backoff
-from alsek.core.concurrency import Lock
+from alsek.core.concurrency.lock import Lock
 from alsek.defaults import DEFAULT_MECHANISM, DEFAULT_QUEUE, DEFAULT_TASK_TIMEOUT
 from alsek.storage.backends import Backend
 from alsek.types import SupportedMechanismType
