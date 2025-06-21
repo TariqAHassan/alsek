@@ -115,8 +115,13 @@ class PostgresAsyncPubSubListener(BasePostgresPubSubListen):
             password=self.url.password,
         )
 
-    def _notification_handler(self, connection, pid, channel, payload):
-        """Handle incoming notifications from PostgreSQL"""
+    def _notification_handler(
+        self,
+        connection: asyncpg.Connection,  # noqa
+        pid: int,  # noqa
+        channel: str,  # noqa
+        payload: str,
+    ) -> None:
         try:
             self._notification_queue.put_nowait(payload)
         except asyncio.QueueFull:
