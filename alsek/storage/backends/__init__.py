@@ -63,10 +63,10 @@ class BaseBackend(ABC):
     def __init__(
         self,
         namespace: str = DEFAULT_NAMESPACE,
-        serializer: Serializer = JsonSerializer(),
+        serializer: Optional[Serializer] = None,
     ) -> None:
         self.namespace = namespace
-        self.serializer = serializer
+        self.serializer = serializer or JsonSerializer(compression_level=9)
 
     def __repr__(self) -> str:
         return auto_repr(
