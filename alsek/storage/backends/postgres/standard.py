@@ -263,8 +263,8 @@ class PostgresBackend(Backend):
         yield from listener.listen()
 
     def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
+        like_pattern = self.full_name(pattern or "%").replace("*", "%")
         with self.session() as session:
-            like_pattern = self.full_name(pattern or "%").replace("*", "%")
             stmt = select(KeyValueRecord)
             if like_pattern:
                 stmt = stmt.where(KeyValueRecord.id.like(like_pattern))
