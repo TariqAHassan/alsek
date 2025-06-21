@@ -11,7 +11,7 @@ from functools import cached_property
 from typing import Optional, Union, cast, Iterator, Any, Type, Iterable
 
 import dill
-from sqlalchemy import Engine, create_engine, select, delete, text
+from sqlalchemy import Engine, create_engine, select, delete, text, or_
 from sqlalchemy.orm import Session
 from sqlalchemy import URL
 
@@ -28,7 +28,7 @@ from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
-from alsek.utils.temporal import compute_expiry_datetime
+from alsek.utils.temporal import compute_expiry_datetime, utcnow
 
 
 class PostgresBackend(Backend):
@@ -144,10 +144,14 @@ class PostgresBackend(Backend):
         default: Optional[Union[Any, Type[Empty]]] = None,
     ) -> Any:
         with self.session() as session:
-            obj: Optional[KeyValueRecord] = session.get(
-                KeyValueRecord,
-                self.full_name(name),
+            stmt = select(KeyValueRecord).where(
+                KeyValueRecord.id == self.full_name(name),
+                or_(
+                    KeyValueRecord.expires_at.is_(None),
+                    KeyValueRecord.expires_at > utcnow(),
+                ),
             )
+            obj: Optional[KeyValueRecord] = session.scalars(stmt).one_or_none()
             if obj is None or obj.is_expired:
                 if default is Empty or isinstance(default, Empty):
                     raise KeyError(f"No name '{name}' found")
@@ -171,7 +175,7 @@ class PostgresBackend(Backend):
                 PriorityRecord.id == full_key,
                 PriorityRecord.unique_id == unique_id,
             )
-            obj = session.scalars(stmt).first()
+            obj = session.scalars(stmt).one_or_none()
             if obj is None:
                 obj = PriorityRecord(
                     id=full_key,
@@ -192,7 +196,7 @@ class PostgresBackend(Backend):
                 .order_by(PriorityRecord.priority.asc())
                 .limit(1)
             )
-            obj = session.scalars(stmt).first()
+            obj = session.scalars(stmt).one_or_none()
             return obj.unique_id if obj else None
 
     def priority_iter(self, key: str) -> Iterable[str]:
