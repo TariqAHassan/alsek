@@ -9,7 +9,6 @@ from enum import Enum, unique
 
 from sqlalchemy import Column, String, DateTime, text, Text, DOUBLE_PRECISION
 from sqlalchemy.dialects.postgresql import ENUM as PgEnum  # noqa
-from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import declarative_base
 
 from alsek.utils.temporal import utcnow
@@ -37,6 +36,11 @@ class KeyValue(Base):
     value = Column(
         Text,
     )
+    type = Column(
+        PgEnum(KeyValueType),
+        index=True,
+        nullable=False,
+    )
     created_at = Column(
         DateTime(timezone=False),
         server_default=text("(now() AT TIME ZONE 'UTC')"),
@@ -47,11 +51,6 @@ class KeyValue(Base):
         DateTime(timezone=False),
         nullable=True,
         index=True,
-    )
-    type = Column(
-        PgEnum(KeyValueType),
-        index=True,
-        nullable=False,
     )
     owner_id = Column(
         String,
