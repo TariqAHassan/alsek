@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from sqlalchemy import Column, String, DateTime, text, Integer, Text
+from sqlalchemy import Column, String, DateTime, text, Integer, Text, DOUBLE_PRECISION
 from sqlalchemy.orm import declarative_base
 
 from alsek.utils.temporal import utcnow
@@ -56,7 +56,9 @@ class Priority(Base):
         index=True,
     )
     priority = Column(
-        Integer,
+        # Redis uses Double Precision for priority so we do the same here
+        # See https://redis.io/docs/latest/commands/zadd/.
+        DOUBLE_PRECISION,
         index=True,
     )
 
