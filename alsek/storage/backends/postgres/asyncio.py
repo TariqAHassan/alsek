@@ -27,7 +27,7 @@ from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
-from alsek.utils.temporal import utcnow, compute_expiry_datetime
+from alsek.utils.temporal import compute_expiry_datetime
 
 log = logging.getLogger(__name__)
 
