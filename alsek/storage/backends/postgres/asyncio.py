@@ -270,8 +270,8 @@ class PostgresAsyncBackend(AsyncBackend):
             yield message
 
     async def scan(self, pattern: Optional[str] = None) -> AsyncIterable[str]:
+        like_pattern = self.full_name((pattern or "%").replace("*", "%"))
         async with self.session() as session:
-            like_pattern = self.full_name(pattern or "%").replace("*", "%")
             stmt = select(KeyValueRecord)
             if like_pattern:
                 stmt = stmt.where(KeyValueRecord.id.like(like_pattern))
