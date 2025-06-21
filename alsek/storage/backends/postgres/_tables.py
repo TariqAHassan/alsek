@@ -8,6 +8,7 @@ Base = declarative_base()
 
 class KeyValue(Base):
     __tablename__ = "alsek_key_value"
+    __table_args__ = {"schema": "alsek"}
 
     name = Column(String, primary_key=True)
     value = Column(String)
@@ -16,6 +17,7 @@ class KeyValue(Base):
 
 class Priority(Base):
     __tablename__ = "alsek_priority"
+    __table_args__ = {"schema": "alsek"}
 
     key = Column(String, primary_key=True)
     unique_id = Column(String, primary_key=True)
