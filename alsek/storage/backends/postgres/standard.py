@@ -15,8 +15,6 @@ from sqlalchemy import Engine, create_engine, select, delete, text
 from sqlalchemy.orm import Session
 from sqlalchemy import URL
 
-from datetime import datetime
-
 from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.backends.postgres.tables import (
