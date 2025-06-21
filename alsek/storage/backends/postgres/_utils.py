@@ -63,7 +63,8 @@ class PostgresPubSubListener(BasePostgresPubSubListen):
         except Exception:  # noqa
             pass
 
-    def _stream(self, conn: psycopg2.extensions.connection) -> Iterable[Any]:
+    def _stream(self) -> Iterable[Any]:
+        conn = self._get_connection()
         conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = conn.cursor()
 
@@ -86,8 +87,7 @@ class PostgresPubSubListener(BasePostgresPubSubListen):
             self._cleanup(conn, cursor=cursor)
 
     def listen(self) -> Iterable[Any]:
-        conn = self._get_connection()
-        yield from self._stream(conn)
+        yield from self._stream()
 
 
 class PostgresAsyncPubSubListener(BasePostgresPubSubListen):
@@ -124,19 +124,18 @@ class PostgresAsyncPubSubListener(BasePostgresPubSubListen):
             pass
 
     async def _cleanup(self, conn: asyncpg.Connection) -> None:
-        if conn.is_closed():
-            return
-
         try:
-            await conn.remove_listener(
-                self.channel,
-                callback=self._notification_handler,
-            )
-            await conn.close()
+            if not conn.is_closed():
+                await conn.remove_listener(
+                    self.channel,
+                    callback=self._notification_handler,
+                )
+                await conn.close()
         except Exception:  # noqa
             pass
 
-    async def _stream(self, conn: asyncpg.Connection) -> AsyncIterable[Any]:
+    async def _stream(self) -> AsyncIterable[Any]:
+        conn = await self._get_connection()
         await conn.add_listener(self.channel, callback=self._notification_handler)
 
         # Keep the connection alive and yield notifications
@@ -159,6 +158,5 @@ class PostgresAsyncPubSubListener(BasePostgresPubSubListen):
             await self._cleanup(conn)
 
     async def listen(self) -> AsyncIterable[Any]:
-        conn = await self._get_connection()
-        async for item in self._stream(conn):
+        async for item in self._stream():
             yield item
