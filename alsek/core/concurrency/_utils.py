@@ -11,6 +11,7 @@ from typing import Optional
 
 import redis_lock
 
+from alsek.storage.backends import Backend
 from alsek.storage.backends.redis import RedisBackend
 
 
@@ -18,7 +19,7 @@ class BaseLockInterface(ABC):
     def __init__(
         self,
         name: str,
-        backend: RedisBackend,
+        backend: Backend,
         ttl: Optional[int],
         owner_id: str,  # noqa
     ) -> None:
@@ -51,10 +52,24 @@ class BaseLockInterface(ABC):
 
 
 class RedisLockInterface(BaseLockInterface):
+    def __init__(
+        self,
+        name: str,
+        backend: RedisBackend,
+        ttl: Optional[int],
+        owner_id: str,  # noqa
+    ) -> None:
+        super().__init__(
+            name=name,
+            backend=backend,
+            ttl=ttl,
+            owner_id=owner_id,
+        )
+
     @cached_property
     def _engine(self) -> redis_lock.Lock:
         return redis_lock.Lock(
-            self.backend.conn,
+            self.backend.conn,  # noqa
             name=self.full_name,
             expire=None if self.ttl is None else round(self.ttl / 1000),
             id=self.owner_id,
