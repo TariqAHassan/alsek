@@ -174,7 +174,7 @@ class PostgresBackend(Backend):
         with self.session() as session:
             full_key = self.full_name(key)
             stmt = select(PriorityRecord).where(
-                PriorityRecord.key == full_key,
+                PriorityRecord.id == full_key,
                 PriorityRecord.unique_id == unique_id,
             )
             obj = session.scalars(stmt).first()
@@ -194,7 +194,7 @@ class PostgresBackend(Backend):
             full_key = self.full_name(key)
             stmt = (
                 select(PriorityRecord)
-                .where(PriorityRecord.key == full_key)
+                .where(PriorityRecord.id == full_key)
                 .order_by(PriorityRecord.priority.asc())
                 .limit(1)
             )
@@ -206,7 +206,7 @@ class PostgresBackend(Backend):
             full_key = self.full_name(key)
             stmt = (
                 select(PriorityRecord)
-                .where(PriorityRecord.key == full_key)
+                .where(PriorityRecord.id == full_key)
                 .order_by(PriorityRecord.priority.asc())
             )
             for obj in session.scalars(stmt):
@@ -216,7 +216,7 @@ class PostgresBackend(Backend):
         with self.session() as session:
             full_key = self.full_name(key)
             stmt = delete(PriorityRecord).where(
-                PriorityRecord.key == full_key,
+                PriorityRecord.id == full_key,
                 PriorityRecord.unique_id == unique_id,
             )
             session.execute(stmt)
@@ -271,7 +271,7 @@ class PostgresBackend(Backend):
             like_pattern = self.full_name(pattern or "%").replace("*", "%")
             stmt = select(KeyValueRecord)
             if like_pattern:
-                stmt = stmt.where(KeyValueRecord.name.like(like_pattern))
+                stmt = stmt.where(KeyValueRecord.id.like(like_pattern))
 
             for obj in session.scalars(stmt):
                 if (
@@ -280,5 +280,5 @@ class PostgresBackend(Backend):
                 ):
                     session.delete(obj)
                 else:
-                    yield self.short_name(obj.name)
+                    yield self.short_name(obj.id)
             session.commit()

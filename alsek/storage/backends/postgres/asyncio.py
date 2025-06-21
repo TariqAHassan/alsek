@@ -182,7 +182,7 @@ class PostgresAsyncBackend(AsyncBackend):
         async with self._session() as session:
             full_key = self.full_name(key)
             stmt = select(PriorityRecord).where(
-                PriorityRecord.key == full_key,
+                PriorityRecord.id == full_key,
                 PriorityRecord.unique_id == unique_id,
             )
             result = await session.execute(stmt)
@@ -203,7 +203,7 @@ class PostgresAsyncBackend(AsyncBackend):
             full_key = self.full_name(key)
             stmt = (
                 select(PriorityRecord)
-                .where(PriorityRecord.key == full_key)
+                .where(PriorityRecord.id == full_key)
                 .order_by(PriorityRecord.priority.asc())
                 .limit(1)
             )
@@ -216,7 +216,7 @@ class PostgresAsyncBackend(AsyncBackend):
             full_key = self.full_name(key)
             stmt = (
                 select(PriorityRecord)
-                .where(PriorityRecord.key == full_key)
+                .where(PriorityRecord.id == full_key)
                 .order_by(PriorityRecord.priority.asc())
             )
             result = await session.execute(stmt)
@@ -227,7 +227,7 @@ class PostgresAsyncBackend(AsyncBackend):
         async with self._session() as session:
             full_key = self.full_name(key)
             stmt = delete(PriorityRecord).where(
-                PriorityRecord.key == full_key,
+                PriorityRecord.id == full_key,
                 PriorityRecord.unique_id == unique_id,
             )
             await session.execute(stmt)
@@ -284,7 +284,7 @@ class PostgresAsyncBackend(AsyncBackend):
             like_pattern = self.full_name(pattern or "%").replace("*", "%")
             stmt = select(KeyValueRecord)
             if like_pattern:
-                stmt = stmt.where(KeyValueRecord.name.like(like_pattern))
+                stmt = stmt.where(KeyValueRecord.id.like(like_pattern))
 
             result = await session.execute(stmt)
             expired_objects = []
@@ -296,7 +296,7 @@ class PostgresAsyncBackend(AsyncBackend):
                 ):
                     expired_objects.append(obj)
                 else:
-                    yield self.short_name(obj.name)
+                    yield self.short_name(obj.id)
 
             # Clean up expired objects
             for obj in expired_objects:

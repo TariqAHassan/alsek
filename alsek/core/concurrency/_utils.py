@@ -36,7 +36,7 @@ class BaseLockInterface(ABC):
         self.validate()
 
     @property
-    def full_name(self) -> str:
+    def lock_id(self) -> str:
         return f"{self.namespace}:{self.name}"
 
     def validate(self) -> None:
@@ -76,7 +76,7 @@ class RedisLockInterface(BaseLockInterface):
     def _engine(self) -> redis_lock.Lock:
         return redis_lock.Lock(
             self.backend.conn,  # noqa
-            name=self.full_name,
+            name=self.lock_id,
             expire=None if self.ttl is None else round(self.ttl / 1000),
             id=self.owner_id,
         )
@@ -129,7 +129,7 @@ class PostgresLockInterface(BaseLockInterface):
         with self.backend.session() as session:
             lock_record: Optional[DistributedLock] = session.get(
                 DistributedLock,
-                self.full_name,
+                self.lock_id,
             )
             if lock_record is None:
                 return None
@@ -144,7 +144,7 @@ class PostgresLockInterface(BaseLockInterface):
         blocking: bool,
     ) -> Optional[DistributedLock]:
         query = session.query(DistributedLock).filter(
-            DistributedLock.name == self.full_name
+            DistributedLock.id == self.lock_id
         )
         if blocking:
             result = query.with_for_update().one_or_none()
@@ -167,7 +167,7 @@ class PostgresLockInterface(BaseLockInterface):
         current_time = utcnow_timestamp_ms()
         session.add(
             DistributedLock(
-                name=self.full_name,
+                id=self.lock_id,
                 owner_id=self.owner_id,
                 acquired_at=current_time,
                 expires_at=current_time + self.ttl or 0,
@@ -214,7 +214,7 @@ class PostgresLockInterface(BaseLockInterface):
             lock_record: Optional[DistributedLock] = (
                 session.query(DistributedLock)
                 .filter(
-                    DistributedLock.name == self.full_name,
+                    DistributedLock.id == self.lock_id,
                     DistributedLock.owner_id == self.owner_id,
                 )
                 .one_or_none()

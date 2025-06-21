@@ -121,7 +121,7 @@ class Lock:
     @property
     def full_name(self) -> str:
         """The full name of the lock including its namespace prefix."""
-        return self.lock_interface.full_name
+        return self.lock_interface.lock_id
 
     @property
     def holder(self) -> Optional[str]:
