@@ -287,10 +287,8 @@ class PostgresAsyncBackend(AsyncBackend):
             if like_pattern:
                 stmt = stmt.where(KeyValueRecord.id.like(like_pattern))
 
-            result = await session.execute(stmt)
-            expired_objects = []
-
-            for obj in result.scalars():
+            expired_objects = list()
+            for obj in (await session.execute(stmt)).scalars():
                 if (
                     obj.expires_at is not None
                     and obj.expires_at <= datetime.now(UTC)
