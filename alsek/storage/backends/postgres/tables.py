@@ -53,9 +53,10 @@ class KeyValue(Base):
         index=True,
         nullable=False,
     )
-    metadata_ = Column(
-        JSONB,
+    owner_id = Column(
+        String,
         nullable=True,
+        index=True,
     )
 
     @property
@@ -89,31 +90,5 @@ class Priority(Base):
         # Redis uses Double Precision for priority so we do the same here
         # See https://redis.io/docs/latest/commands/zadd/.
         DOUBLE_PRECISION,
-        index=True,
-    )
-
-
-class DistributedLock(Base):
-    __tablename__ = "distributed_lock"
-    __table_args__ = {"schema": SCHEMA_NAME}
-
-    id = Column(
-        String,
-        primary_key=True,
-    )
-    owner_id = Column(
-        String,
-        nullable=False,
-        index=True,
-    )
-    created_at = Column(
-        DateTime(timezone=False),
-        server_default=text("(now() AT TIME ZONE 'UTC')"),
-        nullable=False,
-        index=True,
-    )
-    expires_at = Column(
-        DateTime(timezone=False),
-        nullable=True,
         index=True,
     )

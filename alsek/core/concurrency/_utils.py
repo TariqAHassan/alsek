@@ -11,10 +11,14 @@ from functools import cached_property
 from typing import Optional, Literal
 
 import redis_lock
+from sqlalchemy import select, or_
 from sqlalchemy.orm import Session
 
 from alsek.exceptions import LockAlreadyAcquiredError, LockNotAcquiredError
-from alsek.storage.backends.postgres.tables import DistributedLock
+from alsek.storage.backends.postgres.tables import (
+    KeyValueType,
+    KeyValue as KeyValueRecord,
+)
 
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.backends.postgres import PostgresBackend
@@ -133,7 +137,7 @@ class PostgresLockInterface(BaseLockInterface):
 
     @staticmethod
     def _is_lock_expired(
-        lock_record: DistributedLock,
+        lock_record: KeyValueRecord,
         session: Session,
     ) -> bool:
         if lock_record.expires_at is not None and lock_record.expires_at <= utcnow():
@@ -145,10 +149,16 @@ class PostgresLockInterface(BaseLockInterface):
     def get_holder_id(self) -> Optional[str]:
         """Get the current holder of the lock."""
         with self.backend.session() as session:
-            lock_record: Optional[DistributedLock] = session.get(
-                DistributedLock,
-                self.lock_id,
-            )
+            lock_record: Optional[KeyValueRecord] = session.scalars(
+                select(KeyValueRecord).where(
+                    KeyValueRecord.id == self.lock_id,
+                    KeyValueRecord.type == KeyValueType.LOCK,
+                    or_(
+                        KeyValueRecord.expires_at.is_(None),
+                        KeyValueRecord.expires_at > utcnow(),
+                    ),
+                )
+            ).one_or_none()
             if lock_record is None:
                 return None
             elif self._is_lock_expired(lock_record, session):
@@ -160,9 +170,10 @@ class PostgresLockInterface(BaseLockInterface):
         self,
         session: Session,
         blocking: bool,
-    ) -> Optional[DistributedLock]:
-        query = session.query(DistributedLock).filter(
-            DistributedLock.id == self.lock_id
+    ) -> Optional[KeyValueRecord]:
+        query = session.query(KeyValueRecord).filter(
+            KeyValueRecord.id == self.lock_id,
+            KeyValueRecord.type == KeyValueType.LOCK,
         )
         if blocking:
             result = query.with_for_update().one_or_none()
@@ -170,7 +181,7 @@ class PostgresLockInterface(BaseLockInterface):
             result = query.with_for_update(nowait=True).one_or_none()
         return result
 
-    def _can_acquire_lock(self, lock_record: DistributedLock) -> bool:
+    def _can_acquire_lock(self, lock_record: KeyValueRecord) -> bool:
         if lock_record.expires_at is not None and lock_record.expires_at <= utcnow():
             return True
         elif lock_record.owner_id == self.owner_id:
@@ -180,16 +191,17 @@ class PostgresLockInterface(BaseLockInterface):
 
     def _create_new_lock(self, session: Session) -> bool:
         session.add(
-            DistributedLock(
+            KeyValueRecord(
                 id=self.lock_id,
-                owner_id=self.owner_id,
+                type=KeyValueType.LOCK,
                 expires_at=compute_expiry_datetime(self.ttl),
+                owner_id=self.owner_id,
             )
         )
         session.commit()
         return True
 
-    def _update_lock_ownership(self, lock_record: DistributedLock) -> None:
+    def _update_lock_ownership(self, lock_record: KeyValueRecord) -> None:
         lock_record.owner_id = self.owner_id
         lock_record.expires_at = compute_expiry_datetime(self.ttl)
 
@@ -230,11 +242,12 @@ class PostgresLockInterface(BaseLockInterface):
     def release(self) -> None:
         """Release the lock."""
         with self.backend.session() as session:
-            lock_record: Optional[DistributedLock] = (
-                session.query(DistributedLock)
+            lock_record: Optional[KeyValueRecord] = (
+                session.query(KeyValueRecord)
                 .filter(
-                    DistributedLock.id == self.lock_id,
-                    DistributedLock.owner_id == self.owner_id,
+                    KeyValueRecord.id == self.lock_id,
+                    KeyValueRecord.type == KeyValueType.LOCK,
+                    KeyValueRecord.owner_id == self.owner_id,
                 )
                 .one_or_none()
             )
