@@ -14,8 +14,13 @@ class KeyValue(Base):
     __tablename__ = "key_value"
     __table_args__ = {"schema": SCHEMA_NAME}
 
-    id = Column(String, primary_key=True)
-    value = Column(Text)
+    id = Column(
+        String,
+        primary_key=True,
+    )
+    value = Column(
+        Text,
+    )
     created_at = Column(
         DateTime(timezone=False),
         server_default=text("(now() AT TIME ZONE 'UTC')"),
