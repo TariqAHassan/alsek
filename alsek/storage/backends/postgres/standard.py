@@ -21,7 +21,7 @@ from alsek.storage.backends.postgres.tables import (
     Base,
     KeyValue as KeyValueRecord,
     Priority as PriorityRecord,
-    SCHEMA_NAME,
+    SCHEMA_NAME, KeyValueType,
 )
 from alsek.storage.backends.postgres._utils import PostgresPubSubListener
 from alsek.storage.serialization import Serializer
@@ -130,6 +130,7 @@ class PostgresBackend(Backend):
                 obj = KeyValueRecord(
                     id=full_name,
                     value=self.serializer.forward(value),
+                    type=KeyValueType.STANDARD,
                     expires_at=expires_at,
                 )
                 session.add(obj)
@@ -146,6 +147,7 @@ class PostgresBackend(Backend):
         with self.session() as session:
             stmt = select(KeyValueRecord).where(
                 KeyValueRecord.id == self.full_name(name),
+                KeyValueRecord.type == KeyValueType.STANDARD,
                 or_(
                     KeyValueRecord.expires_at.is_(None),
                     KeyValueRecord.expires_at > utcnow(),

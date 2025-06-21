@@ -1,6 +1,15 @@
-from __future__ import annotations
+"""
 
-from sqlalchemy import Column, String, DateTime, text, Integer, Text, DOUBLE_PRECISION
+    Tables
+
+"""
+
+from __future__ import annotations
+from enum import Enum, unique
+
+from sqlalchemy import Column, String, DateTime, text, Text, DOUBLE_PRECISION
+from sqlalchemy.dialects.postgresql import ENUM as PgEnum  # noqa
+from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import declarative_base
 
 from alsek.utils.temporal import utcnow
@@ -8,6 +17,13 @@ from alsek.utils.temporal import utcnow
 Base = declarative_base()
 
 SCHEMA_NAME: str = "alsek"
+
+
+@unique
+class KeyValueType(Enum):
+    STANDARD = "STANDARD"
+    PRIORITY = "PRIORITY"
+    LOCK = "LOCK"
 
 
 class KeyValue(Base):
@@ -31,6 +47,15 @@ class KeyValue(Base):
         DateTime(timezone=False),
         nullable=True,
         index=True,
+    )
+    type = Column(
+        PgEnum(KeyValueType),
+        index=True,
+        nullable=False,
+    )
+    metadata_ = Column(
+        JSONB,
+        nullable=True,
     )
 
     @property
