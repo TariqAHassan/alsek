@@ -14,7 +14,7 @@ import redis_lock
 from datetime import timedelta
 from sqlalchemy.orm import Session
 
-from alsek.exceptions import LockAlreadyAcquiredError
+from alsek.exceptions import LockAlreadyAcquiredError, LockNotAcquiredError
 from alsek.storage.backends.postgres.tables import DistributedLock
 
 from alsek.storage.backends.redis import RedisBackend
@@ -114,7 +114,10 @@ class RedisLockInterface(BaseLockInterface):
             ) from error
 
     def release(self) -> None:
-        self._engine.release()
+        try:
+            self._engine.release()
+        except redis_lock.NotAcquired as error:
+            raise LockNotAcquiredError(f"Lock '{self.lock_id}' not acquired") from error
 
 
 class PostgresLockInterface(BaseLockInterface):
@@ -247,3 +250,5 @@ class PostgresLockInterface(BaseLockInterface):
             if lock_record:
                 session.delete(lock_record)
                 session.commit()
+            else:
+                raise LockNotAcquiredError(f"Lock {self.lock_id} was not acquired")

@@ -47,3 +47,7 @@ class RevokedError(AlsekError):
 
 class LockAlreadyAcquiredError(AlsekError):
     """Lock already acquired."""
+
+
+class LockNotAcquiredError(AlsekError):
+    """Lock not acquired."""

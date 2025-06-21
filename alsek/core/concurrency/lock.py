@@ -12,14 +12,12 @@ from socket import gethostname
 from types import TracebackType
 from typing import Optional, Type, get_args, Any
 
-import redis_lock
-
 from alsek.core.concurrency._utils import (
     RedisLockInterface,
     PostgresLockInterface,
     IF_ALREADY_ACQUIRED_TYPE,
 )
-from alsek.exceptions import LockAlreadyAcquiredError
+from alsek.exceptions import LockAlreadyAcquiredError, LockNotAcquiredError
 from alsek.storage.backends import Backend
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.backends.postgres import PostgresBackend
@@ -186,7 +184,7 @@ class Lock:
         try:
             self.lock_interface.release()
             return True
-        except redis_lock.NotAcquired as error:
+        except LockNotAcquiredError as error:
             if raise_if_not_acquired:
                 raise error
             else:
