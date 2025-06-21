@@ -11,7 +11,6 @@ from functools import cached_property
 from typing import Optional, Literal
 
 import redis_lock
-from datetime import timedelta
 from sqlalchemy.orm import Session
 
 from alsek.exceptions import LockAlreadyAcquiredError, LockNotAcquiredError
@@ -19,7 +18,7 @@ from alsek.storage.backends.postgres.tables import DistributedLock
 
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.backends.postgres import PostgresBackend
-from alsek.utils.temporal import utcnow
+from alsek.utils.temporal import utcnow, get_expiry
 
 IF_ALREADY_ACQUIRED_TYPE = Literal["raise_error", "return_true", "return_false"]
 
@@ -42,10 +41,6 @@ class BaseLockInterface(ABC):
     @property
     def lock_id(self) -> str:
         return f"{self.namespace}:{self.name}"
-
-    @property
-    def _ttl_timedelta(self) -> timedelta:
-        return timedelta(milliseconds=self.ttl or 0)
 
     def validate(self) -> None:
         if not self.name:
@@ -190,7 +185,7 @@ class PostgresLockInterface(BaseLockInterface):
                 id=self.lock_id,
                 owner_id=self.owner_id,
                 acquired_at=current_time,
-                expires_at=current_time + self._ttl_timedelta,
+                expires_at=get_expiry(self.ttl, current_time=current_time),
             )
         )
         session.commit()
@@ -200,7 +195,7 @@ class PostgresLockInterface(BaseLockInterface):
         current_time = utcnow()
         lock_record.owner_id = self.owner_id
         lock_record.acquired_at = current_time
-        lock_record.expires_at = current_time + self._ttl_timedelta
+        lock_record.expires_at = get_expiry(self.ttl, current_time=current_time)
 
     def acquire(
         self,

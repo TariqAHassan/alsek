@@ -3,6 +3,8 @@ from __future__ import annotations
 from sqlalchemy import Column, String, DateTime, text, Integer, Text
 from sqlalchemy.orm import declarative_base
 
+from alsek.utils.temporal import utcnow
+
 Base = declarative_base()
 
 SCHEMA_NAME: str = "alsek"
@@ -25,6 +27,10 @@ class KeyValue(Base):
         nullable=True,
         index=True,
     )
+
+    @property
+    def is_expired(self) -> bool:
+        return self.expires_at <= utcnow()
 
 
 class Priority(Base):

@@ -14,6 +14,7 @@ import dill
 from sqlalchemy import text, select, delete
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
 
+from alsek.core.concurrency._utils import get_expiry
 from alsek.defaults import DEFAULT_NAMESPACE
 from datetime import timedelta
 from alsek.storage.backends import AsyncBackend, LazyClient
@@ -135,7 +136,7 @@ class PostgresAsyncBackend(AsyncBackend):
             full_name = self.full_name(name)
             obj = await session.get(KeyValueRecord, full_name)
 
-            expires_at = utcnow() + timedelta(milliseconds=ttl or 0)
+            expires_at = get_expiry(ttl, current_time=utcnow())
             if nx and obj is not None:
                 raise KeyError(f"Name '{name}' already exists")
             elif obj is None:

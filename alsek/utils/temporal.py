@@ -5,7 +5,8 @@
 """
 
 import time
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
+from typing import Optional
 
 
 def utcnow() -> datetime:
@@ -53,3 +54,23 @@ def time_ms() -> int:
 
     """
     return int(time.time() * 1000)
+
+
+def get_expiry(ttl: Optional[int], current_time: datetime) -> Optional[datetime]:
+    """Calculates the expiry datetime based on the provided time-to-live (TTL) in milliseconds
+    and the current datetime.
+
+    Args:
+        ttl (int): The time-to-live in milliseconds. If `None`, no expiry is calculated.
+        current_time (datetime): The current datetime used as the reference point to calculate
+            the expiry.
+
+    Returns:
+        The calculated expiry datetime as a `datetime` object if `ttl` is not `None`,
+        otherwise `None`.
+
+    """
+    if ttl is None:
+        return None
+    else:
+        return current_time + timedelta(milliseconds=ttl)

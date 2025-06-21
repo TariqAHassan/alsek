@@ -11,12 +11,12 @@ from functools import cached_property
 from typing import Optional, Union, cast, Iterator, Any, Type, Iterable
 
 import dill
-from asyncpg.pgproto.pgproto import timedelta
 from sqlalchemy import Engine, create_engine, select, delete, text
 from sqlalchemy.orm import Session
 from sqlalchemy import URL
 
 from datetime import datetime
+
 from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.backends.postgres.tables import (
@@ -30,7 +30,7 @@ from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
-from alsek.utils.temporal import utcnow
+from alsek.utils.temporal import utcnow, get_expiry
 
 
 class PostgresBackend(Backend):
@@ -103,14 +103,6 @@ class PostgresBackend(Backend):
         settings["engine"] = create_engine(settings["engine"])
         return cls(**settings)
 
-    @staticmethod
-    def _cleanup_expired(session: Session, obj: KeyValueRecord) -> bool:
-        if obj.expires_at is not None and obj.expires_at <= utcnow():
-            session.delete(obj)
-            session.commit()
-            return True
-        return False
-
     def exists(self, name: str) -> bool:
         with self.session() as session:
             obj: Optional[KeyValueRecord] = session.get(
@@ -119,8 +111,8 @@ class PostgresBackend(Backend):
             )
             if obj is None:
                 return False
-            expired = self._cleanup_expired(session, obj=obj)
-            return not expired
+            else:
+                return not obj.is_expired
 
     def set(
         self,
@@ -133,7 +125,7 @@ class PostgresBackend(Backend):
             full_name = self.full_name(name)
             obj = session.get(KeyValueRecord, full_name)
 
-            expires_at = utcnow() + timedelta(milliseconds=ttl or 0)
+            expires_at = get_expiry(ttl, current_time=utcnow())
             if nx and obj is not None:
                 raise KeyError(f"Name '{name}' already exists")
             elif obj is None:
@@ -155,9 +147,10 @@ class PostgresBackend(Backend):
     ) -> Any:
         with self.session() as session:
             obj: Optional[KeyValueRecord] = session.get(
-                KeyValueRecord, self.full_name(name)
+                KeyValueRecord,
+                self.full_name(name),
             )
-            if obj is None or self._cleanup_expired(session, obj):
+            if obj is None or obj.is_expired:
                 if default is Empty or isinstance(default, Empty):
                     raise KeyError(f"No name '{name}' found")
                 return default
