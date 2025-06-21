@@ -152,8 +152,7 @@ class PostgresBackend(Backend):
                 if default is Empty or isinstance(default, Empty):
                     raise KeyError(f"No name '{name}' found")
                 return default
-            value = self.serializer.reverse(obj.value)
-            return value
+            return self.serializer.reverse(obj.value)
 
     def delete(self, name: str, missing_ok: bool = False) -> None:
         with self.session() as session:

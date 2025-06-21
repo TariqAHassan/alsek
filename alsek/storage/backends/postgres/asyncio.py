@@ -104,13 +104,6 @@ class PostgresAsyncBackend(AsyncBackend):
         settings["engine"] = create_async_engine(settings["engine"])
         return cls(**settings)
 
-    @staticmethod
-    def _cleanup_expired(session: AsyncSession, obj: KeyValueRecord) -> bool:
-        if obj.expires_at is not None and obj.expires_at <= utcnow():
-            session.delete(obj)
-            return True
-        return False
-
     async def exists(self, name: str) -> bool:
         async with self.session() as session:
             obj: Optional[KeyValueRecord] = await session.get(
@@ -118,10 +111,8 @@ class PostgresAsyncBackend(AsyncBackend):
             )
             if obj is None:
                 return False
-            expired = self._cleanup_expired(session, obj)
-            if expired:
-                await session.commit()
-            return not expired
+            else:
+                return not obj.is_expired
 
     async def set(
         self,
@@ -156,16 +147,14 @@ class PostgresAsyncBackend(AsyncBackend):
     ) -> Any:
         async with self.session() as session:
             obj: Optional[KeyValueRecord] = await session.get(
-                KeyValueRecord, self.full_name(name)
+                KeyValueRecord,
+                self.full_name(name),
             )
-            if obj is None or self._cleanup_expired(session, obj):
-                if obj is not None:  # cleanup was performed
-                    await session.commit()
+            if obj is None or obj.is_expired:
                 if default is Empty or isinstance(default, Empty):
                     raise KeyError(f"No name '{name}' found")
                 return default
-            value = self.serializer.reverse(obj.value)
-            return value
+            return self.serializer.reverse(obj.value)
 
     async def delete(self, name: str, missing_ok: bool = False) -> None:
         async with self.session() as session:
