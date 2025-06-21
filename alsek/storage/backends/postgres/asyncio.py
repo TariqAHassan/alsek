@@ -16,7 +16,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSessio
 
 from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import AsyncBackend, LazyClient
-from alsek.storage.backends.postgres._tables import (
+from alsek.storage.backends.postgres.tables import (
     Base,
     KeyValue as KeyValueRecord,
     Priority as PriorityRecord,

@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session
 
 from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
-from alsek.storage.backends.postgres._tables import (
+from alsek.storage.backends.postgres.tables import (
     Base,
     KeyValue as KeyValueRecord,
     Priority as PriorityRecord,
@@ -74,7 +74,7 @@ class PostgresBackend(Backend):
             self._tables_created = True
 
     @contextmanager
-    def _session(self) -> Iterator[Session]:
+    def session(self) -> Iterator[Session]:
         self._ensure_schema_and_tables_exist()
         with Session(self.engine) as session:
             yield session
@@ -109,7 +109,7 @@ class PostgresBackend(Backend):
         return False
 
     def exists(self, name: str) -> bool:
-        with self._session() as session:
+        with self.session() as session:
             obj: Optional[KeyValueRecord] = session.get(
                 KeyValueRecord,
                 self.full_name(name),
@@ -126,7 +126,7 @@ class PostgresBackend(Backend):
         nx: bool = False,
         ttl: Optional[int] = None,
     ) -> None:
-        with self._session() as session:
+        with self.session() as session:
             full_name = self.full_name(name)
             expires_at = utcnow_timestamp_ms() + ttl if ttl is not None else None
             obj = session.get(KeyValueRecord, full_name)
@@ -149,7 +149,7 @@ class PostgresBackend(Backend):
         name: str,
         default: Optional[Union[Any, Type[Empty]]] = None,
     ) -> Any:
-        with self._session() as session:
+        with self.session() as session:
             obj: Optional[KeyValueRecord] = session.get(
                 KeyValueRecord, self.full_name(name)
             )
@@ -161,7 +161,7 @@ class PostgresBackend(Backend):
             return value
 
     def delete(self, name: str, missing_ok: bool = False) -> None:
-        with self._session() as session:
+        with self.session() as session:
             obj = session.get(KeyValueRecord, self.full_name(name))
             if obj is None:
                 if not missing_ok:
@@ -171,7 +171,7 @@ class PostgresBackend(Backend):
             session.commit()
 
     def priority_add(self, key: str, unique_id: str, priority: int | float) -> None:
-        with self._session() as session:
+        with self.session() as session:
             full_key = self.full_name(key)
             stmt = select(PriorityRecord).where(
                 PriorityRecord.key == full_key,
@@ -190,7 +190,7 @@ class PostgresBackend(Backend):
             session.commit()
 
     def priority_get(self, key: str) -> Optional[str]:
-        with self._session() as session:
+        with self.session() as session:
             full_key = self.full_name(key)
             stmt = (
                 select(PriorityRecord)
@@ -202,7 +202,7 @@ class PostgresBackend(Backend):
             return obj.unique_id if obj else None
 
     def priority_iter(self, key: str) -> Iterable[str]:
-        with self._session() as session:
+        with self.session() as session:
             full_key = self.full_name(key)
             stmt = (
                 select(PriorityRecord)
@@ -213,7 +213,7 @@ class PostgresBackend(Backend):
                 yield obj.unique_id
 
     def priority_remove(self, key: str, unique_id: str) -> None:
-        with self._session() as session:
+        with self.session() as session:
             full_key = self.full_name(key)
             stmt = delete(PriorityRecord).where(
                 PriorityRecord.key == full_key,
@@ -233,7 +233,7 @@ class PostgresBackend(Backend):
             None
 
         """
-        with self._session() as session:
+        with self.session() as session:
             # Serialize the value
             serialized_value = self.serializer.forward(value)
 
@@ -267,7 +267,7 @@ class PostgresBackend(Backend):
         yield from listener.listen()
 
     def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
-        with self._session() as session:
+        with self.session() as session:
             like_pattern = self.full_name(pattern or "%").replace("*", "%")
             stmt = select(KeyValueRecord)
             if like_pattern:

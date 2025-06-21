@@ -24,3 +24,13 @@ class Priority(Base):
     key = Column(String, primary_key=True)
     unique_id = Column(String, primary_key=True)
     priority = Column(Float)
+
+
+class DistributedLock(Base):
+    __tablename__ = "distributed_lock"
+    __table_args__ = {"schema": SCHEMA_NAME}
+
+    name = Column(String, primary_key=True)
+    owner_id = Column(String, nullable=False)
+    acquired_at = Column(Float, nullable=False)
+    expires_at = Column(Float, nullable=True)
