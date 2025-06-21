@@ -15,6 +15,7 @@ from sqlalchemy import text, select, delete
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
 
 from alsek.defaults import DEFAULT_NAMESPACE
+from datetime import datetime, timedelta, UTC
 from alsek.storage.backends import AsyncBackend, LazyClient
 from alsek.storage.backends.postgres.tables import (
     Base,
@@ -27,7 +28,6 @@ from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
-from alsek.utils.temporal import utcnow_timestamp_ms
 
 log = logging.getLogger(__name__)
 
@@ -106,7 +106,7 @@ class PostgresAsyncBackend(AsyncBackend):
 
     @staticmethod
     def _cleanup_expired(session: AsyncSession, obj: KeyValueRecord) -> bool:
-        if obj.expires_at is not None and obj.expires_at <= utcnow_timestamp_ms():
+        if obj.expires_at is not None and obj.expires_at <= datetime.now(UTC):
             session.delete(obj)
             return True
         return False
@@ -132,13 +132,14 @@ class PostgresAsyncBackend(AsyncBackend):
     ) -> None:
         async with self._session() as session:
             full_name = self.full_name(name)
-            expires_at = utcnow_timestamp_ms() + ttl if ttl is not None else None
             obj = await session.get(KeyValueRecord, full_name)
+
+            expires_at = datetime.now(UTC) + timedelta(milliseconds=ttl or 0)
             if nx and obj is not None:
                 raise KeyError(f"Name '{name}' already exists")
-            if obj is None:
+            elif obj is None:
                 obj = KeyValueRecord(
-                    name=full_name,
+                    id=full_name,
                     value=self.serializer.forward(value),
                     expires_at=expires_at,
                 )
@@ -189,7 +190,7 @@ class PostgresAsyncBackend(AsyncBackend):
             obj = result.scalars().first()
             if obj is None:
                 obj = PriorityRecord(
-                    key=full_key,
+                    id=full_key,
                     unique_id=unique_id,
                     priority=priority,
                 )
@@ -292,7 +293,7 @@ class PostgresAsyncBackend(AsyncBackend):
             for obj in result.scalars():
                 if (
                     obj.expires_at is not None
-                    and obj.expires_at <= utcnow_timestamp_ms()
+                    and obj.expires_at <= datetime.now(UTC)
                 ):
                     expired_objects.append(obj)
                 else:
