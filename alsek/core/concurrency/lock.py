@@ -80,9 +80,6 @@ class Lock:
         self.auto_release = auto_release
         self._owner_id = owner_id
 
-        if not name:
-            raise ValueError(f"Name not provided")
-
         if isinstance(backend, RedisBackend):
             self.lock_interface = RedisLockInterface(
                 name=name,
@@ -93,6 +90,8 @@ class Lock:
         else:
             raise NotImplementedError(f"Unsupported backend '{backend}'")
 
+        self.validate()
+
     def __repr__(self) -> str:
         return auto_repr(
             self,
@@ -101,6 +100,10 @@ class Lock:
             ttl=self.ttl,
             auto_release=self.auto_release,
         )
+
+    def validate(self) -> None:
+        if not self.name:
+            raise ValueError(f"Name not provided")
 
     @property
     def owner_id(self) -> str:
