@@ -122,11 +122,7 @@ class PostgresAsyncPubSubListener(BasePostgresPubSubListen):
         channel: str,  # noqa
         payload: str,
     ) -> None:
-        try:
-            self._notification_queue.put_nowait(payload)
-        except asyncio.QueueFull:
-            # Handle queue full scenario - could log warning
-            pass
+        self._notification_queue.put_nowait(payload)
 
     async def _cleanup(self, conn: asyncpg.Connection) -> None:
         try:
