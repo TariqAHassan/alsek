@@ -5,7 +5,21 @@
 """
 
 import time
-from datetime import datetime
+from datetime import datetime, timezone
+
+
+def utcnow() -> datetime:
+    """Generates the current UTC datetime without timezone information.
+
+    This function retrieves the current date and time in UTC. The resulting
+    datetime object will have its timezone information stripped by replacing
+    it with None. This operation ensures that the resulting datetime is naive.
+
+    Returns:
+        datetime: The current UTC date and time, with no timezone information.
+
+    """
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 def utcnow_timestamp_ms() -> int:
@@ -15,7 +29,7 @@ def utcnow_timestamp_ms() -> int:
         timestamp (int): UTC time in milliseconds
 
     """
-    return int(datetime.utcnow().timestamp() * 1000)
+    return int(utcnow().timestamp() * 1000)
 
 
 def fromtimestamp_ms(timestamp: int) -> datetime:
