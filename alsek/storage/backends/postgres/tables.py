@@ -87,11 +87,6 @@ class DistributedLock(Base):
         nullable=False,
         index=True,
     )
-    acquired_at = Column(
-        DateTime(timezone=False),
-        nullable=False,
-        index=True,
-    )
     expires_at = Column(
         DateTime(timezone=False),
         nullable=True,

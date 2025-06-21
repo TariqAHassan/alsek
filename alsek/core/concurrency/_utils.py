@@ -179,23 +179,19 @@ class PostgresLockInterface(BaseLockInterface):
             return False
 
     def _create_new_lock(self, session: Session) -> bool:
-        current_time = utcnow()
         session.add(
             DistributedLock(
                 id=self.lock_id,
                 owner_id=self.owner_id,
-                acquired_at=current_time,
-                expires_at=compute_expiry_datetime(self.ttl, current_time=current_time),
+                expires_at=compute_expiry_datetime(self.ttl),
             )
         )
         session.commit()
         return True
 
     def _update_lock_ownership(self, lock_record: DistributedLock) -> None:
-        current_time = utcnow()
         lock_record.owner_id = self.owner_id
-        lock_record.acquired_at = current_time
-        lock_record.expires_at = compute_expiry_datetime(self.ttl, current_time=current_time)
+        lock_record.expires_at = compute_expiry_datetime(self.ttl)
 
     def acquire(
         self,
