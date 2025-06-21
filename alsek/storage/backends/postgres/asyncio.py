@@ -97,10 +97,7 @@ class PostgresAsyncBackend(AsyncBackend):
             settings=gather_init_params(self, ignore=("engine",)),
         )
         # For async engines, we need to handle the URL differently
-        if hasattr(self._engine, "url"):
-            data["settings"]["engine"] = str(self._engine.url)
-        else:
-            data["settings"]["engine"] = "postgresql+asyncpg://localhost/postgres"
+        data["settings"]["engine"] = str(self.engine.url)
         return cast(bytes, dill.dumps(data))
 
     @classmethod
