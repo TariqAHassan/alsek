@@ -133,7 +133,6 @@ class PostgresAsyncPubSubListener(BasePostgresPubSubListen):
         try:
             while True:
                 try:
-                    # Wait for notification with timeout to allow graceful shutdown
                     notification = await asyncio.wait_for(
                         self._notification_queue.get(),
                         timeout=self.sleep_time,
