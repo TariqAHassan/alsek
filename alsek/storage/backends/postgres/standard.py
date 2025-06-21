@@ -265,6 +265,7 @@ class PostgresBackend(Backend):
     def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
         like_pattern = self.full_name((pattern or "%").replace("*", "%"))
         with self.session() as session:
+            # Search in KeyValueRecord table
             stmt = select(KeyValueRecord).where(
                 KeyValueRecord.id.like(like_pattern),
                 or_(
@@ -276,4 +277,13 @@ class PostgresBackend(Backend):
             for obj in session.scalars(stmt):
                 if not obj.is_expired:
                     yield self.short_name(obj.id)
+            
+            # Also search in PriorityRecord table for priority queue names
+            priority_stmt = select(PriorityRecord.id).distinct().where(
+                PriorityRecord.id.like(like_pattern)
+            )
+            
+            for priority_id in session.scalars(priority_stmt):
+                yield self.short_name(priority_id)
+                
             session.commit()
