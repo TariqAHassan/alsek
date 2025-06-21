@@ -252,7 +252,7 @@ class PostgresBackend(Backend):
             url=self.engine.url,
             serializer=self.serializer,
         )
-        yield from listener.run()
+        yield from listener.listen()
 
     def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
         with self._session() as session:
