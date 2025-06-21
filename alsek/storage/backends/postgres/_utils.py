@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import time
 from abc import abstractmethod, ABC
+from functools import cached_property
 from typing import Any, AsyncIterable, Iterable, Optional
 
 import asyncpg
@@ -88,20 +89,9 @@ class PostgresPubSubListener(BasePostgresPubSubListen):
 
 
 class PostgresAsyncPubSubListener(BasePostgresPubSubListen):
-    def __init__(
-        self,
-        channel: str,
-        url: URL,
-        serializer: Serializer,
-        sleep_time: float = 0.01,
-    ) -> None:
-        super().__init__(
-            channel=channel,
-            url=url,
-            serializer=serializer,
-            sleep_time=sleep_time,
-        )
-        self._notification_queue: asyncio.Queue[str] = asyncio.Queue()
+    @cached_property
+    def _notification_queue(self) -> asyncio.Queue[str]:
+        return asyncio.Queue()
 
     async def _get_connection(self) -> asyncpg.Connection:
         return await asyncpg.connect(
