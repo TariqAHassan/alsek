@@ -8,7 +8,6 @@ from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
-from functools import cached_property
 from typing import Optional, Union, cast, AsyncIterator, Any, Type, AsyncIterable
 
 import dill
