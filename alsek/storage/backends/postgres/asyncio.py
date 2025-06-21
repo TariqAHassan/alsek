@@ -46,12 +46,12 @@ class PostgresAsyncBackend(AsyncBackend):
     ) -> None:
         super().__init__(namespace, serializer=serializer)
 
-        self._engine = self._engine_parse(engine)
+        self._engine = self._connection_parser(engine)
         self._tables_created: bool = False
 
     @staticmethod
-    def _engine_parse(
-        engine: Optional[Union[str, AsyncEngine, LazyClient]],
+    def _connection_parser(
+        engine: Union[str, AsyncEngine, LazyClient],
     ) -> Union[AsyncEngine, LazyClient]:
         if isinstance(engine, LazyClient):
             return engine
@@ -272,11 +272,9 @@ class PostgresAsyncBackend(AsyncBackend):
             AsyncIterable[str | dict[str, Any]]: An async iterable of messages received on the channel
 
         """
-        # Create an async listener using the engine URL
-        engine = self.engine
         listener = PostgresAsyncPubSubListener(
             channel=channel,
-            url=engine.url,
+            url=self.engine.url,
             serializer=self.serializer,
         )
         async for message in listener.listen():

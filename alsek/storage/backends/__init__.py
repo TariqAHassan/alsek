@@ -70,9 +70,7 @@ class BaseBackend(ABC):
 
     @staticmethod
     @abstractmethod
-    def _connection_parser(
-        engine: Union[str, Any, LazyClient]
-    ) -> Union[Any, LazyClient]:
+    def _connection_parser(*args: Any, **kwargs: Any) -> Union[Any, LazyClient]:
         raise NotImplementedError()
 
     def __repr__(self) -> str:
