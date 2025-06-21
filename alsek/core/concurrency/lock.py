@@ -14,9 +14,10 @@ from typing import Literal, Optional, Type, get_args, Any
 
 import redis_lock
 
-from alsek.core.concurrency._utils import RedisLockInterface
+from alsek.core.concurrency._utils import RedisLockInterface, PostgresLockInterface
 from alsek.storage.backends import Backend
 from alsek.storage.backends.redis import RedisBackend
+from alsek.storage.backends.postgres import PostgresBackend
 from alsek.utils.printing import auto_repr
 
 IF_ALREADY_ACQUIRED_TYPE = Literal["raise_error", "return_true", "return_false"]
@@ -82,6 +83,13 @@ class Lock:
 
         if isinstance(backend, RedisBackend):
             self.lock_interface = RedisLockInterface(
+                name=name,
+                backend=backend,
+                ttl=ttl,
+                owner_id=owner_id,
+            )
+        elif isinstance(backend, PostgresBackend):
+            self.lock_interface = PostgresLockInterface(
                 name=name,
                 backend=backend,
                 ttl=ttl,
