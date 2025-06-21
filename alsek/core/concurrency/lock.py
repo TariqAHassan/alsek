@@ -14,7 +14,7 @@ from typing import Literal, Optional, Type, get_args, Any
 
 import redis_lock
 
-from alsek.core.concurrency._lock_interfaces import RedisLockInterface
+from alsek.core.concurrency._utils import RedisLockInterface
 from alsek.storage.backends import Backend
 from alsek.storage.backends.redis import RedisBackend
 from alsek.utils.printing import auto_repr
