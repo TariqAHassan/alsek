@@ -20,6 +20,7 @@ from alsek.storage.backends.postgres._tables import (
     Base,
     KeyValue as KeyValueRecord,
     Priority as PriorityRecord,
+    SCHEMA_NAME,
 )
 from alsek.storage.backends.postgres._utils import PostgresPubSubListener
 from alsek.storage.serialization import Serializer, JsonSerializer
@@ -36,23 +37,29 @@ class PostgresBackend(Backend):
 
     def __init__(
         self,
-        engine: Optional[Union[str, Engine, LazyClient]] = None,
+        engine: Union[str, Engine, LazyClient],
         namespace: str = DEFAULT_NAMESPACE,
-        serializer: Serializer = JsonSerializer(),
+        serializer: Optional[Serializer] = None,
     ) -> None:
         super().__init__(namespace, serializer=serializer)
+
         self._engine = self._engine_parse(engine)
         if not isinstance(self._engine, LazyClient):
-            Base.metadata.create_all(self.engine)
+            self._ensure_schema_and_tables()
+
+    def _ensure_schema_and_tables(self) -> None:
+        engine = cast(Engine, self._engine)
+        with engine.connect() as conn:
+            conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}"))
+            conn.commit()
+        Base.metadata.create_all(engine)
 
     @staticmethod
     def _engine_parse(
-        engine: Optional[Union[str, Engine, LazyClient]],
+        engine: Union[str, Engine, LazyClient]
     ) -> Union[Engine, LazyClient]:
         if isinstance(engine, LazyClient):
             return engine
-        elif engine is None:
-            return create_engine("postgresql://localhost/postgres")
         elif isinstance(engine, Engine):
             return engine
         elif isinstance(engine, str):
@@ -64,7 +71,7 @@ class PostgresBackend(Backend):
     def engine(self) -> Engine:
         if isinstance(self._engine, LazyClient):
             self._engine = self._engine.get()
-            Base.metadata.create_all(cast(Engine, self._engine))
+            self._ensure_schema_and_tables()
         return cast(Engine, self._engine)
 
     @contextmanager
@@ -103,10 +110,12 @@ class PostgresBackend(Backend):
 
     def exists(self, name: str) -> bool:
         with self._session() as session:
-            obj = session.get(KeyValueRecord, self.full_name(name))
+            obj: Optional[KeyValueRecord] = session.get(
+                KeyValueRecord, self.full_name(name)
+            )
             if obj is None:
                 return False
-            expired = self._cleanup_expired(session, obj)
+            expired = self._cleanup_expired(session, obj=obj)
             return not expired
 
     def set(

@@ -5,10 +5,12 @@ from sqlalchemy.orm import declarative_base
 
 Base = declarative_base()
 
+SCHEMA_NAME: str = "alsek"
+
 
 class KeyValue(Base):
     __tablename__ = "key_value"
-    __table_args__ = {"schema": "alsek"}
+    __table_args__ = {"schema": SCHEMA_NAME}
 
     name = Column(String, primary_key=True)
     value = Column(String)
@@ -17,7 +19,7 @@ class KeyValue(Base):
 
 class Priority(Base):
     __tablename__ = "priority"
-    __table_args__ = {"schema": "alsek"}
+    __table_args__ = {"schema": SCHEMA_NAME}
 
     key = Column(String, primary_key=True)
     unique_id = Column(String, primary_key=True)
