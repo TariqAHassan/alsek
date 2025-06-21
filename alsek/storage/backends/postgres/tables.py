@@ -18,10 +18,12 @@ class KeyValue(Base):
         DateTime(timezone=False),
         server_default=text("(now() AT TIME ZONE 'UTC')"),
         nullable=False,
+        index=True,
     )
     expires_at = Column(
         DateTime(timezone=False),
         nullable=True,
+        index=True,
     )
 
 
@@ -37,12 +39,17 @@ class Priority(Base):
         DateTime(timezone=False),
         server_default=text("(now() AT TIME ZONE 'UTC')"),
         nullable=False,
+        index=True,
     )
     unique_id = Column(
         String,
         primary_key=True,
+        index=True,
     )
-    priority = Column(Integer)
+    priority = Column(
+        Integer,
+        index=True,
+    )
 
 
 class DistributedLock(Base):
@@ -56,17 +63,21 @@ class DistributedLock(Base):
     owner_id = Column(
         String,
         nullable=False,
+        index=True,
     )
     created_at = Column(
         DateTime(timezone=False),
         server_default=text("(now() AT TIME ZONE 'UTC')"),
         nullable=False,
+        index=True,
     )
     acquired_at = Column(
         DateTime(timezone=False),
         nullable=False,
+        index=True,
     )
     expires_at = Column(
         DateTime(timezone=False),
         nullable=True,
+        index=True,
     )
