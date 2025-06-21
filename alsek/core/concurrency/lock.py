@@ -85,7 +85,7 @@ class Lock:
                 name=name,
                 backend=backend,
                 ttl=ttl,
-                owner_id=self.owner_id,
+                owner_id=owner_id,
             )
         else:
             raise NotImplementedError(f"Unsupported backend '{backend}'")
