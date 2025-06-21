@@ -25,7 +25,7 @@ from alsek.core.status import StatusTracker
 from alsek.core.task import task
 from alsek.core.worker.process import ProcessWorkerPool
 from alsek.core.worker.thread import ThreadWorkerPool
-from alsek.storage.backends import Backend
+from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.backends.postgres import PostgresBackend
 from alsek.storage.backends.redis.standard import RedisBackend
 from alsek.storage.result import ResultStore
@@ -71,6 +71,9 @@ def base_backend() -> Backend:
             nx: bool = False,
             ttl: Optional[int] = None,
         ) -> None:
+            raise NotImplementedError()
+
+        def _connection_parser(*args: Any, **kwargs: Any) -> Union[Any, LazyClient]:
             raise NotImplementedError()
 
         def get(
