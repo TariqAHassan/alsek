@@ -15,7 +15,7 @@ from asyncpg.pgproto.pgproto import timedelta
 from sqlalchemy import Engine, create_engine, select, delete, text
 from sqlalchemy.orm import Session
 
-from datetime import datetime, UTC
+from datetime import datetime
 from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.backends.postgres.tables import (
@@ -29,6 +29,7 @@ from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
+from alsek.utils.temporal import utcnow
 
 
 class PostgresBackend(Backend):
@@ -103,7 +104,7 @@ class PostgresBackend(Backend):
 
     @staticmethod
     def _cleanup_expired(session: Session, obj: KeyValueRecord) -> bool:
-        if obj.expires_at is not None and obj.expires_at <= datetime.now(UTC):
+        if obj.expires_at is not None and obj.expires_at <= utcnow():
             session.delete(obj)
             session.commit()
             return True
@@ -131,7 +132,7 @@ class PostgresBackend(Backend):
             full_name = self.full_name(name)
             obj = session.get(KeyValueRecord, full_name)
 
-            expires_at = datetime.now(UTC) + timedelta(milliseconds=ttl or 0)
+            expires_at = utcnow() + timedelta(milliseconds=ttl or 0)
             if nx and obj is not None:
                 raise KeyError(f"Name '{name}' already exists")
             elif obj is None:

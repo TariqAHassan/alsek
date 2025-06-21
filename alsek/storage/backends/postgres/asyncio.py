@@ -15,7 +15,7 @@ from sqlalchemy import text, select, delete
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
 
 from alsek.defaults import DEFAULT_NAMESPACE
-from datetime import datetime, timedelta, UTC
+from datetime import timedelta
 from alsek.storage.backends import AsyncBackend, LazyClient
 from alsek.storage.backends.postgres.tables import (
     Base,
@@ -28,6 +28,7 @@ from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
+from alsek.utils.temporal import utcnow
 
 log = logging.getLogger(__name__)
 
@@ -106,7 +107,7 @@ class PostgresAsyncBackend(AsyncBackend):
 
     @staticmethod
     def _cleanup_expired(session: AsyncSession, obj: KeyValueRecord) -> bool:
-        if obj.expires_at is not None and obj.expires_at <= datetime.now(UTC):
+        if obj.expires_at is not None and obj.expires_at <= utcnow():
             session.delete(obj)
             return True
         return False
@@ -134,7 +135,7 @@ class PostgresAsyncBackend(AsyncBackend):
             full_name = self.full_name(name)
             obj = await session.get(KeyValueRecord, full_name)
 
-            expires_at = datetime.now(UTC) + timedelta(milliseconds=ttl or 0)
+            expires_at = utcnow() + timedelta(milliseconds=ttl or 0)
             if nx and obj is not None:
                 raise KeyError(f"Name '{name}' already exists")
             elif obj is None:
@@ -289,10 +290,7 @@ class PostgresAsyncBackend(AsyncBackend):
 
             expired_objects = list()
             for obj in (await session.execute(stmt)).scalars():
-                if (
-                    obj.expires_at is not None
-                    and obj.expires_at <= datetime.now(UTC)
-                ):
+                if obj.expires_at is not None and obj.expires_at <= utcnow():
                     expired_objects.append(obj)
                 else:
                     yield self.short_name(obj.id)

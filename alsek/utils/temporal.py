@@ -19,7 +19,7 @@ def utcnow() -> datetime:
         datetime: The current UTC date and time, with no timezone information.
 
     """
-    return datetime.now(timezone.utc).replace(tzinfo=None)
+    return utcnow().replace(tzinfo=None)
 
 
 def utcnow_timestamp_ms() -> int:

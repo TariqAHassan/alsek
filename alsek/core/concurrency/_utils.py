@@ -11,13 +11,14 @@ from functools import cached_property
 from typing import Optional
 
 import redis_lock
-from datetime import datetime, timedelta, UTC
+from datetime import timedelta
 from sqlalchemy.orm import Session
 
 from alsek.storage.backends.postgres.tables import DistributedLock
 
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.backends.postgres import PostgresBackend
+from alsek.utils.temporal import utcnow
 
 
 class BaseLockInterface(ABC):
@@ -121,7 +122,7 @@ class PostgresLockInterface(BaseLockInterface):
     ) -> bool:
         if (
             lock_record.expires_at is not None
-            and lock_record.expires_at <= datetime.now(UTC)
+            and lock_record.expires_at <= utcnow()
         ):
             session.delete(lock_record)
             session.commit()
@@ -159,7 +160,7 @@ class PostgresLockInterface(BaseLockInterface):
     def _can_acquire_lock(self, lock_record: DistributedLock) -> bool:
         if (
             lock_record.expires_at is not None
-            and lock_record.expires_at <= datetime.now(UTC)
+            and lock_record.expires_at <= utcnow()
         ):
             return True
         elif lock_record.owner_id == self.owner_id:
@@ -168,7 +169,7 @@ class PostgresLockInterface(BaseLockInterface):
             return False
 
     def _create_new_lock(self, session: Session) -> bool:
-        current_time = datetime.now(UTC)
+        current_time = utcnow()
         session.add(
             DistributedLock(
                 id=self.lock_id,
@@ -181,7 +182,7 @@ class PostgresLockInterface(BaseLockInterface):
         return True
 
     def _update_lock_ownership(self, lock_record: DistributedLock) -> None:
-        current_time = datetime.now(UTC)
+        current_time = utcnow()
         lock_record.owner_id = self.owner_id
         lock_record.acquired_at = current_time
         lock_record.expires_at = current_time + self._ttl_timedelta
