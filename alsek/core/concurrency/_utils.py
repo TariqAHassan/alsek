@@ -18,7 +18,7 @@ from alsek.storage.backends.postgres.tables import DistributedLock
 
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.backends.postgres import PostgresBackend
-from alsek.utils.temporal import utcnow, get_expiry
+from alsek.utils.temporal import utcnow, compute_expiry_datetime
 
 IF_ALREADY_ACQUIRED_TYPE = Literal["raise_error", "return_true", "return_false"]
 
@@ -185,7 +185,7 @@ class PostgresLockInterface(BaseLockInterface):
                 id=self.lock_id,
                 owner_id=self.owner_id,
                 acquired_at=current_time,
-                expires_at=get_expiry(self.ttl, current_time=current_time),
+                expires_at=compute_expiry_datetime(current_time, ttl=self.ttl),
             )
         )
         session.commit()
@@ -195,7 +195,7 @@ class PostgresLockInterface(BaseLockInterface):
         current_time = utcnow()
         lock_record.owner_id = self.owner_id
         lock_record.acquired_at = current_time
-        lock_record.expires_at = get_expiry(self.ttl, current_time=current_time)
+        lock_record.expires_at = compute_expiry_datetime(current_time, ttl=self.ttl)
 
     def acquire(
         self,

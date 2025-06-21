@@ -30,7 +30,7 @@ from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
-from alsek.utils.temporal import utcnow, get_expiry
+from alsek.utils.temporal import utcnow, compute_expiry_datetime
 
 
 class PostgresBackend(Backend):
@@ -125,7 +125,7 @@ class PostgresBackend(Backend):
             full_name = self.full_name(name)
             obj = session.get(KeyValueRecord, full_name)
 
-            expires_at = get_expiry(ttl, current_time=utcnow())
+            expires_at = compute_expiry_datetime(utcnow(), ttl=ttl)
             if nx and obj is not None:
                 raise KeyError(f"Name '{name}' already exists")
             elif obj is None:

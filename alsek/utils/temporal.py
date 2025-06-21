@@ -56,14 +56,16 @@ def time_ms() -> int:
     return int(time.time() * 1000)
 
 
-def get_expiry(ttl: Optional[int], current_time: datetime) -> Optional[datetime]:
+def compute_expiry_datetime(
+    current_time: datetime,
+    ttl: Optional[int],
+) -> Optional[datetime]:
     """Calculates the expiry datetime based on the provided time-to-live (TTL) in milliseconds
     and the current datetime.
 
     Args:
+        current_time (datetime): current datetime used as a reference point
         ttl (int): The time-to-live in milliseconds. If `None`, no expiry is calculated.
-        current_time (datetime): The current datetime used as the reference point to calculate
-            the expiry.
 
     Returns:
         The calculated expiry datetime as a `datetime` object if `ttl` is not `None`,
