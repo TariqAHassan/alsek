@@ -119,8 +119,8 @@ class PostgresBackend(Backend):
         nx: bool = False,
         ttl: Optional[int] = None,
     ) -> None:
+        full_name = self.full_name(name)
         with self.session() as session:
-            full_name = self.full_name(name)
             obj = session.get(KeyValueRecord, full_name)
 
             expires_at = compute_expiry_datetime(ttl)
