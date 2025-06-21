@@ -11,7 +11,8 @@ import threading
 from functools import cached_property
 from socket import gethostname
 from types import TracebackType
-from typing import Any, Literal, Optional, Type, cast, get_args
+from abc import ABC, abstractmethod
+from typing import Literal, Optional, Type, get_args, Callable, Any
 
 import redis_lock
 
@@ -30,6 +31,78 @@ def _get_process_lock_owner_id() -> str:
 
 def _get_thread_lock_owner_id() -> str:
     return f"{_get_process_lock_owner_id()}:thread:{threading.get_ident()}"
+
+
+def _resolve_owner_id(owner_id: str | Callable[[], str]) -> str:
+    if isinstance(owner_id, str):
+        return owner_id
+    elif callable(owner_id):
+        result = owner_id()
+        if isinstance(result, str):
+            return result
+        else:
+            raise TypeError(f"owner_id callable returned invalid result '{result}'")
+    else:
+        raise TypeError(f"Unable to handle type '{type(owner_id)}'")
+
+
+class LockInterface(ABC):
+    def __init__(
+        self,
+        name: str,
+        backend: RedisBackend,
+        ttl: Optional[int],
+        owner_id: str,  # noqa
+    ) -> None:
+        self.name = name
+        self.backend = backend
+        self.ttl = ttl
+        self.owner_id = owner_id
+
+        self.validate()
+
+    @property
+    def full_name(self) -> str:
+        return f"{self.backend.namespace}:{self.name}"
+
+    def validate(self) -> None:
+        if not self.name:
+            raise ValueError("`name` must be provided.")
+
+    @abstractmethod
+    def get_holder_id(self) -> str:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def acquire(self, blocking: bool = True, timeout: Optional[int] = None) -> bool:
+        raise NotImplementedError()
+
+    @abstractmethod
+    def release(self) -> None:
+        raise NotImplementedError()
+
+
+class RedisLockInterface(LockInterface):
+    @cached_property
+    def _engine(self) -> redis_lock.Lock:
+        return redis_lock.Lock(
+            self.backend.conn,
+            name=self.full_name,
+            expire=None if self.ttl is None else round(self.ttl / 1000),
+            id=self.owner_id,
+        )
+
+    def get_holder_id(self) -> str:
+        return self._engine.get_owner_id()
+
+    def acquire(self, blocking: bool = True, timeout: Optional[int] = None) -> bool:
+        return self._engine.acquire(
+            blocking=blocking,
+            timeout=timeout,
+        )
+
+    def release(self) -> None:
+        self._engine.release()
 
 
 class Lock:
@@ -80,27 +153,15 @@ class Lock:
         self.auto_release = auto_release
         self._owner_id = owner_id
 
-        if not isinstance(backend, RedisBackend):
-            raise NotImplementedError("Only RedisBackend is supported.")
-
-        self.validate()
-
-        self._lock = redis_lock.Lock(
-            backend.conn,
-            name=self.full_name,
-            expire=None if ttl is None else round(ttl / 1000),
-            id=self.owner_id,
-        )
-
-    def validate(self) -> None:
-        if not self.name:
-            raise ValueError("`name` must be provided.")
-        elif not self.owner_id:
-            raise ValueError("`owner_id` must be provided.")
-
-    @property
-    def owner_id(self) -> str:
-        return self._owner_id
+        if isinstance(backend, RedisBackend):
+            self.lock_interface = RedisLockInterface(
+                name=name,
+                backend=backend,
+                ttl=ttl,
+                owner_id=self.owner_id,
+            )
+        else:
+            raise NotImplementedError(f"Unsupported backend '{backend}'")
 
     def __repr__(self) -> str:
         return auto_repr(
@@ -112,6 +173,11 @@ class Lock:
         )
 
     @property
+    def owner_id(self) -> str:
+        """The ID of the owner of the lock."""
+        return self._owner_id
+
+    @property
     def full_name(self) -> str:
         """The full name of the lock including its namespace prefix."""
         return f"{self.backend.namespace}:{self.name}"
@@ -119,7 +185,7 @@ class Lock:
     @property
     def holder(self) -> Optional[str]:
         """Name of the owner that currently holds the lock, if any."""
-        return self._lock.get_owner_id()
+        return self.lock_interface.get_holder_id()
 
     @property
     def held(self) -> bool:
@@ -148,7 +214,7 @@ class Lock:
             raise ValueError(f"Invalid `on_already_acquired`, got  {if_already_acquired}")  # fmt: skip
 
         try:
-            return self._lock.acquire(blocking=bool(wait), timeout=wait)
+            return self.lock_interface.acquire(blocking=bool(wait), timeout=wait)
         except redis_lock.AlreadyAcquired as error:
             if if_already_acquired == "return_true":
                 return True
@@ -170,7 +236,7 @@ class Lock:
 
         """
         try:
-            self._lock.release()
+            self.lock_interface.release()
             return True
         except redis_lock.NotAcquired as error:
             if raise_if_not_acquired:
@@ -212,11 +278,11 @@ class Lock:
 
 class ProcessLock(Lock):
     """Distributed mutual exclusion (MUTEX) lock for controlling
-    concurrency accross processes on the same host.
+    concurrency across processes on the same host.
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs, owner_id="")
+        super().__init__(*args, **kwargs, owner_id=_get_process_lock_owner_id())
 
     def validate(self) -> None:
         if not self.name:
@@ -232,11 +298,11 @@ class ProcessLock(Lock):
 
 class ThreadLock(Lock):
     """Distributed mutual exclusion (MUTEX) lock for controlling
-    concurrency accross processes and threads on the same host.
+    concurrency across processes and threads on the same host.
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs, owner_id="")
+        super().__init__(*args, **kwargs, owner_id=_get_process_lock_owner_id())
 
     def validate(self) -> None:
         if not self.name:
