@@ -260,9 +260,12 @@ class PostgresBackend(Backend):
             stmt = select(KeyValueRecord)
             if like_pattern:
                 stmt = stmt.where(KeyValueRecord.name.like(like_pattern))
-            now = utcnow_timestamp_ms()
+
             for obj in session.scalars(stmt):
-                if obj.expires_at is not None and obj.expires_at <= now:
+                if (
+                    obj.expires_at is not None
+                    and obj.expires_at <= utcnow_timestamp_ms()
+                ):
                     session.delete(obj)
                 else:
                     yield self.short_name(obj.name)
