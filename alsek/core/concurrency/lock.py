@@ -157,15 +157,13 @@ class Lock:
 
         try:
             return self.lock_interface.acquire(blocking=bool(wait), timeout=wait)
-        except redis_lock.AlreadyAcquired as error:
+        except LockAlreadyAcquiredError as error:
             if if_already_acquired == "return_true":
                 return True
             elif if_already_acquired == "return_false":
                 return False
             else:
-                raise LockAlreadyAcquiredError(
-                    f"Lock {self.lock_id} already acquired"
-                ) from error
+                raise error
 
     def release(self, raise_if_not_acquired: bool = False) -> bool:
         """Release the lock.

@@ -14,6 +14,7 @@ import redis_lock
 from datetime import timedelta
 from sqlalchemy.orm import Session
 
+from alsek.exceptions import LockAlreadyAcquiredError
 from alsek.storage.backends.postgres.tables import DistributedLock
 
 from alsek.storage.backends.redis import RedisBackend
@@ -90,10 +91,15 @@ class RedisLockInterface(BaseLockInterface):
         return self._engine.get_owner_id()
 
     def acquire(self, blocking: bool = True, timeout: Optional[int] = None) -> bool:
-        return self._engine.acquire(
-            blocking=blocking,
-            timeout=timeout,
-        )
+        try:
+            return self._engine.acquire(
+                blocking=blocking,
+                timeout=timeout,
+            )
+        except redis_lock.AlreadyAcquired as error:
+            raise LockAlreadyAcquiredError(
+                f"Lock {self.lock_id} already acquired"
+            ) from error
 
     def release(self) -> None:
         self._engine.release()
@@ -120,10 +126,7 @@ class PostgresLockInterface(BaseLockInterface):
         lock_record: DistributedLock,
         session: Session,
     ) -> bool:
-        if (
-            lock_record.expires_at is not None
-            and lock_record.expires_at <= utcnow()
-        ):
+        if lock_record.expires_at is not None and lock_record.expires_at <= utcnow():
             session.delete(lock_record)
             session.commit()
             return True
@@ -158,10 +161,7 @@ class PostgresLockInterface(BaseLockInterface):
         return result
 
     def _can_acquire_lock(self, lock_record: DistributedLock) -> bool:
-        if (
-            lock_record.expires_at is not None
-            and lock_record.expires_at <= utcnow()
-        ):
+        if lock_record.expires_at is not None and lock_record.expires_at <= utcnow():
             return True
         elif lock_record.owner_id == self.owner_id:
             return True
