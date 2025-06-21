@@ -255,7 +255,6 @@ class PostgresBackend(Backend):
             Iterable[str | dict[str, Any]]: An iterable of messages received on the channel
 
         """
-        # Create a direct psycopg2 connection from the engine URL
         listener = PostgresPubSubListener(
             channel=channel,
             url=self.engine.url,
