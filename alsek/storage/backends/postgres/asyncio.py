@@ -287,15 +287,6 @@ class PostgresAsyncBackend(AsyncBackend):
             if like_pattern:
                 stmt = stmt.where(KeyValueRecord.id.like(like_pattern))
 
-            expired_objects = list()
             for obj in (await session.execute(stmt)).scalars():
-                if obj.expires_at is not None and obj.expires_at <= utcnow():
-                    expired_objects.append(obj)
-                else:
+                if not obj.is_expired:
                     yield self.short_name(obj.id)
-
-            # Clean up expired objects
-            for obj in expired_objects:
-                await session.delete(obj)
-            if expired_objects:
-                await session.commit()

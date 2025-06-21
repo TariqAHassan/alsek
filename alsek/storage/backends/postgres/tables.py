@@ -30,7 +30,10 @@ class KeyValue(Base):
 
     @property
     def is_expired(self) -> bool:
-        return self.expires_at <= utcnow()
+        if self.expires_at:
+            return self.expires_at <= utcnow()
+        else:
+            return False
 
 
 class Priority(Base):

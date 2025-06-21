@@ -271,8 +271,6 @@ class PostgresBackend(Backend):
                 stmt = stmt.where(KeyValueRecord.id.like(like_pattern))
 
             for obj in session.scalars(stmt):
-                if obj.expires_at is not None and obj.expires_at <= datetime.now():
-                    session.delete(obj)
-                else:
+                if not obj.is_expired:
                     yield self.short_name(obj.id)
             session.commit()
