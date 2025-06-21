@@ -173,7 +173,10 @@ class PostgresAsyncBackend(AsyncBackend):
             await session.commit()
 
     async def priority_add(
-        self, key: str, unique_id: str, priority: int | float
+        self,
+        key: str,
+        unique_id: str,
+        priority: int | float,
     ) -> None:
         async with self.session() as session:
             full_key = self.full_name(key)
