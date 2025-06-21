@@ -47,13 +47,15 @@ class BasePostgresPubSubListen(ABC):
 
 class PostgresPubSubListener(BasePostgresPubSubListen):
     def _get_connection(self) -> psycopg2.extensions.connection:
-        return psycopg2.connect(
+        conn = psycopg2.connect(
             host=self.url.host,
             port=self.url.port,
             database=self.url.database,
             user=self.url.username,
             password=self.url.password,
         )
+        conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+        return conn
 
     def _cleanup(
         self,
@@ -72,7 +74,6 @@ class PostgresPubSubListener(BasePostgresPubSubListen):
         conn = self._get_connection()
         cursor: Optional[psycopg2.extensions.cursor] = None
         try:
-            conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
             cursor = conn.cursor()
             cursor.execute(f"LISTEN {self.channel}")
             while True:
