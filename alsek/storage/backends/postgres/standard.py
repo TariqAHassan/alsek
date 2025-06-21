@@ -265,9 +265,13 @@ class PostgresBackend(Backend):
     def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
         like_pattern = self.full_name((pattern or "%").replace("*", "%"))
         with self.session() as session:
-            stmt = select(KeyValueRecord)
-            if like_pattern:
-                stmt = stmt.where(KeyValueRecord.id.like(like_pattern))
+            stmt = select(KeyValueRecord).where(
+                KeyValueRecord.id.like(like_pattern),
+                or_(
+                    KeyValueRecord.expires_at.is_(None),
+                    KeyValueRecord.expires_at > utcnow(),
+                ),
+            )
 
             for obj in session.scalars(stmt):
                 if not obj.is_expired:

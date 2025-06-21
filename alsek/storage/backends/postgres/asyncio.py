@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from typing import Optional, Union, cast, AsyncIterator, Any, Type, AsyncIterable
 
 import dill
-from sqlalchemy import text, select, delete
+from sqlalchemy import text, select, delete, or_
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
 
 from alsek.defaults import DEFAULT_NAMESPACE
@@ -27,7 +27,7 @@ from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
-from alsek.utils.temporal import compute_expiry_datetime
+from alsek.utils.temporal import compute_expiry_datetime, utcnow
 
 log = logging.getLogger(__name__)
 
@@ -146,10 +146,14 @@ class PostgresAsyncBackend(AsyncBackend):
         default: Optional[Union[Any, Type[Empty]]] = Empty,
     ) -> Any:
         async with self.session() as session:
-            obj: Optional[KeyValueRecord] = await session.get(
-                KeyValueRecord,
-                self.full_name(name),
+            stmt = select(KeyValueRecord).where(
+                KeyValueRecord.id == self.full_name(name),
+                or_(
+                    KeyValueRecord.expires_at.is_(None),
+                    KeyValueRecord.expires_at > utcnow(),
+                ),
             )
+            obj: Optional[KeyValueRecord] = (await session.scalars(stmt)).one_or_none()
             if obj is None or obj.is_expired:
                 if default is Empty or isinstance(default, Empty):
                     raise KeyError(f"No name '{name}' found")
@@ -272,9 +276,13 @@ class PostgresAsyncBackend(AsyncBackend):
     async def scan(self, pattern: Optional[str] = None) -> AsyncIterable[str]:
         like_pattern = self.full_name((pattern or "%").replace("*", "%"))
         async with self.session() as session:
-            stmt = select(KeyValueRecord)
-            if like_pattern:
-                stmt = stmt.where(KeyValueRecord.id.like(like_pattern))
+            stmt = select(KeyValueRecord).where(
+                KeyValueRecord.id.like(like_pattern),
+                or_(
+                    KeyValueRecord.expires_at.is_(None),
+                    KeyValueRecord.expires_at > utcnow(),
+                ),
+            )
 
             for obj in (await session.execute(stmt)).scalars():
                 if not obj.is_expired:
