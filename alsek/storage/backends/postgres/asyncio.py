@@ -80,7 +80,7 @@ class PostgresAsyncBackend(AsyncBackend):
             self._tables_created = True
 
     @asynccontextmanager
-    async def _session(self) -> AsyncIterator[AsyncSession]:
+    async def session(self) -> AsyncIterator[AsyncSession]:
         await self._ensure_schema_and_tables_exist()
         async with AsyncSession(self.engine) as session:
             yield session
@@ -113,7 +113,7 @@ class PostgresAsyncBackend(AsyncBackend):
         return False
 
     async def exists(self, name: str) -> bool:
-        async with self._session() as session:
+        async with self.session() as session:
             obj: Optional[KeyValueRecord] = await session.get(
                 KeyValueRecord, self.full_name(name)
             )
@@ -131,7 +131,7 @@ class PostgresAsyncBackend(AsyncBackend):
         nx: bool = False,
         ttl: Optional[int] = None,
     ) -> None:
-        async with self._session() as session:
+        async with self.session() as session:
             full_name = self.full_name(name)
             obj = await session.get(KeyValueRecord, full_name)
 
@@ -155,7 +155,7 @@ class PostgresAsyncBackend(AsyncBackend):
         name: str,
         default: Optional[Union[Any, Type[Empty]]] = Empty,
     ) -> Any:
-        async with self._session() as session:
+        async with self.session() as session:
             obj: Optional[KeyValueRecord] = await session.get(
                 KeyValueRecord, self.full_name(name)
             )
@@ -169,7 +169,7 @@ class PostgresAsyncBackend(AsyncBackend):
             return value
 
     async def delete(self, name: str, missing_ok: bool = False) -> None:
-        async with self._session() as session:
+        async with self.session() as session:
             obj = await session.get(KeyValueRecord, self.full_name(name))
             if obj is None:
                 if not missing_ok:
@@ -181,7 +181,7 @@ class PostgresAsyncBackend(AsyncBackend):
     async def priority_add(
         self, key: str, unique_id: str, priority: int | float
     ) -> None:
-        async with self._session() as session:
+        async with self.session() as session:
             full_key = self.full_name(key)
             stmt = select(PriorityRecord).where(
                 PriorityRecord.id == full_key,
@@ -201,7 +201,7 @@ class PostgresAsyncBackend(AsyncBackend):
             await session.commit()
 
     async def priority_get(self, key: str) -> Optional[str]:
-        async with self._session() as session:
+        async with self.session() as session:
             full_key = self.full_name(key)
             stmt = (
                 select(PriorityRecord)
@@ -214,7 +214,7 @@ class PostgresAsyncBackend(AsyncBackend):
             return obj.unique_id if obj else None
 
     async def priority_iter(self, key: str) -> AsyncIterable[str]:
-        async with self._session() as session:
+        async with self.session() as session:
             full_key = self.full_name(key)
             stmt = (
                 select(PriorityRecord)
@@ -226,7 +226,7 @@ class PostgresAsyncBackend(AsyncBackend):
                 yield obj.unique_id
 
     async def priority_remove(self, key: str, unique_id: str) -> None:
-        async with self._session() as session:
+        async with self.session() as session:
             full_key = self.full_name(key)
             stmt = delete(PriorityRecord).where(
                 PriorityRecord.id == full_key,
@@ -246,7 +246,7 @@ class PostgresAsyncBackend(AsyncBackend):
             None
 
         """
-        async with self._session() as session:
+        async with self.session() as session:
             # Serialize the value
             serialized_value = self.serializer.forward(value)
 
@@ -282,7 +282,7 @@ class PostgresAsyncBackend(AsyncBackend):
             yield message
 
     async def scan(self, pattern: Optional[str] = None) -> AsyncIterable[str]:
-        async with self._session() as session:
+        async with self.session() as session:
             like_pattern = self.full_name(pattern or "%").replace("*", "%")
             stmt = select(KeyValueRecord)
             if like_pattern:
