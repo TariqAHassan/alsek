@@ -15,8 +15,11 @@ from typing import Any, AsyncIterable, Iterable, Optional
 import asyncpg
 import psycopg2
 from sqlalchemy import URL
+import logging
 
 from alsek.storage.serialization import Serializer
+
+log = logging.getLogger(__name__)
 
 
 def _parse_notification_data(payload: str, serializer: Serializer) -> dict[str, Any]:
@@ -63,7 +66,7 @@ class PostgresPubSubListener(BasePostgresPubSubListen):
                 cursor.close()
             conn.close()
         except Exception:  # noqa
-            pass
+            log.exception("Error on cleanup", exc_info=True)
 
     def listen(self) -> Iterable[Any]:
         conn = self._get_connection()
@@ -120,7 +123,7 @@ class PostgresAsyncPubSubListener(BasePostgresPubSubListen):
                 )
                 await conn.close()
         except Exception:  # noqa
-            pass
+            log.exception("Error on cleanup", exc_info=True)
 
     async def listen(self) -> AsyncIterable[Any]:
         conn = await self._get_connection()
