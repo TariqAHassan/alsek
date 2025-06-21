@@ -114,14 +114,14 @@ class Lock:
             raise ValueError(f"Name not provided")
 
     @property
+    def lock_id(self) -> str:
+        """The full name of the lock including its namespace prefix."""
+        return self.lock_interface.lock_id
+
+    @property
     def owner_id(self) -> str:
         """The ID of the owner of the lock."""
         return self._owner_id
-
-    @property
-    def full_name(self) -> str:
-        """The full name of the lock including its namespace prefix."""
-        return self.lock_interface.lock_id
 
     @property
     def holder(self) -> Optional[str]:
