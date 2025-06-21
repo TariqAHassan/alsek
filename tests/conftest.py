@@ -129,7 +129,7 @@ def postgres_backend(custom_postgresql) -> PostgresBackend:
     return PostgresBackend(connection_string)
 
 
-@pytest.fixture(params=["redis"])
+@pytest.fixture(params=["redis", "postgres"])
 def rolling_backend(
     request: SubRequest,
     custom_redisdb: Redis,

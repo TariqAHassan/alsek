@@ -10,18 +10,20 @@ import os
 import threading
 from socket import gethostname
 from types import TracebackType
-from typing import Literal, Optional, Type, get_args, Any
+from typing import Optional, Type, get_args, Any
 
 import redis_lock
 
-from alsek.core.concurrency._utils import RedisLockInterface, PostgresLockInterface
+from alsek.core.concurrency._utils import (
+    RedisLockInterface,
+    PostgresLockInterface,
+    IF_ALREADY_ACQUIRED_TYPE,
+)
 from alsek.exceptions import LockAlreadyAcquiredError
 from alsek.storage.backends import Backend
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.backends.postgres import PostgresBackend
 from alsek.utils.printing import auto_repr
-
-IF_ALREADY_ACQUIRED_TYPE = Literal["raise_error", "return_true", "return_false"]
 
 CURRENT_HOST_OWNER_ID = f"lock:{gethostname()}"
 
@@ -156,7 +158,11 @@ class Lock:
             raise ValueError(f"Invalid `on_already_acquired`, got  {if_already_acquired}")  # fmt: skip
 
         try:
-            return self.lock_interface.acquire(blocking=bool(wait), timeout=wait)
+            return self.lock_interface.acquire(
+                if_already_acquired=if_already_acquired,
+                blocking=bool(wait),
+                timeout=wait,
+            )
         except LockAlreadyAcquiredError as error:
             if if_already_acquired == "return_true":
                 return True

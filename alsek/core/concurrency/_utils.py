@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Optional
+from typing import Optional, Literal
 
 import redis_lock
 from datetime import timedelta
@@ -20,6 +20,8 @@ from alsek.storage.backends.postgres.tables import DistributedLock
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.backends.postgres import PostgresBackend
 from alsek.utils.temporal import utcnow
+
+IF_ALREADY_ACQUIRED_TYPE = Literal["raise_error", "return_true", "return_false"]
 
 
 class BaseLockInterface(ABC):
@@ -54,7 +56,12 @@ class BaseLockInterface(ABC):
         raise NotImplementedError()
 
     @abstractmethod
-    def acquire(self, blocking: bool = True, timeout: Optional[int] = None) -> bool:
+    def acquire(
+        self,
+        if_already_acquired: IF_ALREADY_ACQUIRED_TYPE,
+        blocking: bool = True,
+        timeout: Optional[int] = None,
+    ) -> bool:
         raise NotImplementedError()
 
     @abstractmethod
@@ -90,7 +97,12 @@ class RedisLockInterface(BaseLockInterface):
     def get_holder_id(self) -> str:
         return self._engine.get_owner_id()
 
-    def acquire(self, blocking: bool = True, timeout: Optional[int] = None) -> bool:
+    def acquire(
+        self,
+        if_already_acquired: IF_ALREADY_ACQUIRED_TYPE,
+        blocking: bool = True,
+        timeout: Optional[int] = None,
+    ) -> bool:
         try:
             return self._engine.acquire(
                 blocking=blocking,
@@ -187,7 +199,12 @@ class PostgresLockInterface(BaseLockInterface):
         lock_record.acquired_at = current_time
         lock_record.expires_at = current_time + self._ttl_timedelta
 
-    def acquire(self, blocking: bool = True, timeout: Optional[int] = None) -> bool:
+    def acquire(
+        self,
+        if_already_acquired: IF_ALREADY_ACQUIRED_TYPE,
+        blocking: bool = True,
+        timeout: Optional[int] = None,
+    ) -> bool:
         """Acquire the lock using PostgreSQL row-level locking."""
         with self.backend.session() as session:
             try:
@@ -198,20 +215,23 @@ class PostgresLockInterface(BaseLockInterface):
                 # A. No existing lock, create new one
                 if lock_record is None:
                     return self._create_new_lock(session)
-                # B. Can acquire the lock (expired or we own it)
+                # B. Lock already acquired by same owner
+                elif (
+                    if_already_acquired == "raise_error"
+                    and lock_record.owner_id == self.owner_id
+                ):
+                    raise LockAlreadyAcquiredError(f"Lock {self.lock_id} already acquired")  # fmt: skip
+                # C. Can acquire the lock (expired)
                 elif self._can_acquire_lock(lock_record):
                     self._update_lock_ownership(lock_record)
                     session.commit()
                     return True
-                # C. Lock is held by someone else
+                # D. Lock is held by someone else
                 else:
                     return False
             except Exception as error:
                 session.rollback()
-                if blocking:
-                    raise error
-                else:
-                    return False
+                raise error
 
     def release(self) -> None:
         """Release the lock."""
