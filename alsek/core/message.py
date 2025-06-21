@@ -21,7 +21,7 @@ from alsek.types import SupportedMechanismType
 from alsek.utils.helpers import dict_merge_update_into_origin
 from alsek.utils.parsing import ExceptionDetails
 from alsek.utils.printing import auto_repr
-from alsek.utils.temporal import fromtimestamp_ms, utcnow_timestamp_ms
+from alsek.utils.temporal import from_timestamp_ms, utcnow_timestamp_ms
 
 log = logging.getLogger(__name__)
 
@@ -205,7 +205,7 @@ class Message:
     def __repr__(self) -> str:
         params = self.data
         for k in ("created_at", "updated_at"):
-            params[k] = fromtimestamp_ms(params[k])
+            params[k] = from_timestamp_ms(params[k])
         return auto_repr(self, **params)
 
     @property

@@ -4,18 +4,16 @@
 
 """
 
-import pytest
-
-from alsek.utils.temporal import fromtimestamp_ms, time_ms, utcnow_timestamp_ms
+from alsek.utils.temporal import from_timestamp_ms, time_ms, utcnow_timestamp_ms
 
 
 def test_utcnow_timestamp_ms() -> None:
     assert isinstance(utcnow_timestamp_ms(), int)
 
 
-def test_fromtimestamp_ms() -> None:
+def test_from_timestamp_ms() -> None:
     ts = utcnow_timestamp_ms()
-    dt = fromtimestamp_ms(ts)
+    dt = from_timestamp_ms(ts)
     assert int(dt.timestamp() * 1000) == ts
 
 
