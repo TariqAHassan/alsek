@@ -14,9 +14,7 @@ import dill
 from sqlalchemy import text, select, delete
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
 
-from alsek.core.concurrency._utils import compute_expiry_datetime
 from alsek.defaults import DEFAULT_NAMESPACE
-from datetime import timedelta
 from alsek.storage.backends import AsyncBackend, LazyClient
 from alsek.storage.backends.postgres.tables import (
     Base,
@@ -29,7 +27,7 @@ from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
-from alsek.utils.temporal import utcnow
+from alsek.utils.temporal import utcnow, compute_expiry_datetime
 
 log = logging.getLogger(__name__)
 
