@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 import time
 from abc import abstractmethod, ABC
-from typing import Any, AsyncIterable, Iterable
+from typing import Any, AsyncIterable, Iterable, Optional
 
 import asyncpg
 import psycopg2
@@ -54,23 +54,23 @@ class PostgresPubSubListener(BasePostgresPubSubListen):
     def _cleanup(
         self,
         conn: psycopg2.extensions.connection,
-        cursor: psycopg2.extensions.cursor,
+        cursor: Optional[psycopg2.extensions.cursor],
     ) -> None:
         try:
-            cursor.execute(f"UNLISTEN {self.channel}")
-            cursor.close()
+            if cursor:
+                cursor.execute(f"UNLISTEN {self.channel}")
+                cursor.close()
             conn.close()
         except Exception:  # noqa
             pass
 
     def _stream(self) -> Iterable[Any]:
         conn = self._get_connection()
-        conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
-        cursor = conn.cursor()
-
-        # Start listening to the channel
-        cursor.execute(f"LISTEN {self.channel}")
+        cursor: Optional[psycopg2.extensions.cursor] = None
         try:
+            conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
+            cursor = conn.cursor()
+            cursor.execute(f"LISTEN {self.channel}")
             while True:
                 conn.poll()
                 while conn.notifies:
