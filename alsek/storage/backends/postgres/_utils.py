@@ -46,7 +46,7 @@ class PostgresPubSubListener:
             password=self.url.password,
         )
 
-    def _engine(self) -> Iterable[Any]:
+    def _stream(self) -> Iterable[Any]:
         self.conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = self.conn.cursor()
 
@@ -76,6 +76,6 @@ class PostgresPubSubListener:
 
     def listen(self) -> Iterable[Any]:
         try:
-            yield from self._engine()
+            yield from self._stream()
         finally:
             self._cleanup()
