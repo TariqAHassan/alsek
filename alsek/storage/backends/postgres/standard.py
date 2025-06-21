@@ -69,10 +69,10 @@ class PostgresBackend(Backend):
 
     def _ensure_schema_and_tables_exist(self) -> None:
         if not self._tables_created:
-            with self._engine.connect() as conn:
+            with self.engine.connect() as conn:
                 conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}"))
                 conn.commit()
-            Base.metadata.create_all(self._engine)
+            Base.metadata.create_all(self.engine)
             self._tables_created = True
 
     @contextmanager
