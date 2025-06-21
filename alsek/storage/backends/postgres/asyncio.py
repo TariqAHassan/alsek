@@ -136,7 +136,7 @@ class PostgresAsyncBackend(AsyncBackend):
             full_name = self.full_name(name)
             obj = await session.get(KeyValueRecord, full_name)
 
-            expires_at = compute_expiry_datetime(utcnow(), ttl=ttl)
+            expires_at = compute_expiry_datetime(ttl)
             if nx and obj is not None:
                 raise KeyError(f"Name '{name}' already exists")
             elif obj is None:

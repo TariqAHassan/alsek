@@ -185,7 +185,7 @@ class PostgresLockInterface(BaseLockInterface):
                 id=self.lock_id,
                 owner_id=self.owner_id,
                 acquired_at=current_time,
-                expires_at=compute_expiry_datetime(current_time, ttl=self.ttl),
+                expires_at=compute_expiry_datetime(self.ttl, current_time=current_time),
             )
         )
         session.commit()
@@ -195,7 +195,7 @@ class PostgresLockInterface(BaseLockInterface):
         current_time = utcnow()
         lock_record.owner_id = self.owner_id
         lock_record.acquired_at = current_time
-        lock_record.expires_at = compute_expiry_datetime(current_time, ttl=self.ttl)
+        lock_record.expires_at = compute_expiry_datetime(self.ttl, current_time=current_time)
 
     def acquire(
         self,
