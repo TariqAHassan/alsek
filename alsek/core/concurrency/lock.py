@@ -231,7 +231,7 @@ class ThreadLock(Lock):
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs, owner_id=_get_process_lock_owner_id())
+        super().__init__(*args, **kwargs, owner_id=_get_thread_lock_owner_id())
 
     @property
     def owner_id(self) -> str:
