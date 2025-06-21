@@ -15,6 +15,7 @@ import pytest
 import redis_lock
 
 from alsek.core.concurrency.lock import Lock, ProcessLock, ThreadLock
+from alsek.exceptions import LockAlreadyAcquiredError
 from alsek.storage.backends import Backend
 
 
@@ -59,7 +60,7 @@ def test_multi_acquire(rolling_backend: Backend) -> None:
     assert lock.acquire()
     assert lock.acquire(if_already_acquired="return_true")
 
-    with pytest.raises(redis_lock.AlreadyAcquired):
+    with pytest.raises(LockAlreadyAcquiredError):
         lock.acquire(if_already_acquired="raise_error")
 
 

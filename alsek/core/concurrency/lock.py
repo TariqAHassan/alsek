@@ -11,11 +11,11 @@ import threading
 from socket import gethostname
 from types import TracebackType
 from typing import Literal, Optional, Type, get_args, Any
-from datetime import timedelta
 
 import redis_lock
 
 from alsek.core.concurrency._utils import RedisLockInterface, PostgresLockInterface
+from alsek.exceptions import LockAlreadyAcquiredError
 from alsek.storage.backends import Backend
 from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.backends.postgres import PostgresBackend
@@ -163,7 +163,9 @@ class Lock:
             elif if_already_acquired == "return_false":
                 return False
             else:
-                raise error
+                raise LockAlreadyAcquiredError(
+                    f"Lock {self.lock_id} already acquired"
+                ) from error
 
     def release(self, raise_if_not_acquired: bool = False) -> bool:
         """Release the lock.
