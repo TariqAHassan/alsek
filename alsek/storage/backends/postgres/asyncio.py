@@ -21,9 +21,10 @@ from alsek.storage.backends.postgres._tables import (
     Base,
     KeyValue as KeyValueRecord,
     Priority as PriorityRecord,
+    SCHEMA_NAME,
 )
 from alsek.storage.backends.postgres._utils import PostgresAsyncPubSubListener
-from alsek.storage.serialization import Serializer, JsonSerializer
+from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
@@ -40,13 +41,14 @@ class PostgresAsyncBackend(AsyncBackend):
 
     def __init__(
         self,
-        engine: Optional[Union[str, AsyncEngine, LazyClient]] = None,
+        engine: Union[str, AsyncEngine, LazyClient] = None,
         namespace: str = DEFAULT_NAMESPACE,
-        serializer: Serializer = JsonSerializer(),
+        serializer: Optional[Serializer] = None,
     ) -> None:
         super().__init__(namespace, serializer=serializer)
+
         self._engine = self._engine_parse(engine)
-        self._tables_created = False
+        self._tables_created: bool = False
 
     @staticmethod
     def _engine_parse(
@@ -54,8 +56,6 @@ class PostgresAsyncBackend(AsyncBackend):
     ) -> Union[AsyncEngine, LazyClient]:
         if isinstance(engine, LazyClient):
             return engine
-        elif engine is None:
-            return create_async_engine("postgresql+asyncpg://localhost/postgres")
         elif isinstance(engine, AsyncEngine):
             return engine
         elif isinstance(engine, str):
@@ -72,16 +72,17 @@ class PostgresAsyncBackend(AsyncBackend):
             self._engine = self._engine.get()
         return cast(AsyncEngine, self._engine)
 
-    @asynccontextmanager
-    async def _session(self) -> AsyncIterator[AsyncSession]:
-        engine = self.engine
-        # Ensure tables are created on first use
+    async def _ensure_schema_and_tables_exist(self) -> None:
         if not self._tables_created:
-            async with engine.begin() as conn:
+            async with self.engine.begin() as conn:
+                await conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}"))
                 await conn.run_sync(Base.metadata.create_all)
             self._tables_created = True
-        
-        async with AsyncSession(engine) as session:
+
+    @asynccontextmanager
+    async def _session(self) -> AsyncIterator[AsyncSession]:
+        await self._ensure_schema_and_tables_exist()
+        async with AsyncSession(self.engine) as session:
             yield session
 
     def __repr__(self) -> str:
@@ -97,7 +98,7 @@ class PostgresAsyncBackend(AsyncBackend):
             settings=gather_init_params(self, ignore=("engine",)),
         )
         # For async engines, we need to handle the URL differently
-        if hasattr(self._engine, 'url'):
+        if hasattr(self._engine, "url"):
             data["settings"]["engine"] = str(self._engine.url)
         else:
             data["settings"]["engine"] = "postgresql+asyncpg://localhost/postgres"
@@ -117,7 +118,9 @@ class PostgresAsyncBackend(AsyncBackend):
 
     async def exists(self, name: str) -> bool:
         async with self._session() as session:
-            obj = await session.get(KeyValueRecord, self.full_name(name))
+            obj: Optional[KeyValueRecord] = await session.get(
+                KeyValueRecord, self.full_name(name)
+            )
             if obj is None:
                 return False
             expired = self._cleanup_expired(session, obj)
@@ -156,7 +159,9 @@ class PostgresAsyncBackend(AsyncBackend):
         default: Optional[Union[Any, Type[Empty]]] = Empty,
     ) -> Any:
         async with self._session() as session:
-            obj = await session.get(KeyValueRecord, self.full_name(name))
+            obj: Optional[KeyValueRecord] = await session.get(
+                KeyValueRecord, self.full_name(name)
+            )
             if obj is None or self._cleanup_expired(session, obj):
                 if obj is not None:  # cleanup was performed
                     await session.commit()
@@ -173,10 +178,12 @@ class PostgresAsyncBackend(AsyncBackend):
                 if not missing_ok:
                     raise KeyError(f"No name '{name}' found")
                 return
-            session.delete(obj)
+            await session.delete(obj)
             await session.commit()
 
-    async def priority_add(self, key: str, unique_id: str, priority: int | float) -> None:
+    async def priority_add(
+        self, key: str, unique_id: str, priority: int | float
+    ) -> None:
         async with self._session() as session:
             full_key = self.full_name(key)
             stmt = select(PriorityRecord).where(
@@ -254,7 +261,9 @@ class PostgresAsyncBackend(AsyncBackend):
                 )
 
             stmt = text("NOTIFY :channel, :payload")
-            await session.execute(stmt, {"channel": channel, "payload": serialized_value})
+            await session.execute(
+                stmt, {"channel": channel, "payload": serialized_value}
+            )
             await session.commit()
 
     async def sub(self, channel: str) -> AsyncIterable[str | dict[str, Any]]:
@@ -267,7 +276,7 @@ class PostgresAsyncBackend(AsyncBackend):
             AsyncIterable[str | dict[str, Any]]: An async iterable of messages received on the channel
 
         """
-        # Create an async listener using the engine URL  
+        # Create an async listener using the engine URL
         engine = self.engine
         listener = PostgresAsyncPubSubListener(
             channel=channel,
@@ -286,7 +295,7 @@ class PostgresAsyncBackend(AsyncBackend):
 
             result = await session.execute(stmt)
             expired_objects = []
-            
+
             for obj in result.scalars():
                 if (
                     obj.expires_at is not None
@@ -295,9 +304,9 @@ class PostgresAsyncBackend(AsyncBackend):
                     expired_objects.append(obj)
                 else:
                     yield self.short_name(obj.name)
-            
+
             # Clean up expired objects
             for obj in expired_objects:
-                session.delete(obj)
+                await session.delete(obj)
             if expired_objects:
                 await session.commit()

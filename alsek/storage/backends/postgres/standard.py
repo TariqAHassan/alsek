@@ -23,7 +23,7 @@ from alsek.storage.backends.postgres._tables import (
     SCHEMA_NAME,
 )
 from alsek.storage.backends.postgres._utils import PostgresPubSubListener
-from alsek.storage.serialization import Serializer, JsonSerializer
+from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
@@ -44,15 +44,7 @@ class PostgresBackend(Backend):
         super().__init__(namespace, serializer=serializer)
 
         self._engine = self._engine_parse(engine)
-        if not isinstance(self._engine, LazyClient):
-            self._ensure_schema_and_tables()
-
-    def _ensure_schema_and_tables(self) -> None:
-        engine = cast(Engine, self._engine)
-        with engine.connect() as conn:
-            conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}"))
-            conn.commit()
-        Base.metadata.create_all(engine)
+        self._tables_created: bool = False
 
     @staticmethod
     def _engine_parse(
@@ -71,11 +63,19 @@ class PostgresBackend(Backend):
     def engine(self) -> Engine:
         if isinstance(self._engine, LazyClient):
             self._engine = self._engine.get()
-            self._ensure_schema_and_tables()
         return cast(Engine, self._engine)
+
+    def _ensure_schema_and_tables_exist(self) -> None:
+        if not self._tables_created:
+            with self._engine.connect() as conn:
+                conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}"))
+                conn.commit()
+            Base.metadata.create_all(self._engine)
+            self._tables_created = True
 
     @contextmanager
     def _session(self) -> Iterator[Session]:
+        self._ensure_schema_and_tables_exist()
         with Session(self.engine) as session:
             yield session
 
@@ -111,7 +111,8 @@ class PostgresBackend(Backend):
     def exists(self, name: str) -> bool:
         with self._session() as session:
             obj: Optional[KeyValueRecord] = session.get(
-                KeyValueRecord, self.full_name(name)
+                KeyValueRecord,
+                self.full_name(name),
             )
             if obj is None:
                 return False
@@ -149,7 +150,9 @@ class PostgresBackend(Backend):
         default: Optional[Union[Any, Type[Empty]]] = None,
     ) -> Any:
         with self._session() as session:
-            obj = session.get(KeyValueRecord, self.full_name(name))
+            obj: Optional[KeyValueRecord] = session.get(
+                KeyValueRecord, self.full_name(name)
+            )
             if obj is None or self._cleanup_expired(session, obj):
                 if default is Empty or isinstance(default, Empty):
                     raise KeyError(f"No name '{name}' found")
