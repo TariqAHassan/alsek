@@ -26,7 +26,7 @@ class Delayed:
 @pytest.mark.parametrize("backend", [RedisBackend])
 def test_invalid_conn(backend: Backend) -> None:
     with pytest.raises(ValueError):
-        backend._conn_parse(-1)
+        backend._connection_parser(-1)
 
 
 @pytest.mark.parametrize(
@@ -38,7 +38,7 @@ def test_invalid_conn(backend: Backend) -> None:
         LazyClient(lambda: Redis()),
     ],
 )
-def test_redis_conn_parse(
+def test_redis_connection_parser(
     conn: Optional[Union[Delayed, LazyClient]],
     redis_backend: RedisBackend,
 ) -> None:
@@ -46,7 +46,7 @@ def test_redis_conn_parse(
         conn = conn()
 
     expected = LazyClient if isinstance(conn, LazyClient) else Redis
-    assert isinstance(RedisBackend._conn_parse(conn), expected)
+    assert isinstance(RedisBackend._connection_parser(conn), expected)
 
 
 @pytest.mark.parametrize(

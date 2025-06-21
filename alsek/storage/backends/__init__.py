@@ -68,6 +68,13 @@ class BaseBackend(ABC):
         self.namespace = namespace
         self.serializer = serializer or JsonSerializer(compression_level=9)
 
+    @staticmethod
+    @abstractmethod
+    def _connection_parser(
+        engine: Union[str, Any, LazyClient]
+    ) -> Union[Any, LazyClient]:
+        raise NotImplementedError()
+
     def __repr__(self) -> str:
         return auto_repr(
             self,

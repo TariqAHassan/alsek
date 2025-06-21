@@ -43,11 +43,11 @@ class PostgresBackend(Backend):
     ) -> None:
         super().__init__(namespace, serializer=serializer)
 
-        self._engine = self._engine_parse(engine)
+        self._engine = self._connection_parser(engine)
         self._tables_created: bool = False
 
     @staticmethod
-    def _engine_parse(
+    def _connection_parser(
         engine: Union[str, Engine, LazyClient]
     ) -> Union[Engine, LazyClient]:
         if isinstance(engine, LazyClient):

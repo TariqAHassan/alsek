@@ -44,24 +44,12 @@ class RedisAsyncBackend(AsyncBackend):
         **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
-        self._conn = self._conn_parse(conn)
+        self._conn = self._connection_parser(conn)
 
     @staticmethod
-    def _conn_parse(
+    def _connection_parser(
         conn: Optional[Union[str, RedisAsync, LazyClient]]
     ) -> Union[RedisAsync, LazyClient]:
-        """Parse the connection parameter to obtain an AsyncRedis or LazyClient instance.
-
-        Args:
-            conn (Optional[Union[str, AsyncRedis, LazyClient]]): The connection parameter.
-
-        Returns:
-            Union[AsyncRedis, LazyClient]: An `AsyncRedis` instance or a `LazyClient` wrapping one.
-
-        Raises:
-            ValueError: If the connection parameter is of an unsupported type.
-
-        """
         if isinstance(conn, LazyClient):
             return conn
         elif conn is None:

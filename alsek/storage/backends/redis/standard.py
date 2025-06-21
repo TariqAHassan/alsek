@@ -53,10 +53,10 @@ class RedisBackend(Backend):
         serializer: Serializer = JsonSerializer(),
     ) -> None:
         super().__init__(namespace, serializer=serializer)
-        self._conn = self._conn_parse(conn)
+        self._conn = self._connection_parser(conn)
 
     @staticmethod
-    def _conn_parse(
+    def _connection_parser(
         conn: Optional[Union[str, Redis, LazyClient]]
     ) -> Union[Redis, LazyClient]:
         if isinstance(conn, LazyClient):
