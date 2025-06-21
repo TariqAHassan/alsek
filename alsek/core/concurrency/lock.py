@@ -80,6 +80,9 @@ class Lock:
         self.auto_release = auto_release
         self._owner_id = owner_id
 
+        if not name:
+            raise ValueError(f"Name not provided")
+
         if isinstance(backend, RedisBackend):
             self.lock_interface = RedisLockInterface(
                 name=name,
@@ -211,10 +214,6 @@ class ProcessLock(Lock):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs, owner_id=_get_process_lock_owner_id())
 
-    def validate(self) -> None:
-        if not self.name:
-            raise ValueError("`name` must be provided.")
-
     @property
     def owner_id(self) -> str:
         # We compute this "fresh" every time so that
@@ -230,10 +229,6 @@ class ThreadLock(Lock):
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs, owner_id=_get_process_lock_owner_id())
-
-    def validate(self) -> None:
-        if not self.name:
-            raise ValueError("`name` must be provided.")
 
     @property
     def owner_id(self) -> str:
