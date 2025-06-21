@@ -11,8 +11,7 @@ from sqlalchemy import URL
 from alsek.storage.serialization import Serializer
 
 
-def parse_notification_data(payload: str, serializer: Serializer) -> dict[str, Any]:
-    """Parse notification payload and deserialize the data."""
+def _parse_notification_data(payload: str, serializer: Serializer) -> dict[str, Any]:
     data = serializer.reverse(payload)
     return {"type": "message", "data": data}
 
@@ -43,9 +42,7 @@ class PostgresPubSubListener:
         )
 
     def _listen(self) -> Iterable[Any]:
-        self.conn.set_isolation_level(
-            psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT
-        )
+        self.conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
         cursor = self.conn.cursor()
 
         # Start listening to the channel
@@ -55,7 +52,10 @@ class PostgresPubSubListener:
             while self.conn.notifies:
                 notify = conn.notifies.popleft()  # type: ignore
                 if notify.channel == self.channel:
-                    yield parse_notification_data(notify.payload, self.serializer)
+                    yield _parse_notification_data(
+                        payload=notify.payload,
+                        serializer=self.serializer,
+                    )
 
             # Small sleep to prevent busy waiting
             time.sleep(self.sleep_time)
