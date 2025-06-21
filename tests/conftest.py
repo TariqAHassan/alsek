@@ -13,6 +13,7 @@ from typing import Any, Iterable, Optional, Type, Union
 import pytest
 from _pytest.fixtures import SubRequest
 from click.testing import CliRunner
+from pytest_postgresql import factories as postgresql_factories
 from pytest_redis import factories as redis_factories
 from redis import Redis
 
@@ -25,6 +26,7 @@ from alsek.core.task import task
 from alsek.core.worker.process import ProcessWorkerPool
 from alsek.core.worker.thread import ThreadWorkerPool
 from alsek.storage.backends import Backend
+from alsek.storage.backends.postgres import PostgresBackend
 from alsek.storage.backends.redis.standard import RedisBackend
 from alsek.storage.result import ResultStore
 from alsek.tools.iteration import ResultPool
@@ -45,6 +47,11 @@ custom_redisdb_proc = redis_factories.redis_proc(
     datadir="/tmp",
 )
 custom_redisdb = redis_factories.redisdb("custom_redisdb_proc", decode=True)
+
+custom_postgresql_proc = postgresql_factories.postgresql_proc(
+    port=None,
+)
+custom_postgresql = postgresql_factories.postgresql("custom_postgresql_proc")
 
 
 @pytest.fixture()
@@ -108,13 +115,32 @@ def redis_backend(custom_redisdb: Redis) -> RedisBackend:
     return RedisBackend(custom_redisdb)
 
 
-@pytest.fixture(params=["redis"])
+@pytest.fixture()
+def postgres_backend(custom_postgresql) -> PostgresBackend:
+    # Create connection string from the postgresql fixture
+    connection_string = (
+        f"postgresql://{custom_postgresql.info.user}:"
+        f"@{custom_postgresql.info.host}:{custom_postgresql.info.port}"
+        f"/{custom_postgresql.info.dbname}"
+    )
+    return PostgresBackend(connection_string)
+
+
+@pytest.fixture(params=["redis", "postgres"])
 def rolling_backend(
     request: SubRequest,
     custom_redisdb: Redis,
+    custom_postgresql,
 ) -> Backend:
     if request.param == "redis":
         return RedisBackend(custom_redisdb)
+    elif request.param == "postgres":
+        # Create connection string from the postgresql fixture
+        return PostgresBackend(
+            f"postgresql://{custom_postgresql.info.user}:"
+            f"@{custom_postgresql.info.host}:{custom_postgresql.info.port}"
+            f"/{custom_postgresql.info.dbname}"
+        )
     else:
         raise ValueError(f"Unknown backend '{request.param}'")
 
