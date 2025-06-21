@@ -64,7 +64,7 @@ class PostgresPubSubListener(BasePostgresPubSubListen):
         except Exception:  # noqa
             pass
 
-    def _stream(self) -> Iterable[Any]:
+    def listen(self) -> Iterable[Any]:
         conn = self._get_connection()
         cursor: Optional[psycopg2.extensions.cursor] = None
         try:
@@ -85,9 +85,6 @@ class PostgresPubSubListener(BasePostgresPubSubListen):
                 time.sleep(self.sleep_time)
         finally:
             self._cleanup(conn, cursor=cursor)
-
-    def listen(self) -> Iterable[Any]:
-        yield from self._stream()
 
 
 class PostgresAsyncPubSubListener(BasePostgresPubSubListen):
@@ -135,7 +132,7 @@ class PostgresAsyncPubSubListener(BasePostgresPubSubListen):
         except Exception:  # noqa
             pass
 
-    async def _stream(self) -> AsyncIterable[Any]:
+    async def listen(self) -> AsyncIterable[Any]:
         conn = await self._get_connection()
         await conn.add_listener(self.channel, callback=self._notification_handler)
 
@@ -157,7 +154,3 @@ class PostgresAsyncPubSubListener(BasePostgresPubSubListen):
                     continue
         finally:
             await self._cleanup(conn)
-
-    async def listen(self) -> AsyncIterable[Any]:
-        async for item in self._stream():
-            yield item
