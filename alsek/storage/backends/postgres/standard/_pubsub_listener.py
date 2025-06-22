@@ -11,7 +11,7 @@ from typing import Optional, Iterable, Any
 import psycopg2
 from psycopg2 import sql
 
-from alsek.storage.backends.postgres._utils import BasePostgresPubSubListen
+from alsek.storage.backends.postgres.utils.pubsub import BasePostgresPubSubListen
 
 import logging
 

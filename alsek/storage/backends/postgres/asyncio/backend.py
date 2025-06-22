@@ -17,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engin
 
 from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import AsyncBackend, LazyClient
-from alsek.storage.backends.postgres._utils import (
+from alsek.storage.backends.postgres.utils.general import (
     validate_value_within_postgres_notification_size_limit,
 )
 from alsek.storage.backends.postgres.asyncio._pubsub_listener import PostgresAsyncPubSubListener

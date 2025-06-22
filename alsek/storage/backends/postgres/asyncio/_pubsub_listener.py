@@ -12,7 +12,7 @@ from typing import AsyncIterable, Any
 
 import asyncpg
 
-from alsek.storage.backends.postgres._utils import BasePostgresPubSubListen
+from alsek.storage.backends.postgres.utils.pubsub import BasePostgresPubSubListen
 
 import logging
 
