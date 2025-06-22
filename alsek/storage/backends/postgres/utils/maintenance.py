@@ -115,9 +115,8 @@ class PostgresCronMaintenance(BasePostgresCronMaintenance):
 
                 conn.commit()
                 return True
-
-        except SQLAlchemyError as e:
-            print(f"Failed to setup pg_cron cleanup job: {e}")
+        except SQLAlchemyError:
+            log.error(f"Failed to setup pg_cron cleanup job", exc_info=True)
             return False
 
     def remove_cleanup_job(self) -> bool:
@@ -129,8 +128,8 @@ class PostgresCronMaintenance(BasePostgresCronMaintenance):
                 )
                 conn.commit()
                 return True
-        except SQLAlchemyError as e:
-            print(f"Failed to remove pg_cron cleanup job: {e}")
+        except SQLAlchemyError:
+            log.error(f"Failed to remove pg_cron cleanup job", exc_info=True)
             return False
 
 
@@ -179,8 +178,8 @@ class PostgresCronMaintenanceAsync(BasePostgresCronMaintenance):
                 await conn.commit()
                 return True
 
-        except SQLAlchemyError as e:
-            print(f"Failed to setup pg_cron cleanup job: {e}")
+        except SQLAlchemyError:
+            log.error(f"Failed to setup pg_cron cleanup job", exc_info=True)
             return False
 
     async def remove_cleanup_job(self) -> bool:
@@ -192,6 +191,6 @@ class PostgresCronMaintenanceAsync(BasePostgresCronMaintenance):
                 )
                 await conn.commit()
                 return True
-        except SQLAlchemyError as e:
-            print(f"Failed to remove pg_cron cleanup job: {e}")
+        except SQLAlchemyError:
+            log.error(f"Failed to remove pg_cron cleanup job", exc_info=True)
             return False
