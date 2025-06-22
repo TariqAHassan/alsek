@@ -11,7 +11,7 @@ from functools import cached_property
 from typing import Optional, Union, cast, Iterator, Any, Type, Iterable
 
 import dill
-from sqlalchemy import Engine, create_engine, select, delete, text, or_
+from sqlalchemy import Engine, create_engine, select, text, or_
 from sqlalchemy.orm import Session
 from sqlalchemy import URL
 
@@ -20,8 +20,8 @@ from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.backends.postgres.tables import (
     Base,
     KeyValue as KeyValueRecord,
-    Priority as PriorityRecord,
-    SCHEMA_NAME, KeyValueType,
+    SCHEMA_NAME,
+    KeyValueType,
 )
 from alsek.storage.backends.postgres._utils import PostgresPubSubListener
 from alsek.storage.serialization import Serializer
@@ -173,53 +173,84 @@ class PostgresBackend(Backend):
     def priority_add(self, key: str, unique_id: str, priority: int | float) -> None:
         full_key = self.full_name(key)
         with self.session() as session:
-            stmt = select(PriorityRecord).where(
-                PriorityRecord.id == full_key,
-                PriorityRecord.unique_id == unique_id,
-            )
-            obj = session.scalars(stmt).one_or_none()
+            obj = session.scalars(
+                select(KeyValueRecord).where(
+                    KeyValueRecord.id == full_key,
+                    KeyValueRecord.type == KeyValueType.PRIORITY,
+                )
+            ).one_or_none()
+
             if obj is None:
-                obj = PriorityRecord(
+                obj = KeyValueRecord(
                     id=full_key,
-                    unique_id=unique_id,
-                    priority=priority,
+                    value=self.serializer.forward({unique_id: priority}),
+                    type=KeyValueType.PRIORITY,
                 )
                 session.add(obj)
             else:
-                obj.priority = priority
+                priority_data = self.serializer.reverse(obj.value)
+                priority_data[unique_id] = priority
+                obj.value = self.serializer.forward(priority_data)
             session.commit()
 
     def priority_get(self, key: str) -> Optional[str]:
         full_key = self.full_name(key)
         with self.session() as session:
-            stmt = (
-                select(PriorityRecord)
-                .where(PriorityRecord.id == full_key)
-                .order_by(PriorityRecord.priority.asc())
-            )
-            obj = session.scalars(stmt).one_or_none()
-            return obj.unique_id if obj else None
+            obj = session.scalars(
+                select(KeyValueRecord).where(
+                    KeyValueRecord.id == full_key,
+                    KeyValueRecord.type == KeyValueType.PRIORITY,
+                )
+            ).one_or_none()
+            if obj is None:
+                return None
+
+            if priority_data := self.serializer.reverse(obj.value):
+                return min(
+                    priority_data.keys(),
+                    key=lambda k: priority_data[k],
+                )
+            else:
+                return None
 
     def priority_iter(self, key: str) -> Iterable[str]:
         full_key = self.full_name(key)
         with self.session() as session:
-            stmt = (
-                select(PriorityRecord)
-                .where(PriorityRecord.id == full_key)
-                .order_by(PriorityRecord.priority.asc())
-            )
-            for obj in session.scalars(stmt):
-                yield obj.unique_id
+            obj = session.scalars(
+                select(KeyValueRecord).where(
+                    KeyValueRecord.id == full_key,
+                    KeyValueRecord.type == KeyValueType.PRIORITY,
+                )
+            ).one_or_none()
+            if obj is None:
+                return
+
+            for unique_id, _ in sorted(
+                self.serializer.reverse(obj.value).items(),
+                key=lambda x: x[1],
+            ):
+                yield unique_id
 
     def priority_remove(self, key: str, unique_id: str) -> None:
         full_key = self.full_name(key)
         with self.session() as session:
-            stmt = delete(PriorityRecord).where(
-                PriorityRecord.id == full_key,
-                PriorityRecord.unique_id == unique_id,
-            )
-            session.execute(stmt)
-            session.commit()
+            obj = session.scalars(
+                select(KeyValueRecord).where(
+                    KeyValueRecord.id == full_key,
+                    KeyValueRecord.type == KeyValueType.PRIORITY,
+                )
+            ).one_or_none()
+            if obj is None:
+                return  # Nothing to remove
+
+            priority_data = self.serializer.reverse(obj.value)
+            if unique_id in priority_data:
+                del priority_data[unique_id]
+                if priority_data:
+                    obj.value = self.serializer.forward(priority_data)
+                else:
+                    session.delete(obj)
+                session.commit()
 
     def pub(self, channel: str, value: Any) -> None:
         """Publish a message to a PostgreSQL channel using NOTIFY.
@@ -267,7 +298,6 @@ class PostgresBackend(Backend):
     def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
         like_pattern = self.full_name((pattern or "%").replace("*", "%"))
         with self.session() as session:
-            # Search in KeyValueRecord table
             stmt = select(KeyValueRecord).where(
                 KeyValueRecord.id.like(like_pattern),
                 or_(
@@ -279,13 +309,5 @@ class PostgresBackend(Backend):
             for obj in session.scalars(stmt):
                 if not obj.is_expired:
                     yield self.short_name(obj.id)
-            
-            # Also search in PriorityRecord table for priority queue names
-            priority_stmt = select(PriorityRecord.id).distinct().where(
-                PriorityRecord.id.like(like_pattern)
-            )
-            
-            for priority_id in session.scalars(priority_stmt):
-                yield self.short_name(priority_id)
-                
+
             session.commit()
