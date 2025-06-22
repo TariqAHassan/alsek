@@ -37,7 +37,19 @@ _TABLES_CREATION_LOCK = threading.Lock()
 
 
 class PostgresBackend(Backend):
-    """PostgreSQL backend powered by SQLAlchemy."""
+    """PostgreSQL backend powered by SQLAlchemy.
+
+    Backend powered by PostgreSQL using SQLAlchemy for ORM operations.
+    Provides full support for key-value storage, priority queues, and pub/sub messaging.
+
+    Args:
+        engine (Union[str, URL, Engine, LazyClient]): A connection URL string,
+            SQLAlchemy URL object, SQLAlchemy Engine instance, or LazyClient.
+        namespace (str): Prefix to use when inserting names in the backend.
+        serializer (Serializer, optional): Tool for encoding and decoding
+            values written into the backend.
+
+    """
 
     __SUPPORTS_PUBSUB__: bool = True
 
@@ -110,6 +122,15 @@ class PostgresBackend(Backend):
         return cls(**settings)
 
     def exists(self, name: str) -> bool:
+        """Check if a key exists in the PostgreSQL backend.
+
+        Args:
+            name (str): The name of the key to check.
+
+        Returns:
+            bool: `True` if the key exists and is not expired, `False` otherwise.
+
+        """
         with self.session() as session:
             stmt = select(1).where(
                 KeyValueRecord.id == self.full_name(name),
@@ -127,6 +148,21 @@ class PostgresBackend(Backend):
         nx: bool = False,
         ttl: Optional[int] = None,
     ) -> None:
+        """Set a value for a key in the PostgreSQL backend.
+
+        Args:
+            name (str): The name of the key.
+            value (Any): The value to set.
+            nx (bool, optional): If `True`, only set the key if it does not already exist.
+            ttl (Optional[int], optional): Time to live for the key in milliseconds.
+
+        Returns:
+            None
+
+        Raises:
+            KeyError: If `nx` is `True` and the key already exists.
+
+        """
         full_name = self.full_name(name)
         with self.session() as session:
             obj = session.get(KeyValueRecord, full_name)
@@ -152,6 +188,19 @@ class PostgresBackend(Backend):
         name: str,
         default: Optional[Union[Any, Type[Empty]]] = None,
     ) -> Any:
+        """Get the value of a key from the PostgreSQL backend.
+
+        Args:
+            name (str): The name of the key.
+            default (Optional[Union[Any, Type[Empty]]], optional): Default value if the key does not exist.
+
+        Returns:
+            Any: The value of the key.
+
+        Raises:
+            KeyError: If the key does not exist and no default is provided.
+
+        """
         with self.session() as session:
             stmt = select(KeyValueRecord).where(
                 KeyValueRecord.id == self.full_name(name),
@@ -169,6 +218,19 @@ class PostgresBackend(Backend):
             return self.serializer.reverse(obj.value)
 
     def delete(self, name: str, missing_ok: bool = False) -> None:
+        """Delete a key from the PostgreSQL backend.
+
+        Args:
+            name (str): The name of the key to delete.
+            missing_ok (bool, optional): If `True`, do not raise an error if the key does not exist.
+
+        Returns:
+            None
+
+        Raises:
+            KeyError: If the key does not exist and `missing_ok` is `False`.
+
+        """
         with self.session() as session:
             obj = session.get(KeyValueRecord, self.full_name(name))
             if obj is None:
@@ -179,6 +241,17 @@ class PostgresBackend(Backend):
             session.commit()
 
     def priority_add(self, key: str, unique_id: str, priority: int | float) -> None:
+        """Add an item to a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+            unique_id (str): The item's unique identifier.
+            priority (int | float): The numeric priority score.
+
+        Returns:
+            None
+
+        """
         full_key = self.full_name(key)
         with self.session() as session:
             kv_obj = session.get(KeyValueRecord, full_key)
@@ -204,6 +277,15 @@ class PostgresBackend(Backend):
             session.commit()
 
     def priority_get(self, key: str) -> Optional[str]:
+        """Peek the highest-priority item in a sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Returns:
+            Optional[str]: The ID of the highest-priority item, or None if empty.
+
+        """
         full_key = self.full_name(key)
         with self.session() as session:
             stmt = (
@@ -215,6 +297,15 @@ class PostgresBackend(Backend):
             return session.scalars(stmt).first()
 
     def priority_iter(self, key: str) -> Iterable[str]:
+        """Iterate over all items in a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Yields:
+            str: Member of the sorted set, in priority order.
+
+        """
         full_key = self.full_name(key)
         with self.session() as session:
             stmt = (
@@ -225,6 +316,16 @@ class PostgresBackend(Backend):
             yield from session.scalars(stmt)
 
     def priority_remove(self, key: str, unique_id: str) -> None:
+        """Remove an item from a priority-sorted set.
+
+        Args:
+            key (str): The name of the sorted set.
+            unique_id (str): The ID of the item to remove.
+
+        Returns:
+            None
+
+        """
         full_key = self.full_name(key)
         with self.session() as session:
             # A. Remove the Priority record
@@ -255,8 +356,8 @@ class PostgresBackend(Backend):
         """Publish a message to a PostgreSQL channel using NOTIFY.
 
         Args:
-            channel (str): The channel name to publish to
-            value (Any): The value to publish (will be serialized)
+            channel (str): The name of the channel.
+            value (Any): The message to publish.
 
         Returns:
             None
@@ -276,10 +377,10 @@ class PostgresBackend(Backend):
         """Subscribe to a PostgreSQL channel using LISTEN.
 
         Args:
-            channel (str): The channel name to subscribe to
+            channel (str): The name of the channel to subscribe to.
 
         Returns:
-            Iterable[str | dict[str, Any]]: An iterable of messages received on the channel
+            Iterable[str | dict[str, Any]]: An iterable of messages received on the channel.
 
         """
         listener = PostgresPubSubListener(
@@ -290,6 +391,15 @@ class PostgresBackend(Backend):
         yield from listener.listen()
 
     def scan(self, pattern: Optional[str] = None) -> Iterable[str]:
+        """Scan the PostgreSQL backend for keys matching a pattern.
+
+        Args:
+            pattern (Optional[str], optional): The pattern to match keys against. Defaults to '*'.
+
+        Yields:
+            str: The names of matching keys without the namespace prefix.
+
+        """
         like_pattern = self.full_name((pattern or "%").replace("*", "%"))
         with self.session() as session:
             stmt = select(KeyValueRecord).where(

@@ -39,7 +39,20 @@ _TABLES_CREATION_LOCK = asyncio.Lock()
 
 
 class PostgresAsyncBackend(AsyncBackend):
-    """Asynchronous PostgreSQL backend powered by SQLAlchemy and asyncpg."""
+    """Asynchronous PostgreSQL backend powered by SQLAlchemy and asyncpg.
+
+    This backend is powered by PostgreSQL with asyncpg driver and provides asynchronous support
+    for all PostgreSQL operations. Supports key-value storage, priority queues, and pub/sub messaging.
+
+    Args:
+        engine (Union[str, URL, AsyncEngine, LazyClient]): A connection URL string,
+            SQLAlchemy URL object, AsyncEngine instance, or LazyClient. If using a string URL,
+            it will be automatically converted to use the asyncpg driver.
+        namespace (str): Prefix to use when inserting names in the backend.
+        serializer (Serializer, optional): Tool for encoding and decoding
+            values written into the backend.
+
+    """
 
     __IS_ASYNC__: bool = True
     __SUPPORTS_PUBSUB__: bool = True
@@ -119,6 +132,15 @@ class PostgresAsyncBackend(AsyncBackend):
         return cls(**settings)
 
     async def exists(self, name: str) -> bool:
+        """Check if a key exists in the PostgreSQL backend asynchronously.
+
+        Args:
+            name (str): The name of the key to check.
+
+        Returns:
+            bool: `True` if the key exists and is not expired, `False` otherwise.
+
+        """
         async with self.session() as session:
             stmt = select(1).where(
                 KeyValueRecord.id == self.full_name(name),
@@ -137,6 +159,21 @@ class PostgresAsyncBackend(AsyncBackend):
         nx: bool = False,
         ttl: Optional[int] = None,
     ) -> None:
+        """Set a value for a key in the PostgreSQL backend asynchronously.
+
+        Args:
+            name (str): The name of the key.
+            value (Any): The value to set.
+            nx (bool, optional): If `True`, only set the key if it does not already exist.
+            ttl (Optional[int], optional): Time to live for the key in milliseconds.
+
+        Returns:
+            None
+
+        Raises:
+            KeyError: If `nx` is `True` and the key already exists.
+
+        """
         async with self.session() as session:
             full_name = self.full_name(name)
             obj = await session.get(KeyValueRecord, full_name)
@@ -162,6 +199,19 @@ class PostgresAsyncBackend(AsyncBackend):
         name: str,
         default: Optional[Union[Any, Type[Empty]]] = Empty,
     ) -> Any:
+        """Get the value of a key from the PostgreSQL backend asynchronously.
+
+        Args:
+            name (str): The name of the key.
+            default (Optional[Union[Any, Type[Empty]]], optional): Default value if the key does not exist.
+
+        Returns:
+            Any: The value of the key.
+
+        Raises:
+            KeyError: If the key does not exist and no default is provided.
+
+        """
         async with self.session() as session:
             stmt = select(KeyValueRecord).where(
                 KeyValueRecord.id == self.full_name(name),
@@ -179,6 +229,19 @@ class PostgresAsyncBackend(AsyncBackend):
             return self.serializer.reverse(obj.value)
 
     async def delete(self, name: str, missing_ok: bool = False) -> None:
+        """Delete a key from the PostgreSQL backend asynchronously.
+
+        Args:
+            name (str): The name of the key to delete.
+            missing_ok (bool, optional): If `True`, do not raise an error if the key does not exist.
+
+        Returns:
+            None
+
+        Raises:
+            KeyError: If the key does not exist and `missing_ok` is `False`.
+
+        """
         async with self.session() as session:
             obj = await session.get(KeyValueRecord, self.full_name(name))
             if obj is None:
@@ -194,6 +257,17 @@ class PostgresAsyncBackend(AsyncBackend):
         unique_id: str,
         priority: int | float,
     ) -> None:
+        """Add an item to a priority-sorted set asynchronously.
+
+        Args:
+            key (str): The name of the sorted set.
+            unique_id (str): The item's unique identifier.
+            priority (int | float): The numeric priority score.
+
+        Returns:
+            None
+
+        """
         full_key = self.full_name(key)
         async with self.session() as session:
             # Ensure the KeyValue record exists for the priority queue
@@ -220,6 +294,15 @@ class PostgresAsyncBackend(AsyncBackend):
             await session.commit()
 
     async def priority_get(self, key: str) -> Optional[str]:
+        """Peek the highest-priority item in a sorted set asynchronously.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Returns:
+            Optional[str]: The ID of the highest-priority item, or None if empty.
+
+        """
         full_key = self.full_name(key)
         async with self.session() as session:
             stmt = (
@@ -232,6 +315,15 @@ class PostgresAsyncBackend(AsyncBackend):
             return result.scalars().first()
 
     async def priority_iter(self, key: str) -> AsyncIterable[str]:
+        """Iterate over all items in a priority-sorted set asynchronously.
+
+        Args:
+            key (str): The name of the sorted set.
+
+        Yields:
+            str: Member of the sorted set, in priority order.
+
+        """
         full_key = self.full_name(key)
         async with self.session() as session:
             stmt = (
@@ -244,6 +336,16 @@ class PostgresAsyncBackend(AsyncBackend):
                 yield unique_id
 
     async def priority_remove(self, key: str, unique_id: str) -> None:
+        """Remove an item from a priority-sorted set asynchronously.
+
+        Args:
+            key (str): The name of the sorted set.
+            unique_id (str): The ID of the item to remove.
+
+        Returns:
+            None
+
+        """
         full_key = self.full_name(key)
         async with self.session() as session:
             # A. Remove the Priority record
@@ -277,11 +379,11 @@ class PostgresAsyncBackend(AsyncBackend):
             await session.commit()
 
     async def pub(self, channel: str, value: Any) -> None:
-        """Publish a message to a PostgreSQL channel using NOTIFY.
+        """Publish a message to a PostgreSQL channel using NOTIFY asynchronously.
 
         Args:
-            channel (str): The channel name to publish to
-            value (Any): The value to publish (will be serialized)
+            channel (str): The name of the channel.
+            value (Any): The message to publish.
 
         Returns:
             None
@@ -298,13 +400,13 @@ class PostgresAsyncBackend(AsyncBackend):
             await session.commit()
 
     async def sub(self, channel: str) -> AsyncIterable[str | dict[str, Any]]:
-        """Subscribe to a PostgreSQL channel using LISTEN.
+        """Subscribe to a PostgreSQL channel using LISTEN asynchronously.
 
         Args:
-            channel (str): The channel name to subscribe to
+            channel (str): The name of the channel to subscribe to.
 
-        Returns:
-            AsyncIterable[str | dict[str, Any]]: An async iterable of messages received on the channel
+        Yields:
+            dict[str, Any]: A dictionary representing the message data.
 
         """
         listener = PostgresAsyncPubSubListener(
@@ -316,6 +418,15 @@ class PostgresAsyncBackend(AsyncBackend):
             yield message
 
     async def scan(self, pattern: Optional[str] = None) -> AsyncIterable[str]:
+        """Asynchronously scan the PostgreSQL backend for keys matching a pattern.
+
+        Args:
+            pattern (Optional[str], optional): The pattern to match keys against. Defaults to '*'.
+
+        Yields:
+            str: The names of matching keys without the namespace prefix.
+
+        """
         like_pattern = self.full_name((pattern or "%").replace("*", "%"))
         async with self.session() as session:
             stmt = select(KeyValueRecord).where(
