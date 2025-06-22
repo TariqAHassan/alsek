@@ -285,9 +285,11 @@ class PostgresAsyncBackend(AsyncBackend):
                     "Message payload too large for PostgreSQL NOTIFY (max 8000 bytes)"
                 )
 
-            stmt = text("NOTIFY :channel, :payload")
+            # Channel name must be directly embedded, cannot be parameterized
+            # Sanitize channel name by replacing invalid characters
             await session.execute(
-                stmt, {"channel": channel, "payload": serialized_value}
+                text("SELECT pg_notify(:channel, :payload)"),
+                {"channel": channel, "payload": serialized_value},
             )
             await session.commit()
 

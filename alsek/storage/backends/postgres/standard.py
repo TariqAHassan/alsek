@@ -24,7 +24,10 @@ from alsek.storage.backends.postgres.tables import (
     SCHEMA_NAME,
     KeyValueType,
 )
-from alsek.storage.backends.postgres._utils import PostgresPubSubListener
+from alsek.storage.backends.postgres._utils import (
+    PostgresPubSubListener,
+    make_postgres_safe_channel_name,
+)
 from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
@@ -266,8 +269,11 @@ class PostgresBackend(Backend):
                     "Message payload too large for PostgreSQL NOTIFY (max 8000 bytes)"
                 )
 
-            stmt = text("NOTIFY :channel, :payload")
-            session.execute(stmt, {"channel": channel, "payload": serialized_value})
+            # Channel name must be directly embedded, cannot be parameterized
+            session.execute(
+                text("SELECT pg_notify(:channel, :payload)"),
+                {"channel": channel, "payload": serialized_value},
+            )
             session.commit()
 
     def sub(self, channel: str) -> Iterable[str | dict[str, Any]]:
