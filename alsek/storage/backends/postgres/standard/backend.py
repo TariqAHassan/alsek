@@ -105,9 +105,12 @@ class PostgresBackend(Backend):
                     ).create()
                     self._tables_created = True
 
+    def initialize(self) -> None:
+        self._ensure_schema_and_tables_exist()
+
     @contextmanager
     def session(self) -> Iterator[Session]:
-        self._ensure_schema_and_tables_exist()
+        self.initialize()
         with Session(self.engine) as session:
             yield session
 

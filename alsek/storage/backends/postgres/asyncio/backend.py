@@ -116,9 +116,12 @@ class PostgresAsyncBackend(AsyncBackend):
                     ).create()
                     self._tables_created = True
 
+    def initialize(self) -> None:
+        self._ensure_schema_and_tables_exist()
+
     @asynccontextmanager
     async def session(self) -> AsyncIterator[AsyncSession]:
-        await self._ensure_schema_and_tables_exist()
+        await self.initialize()
         async with AsyncSession(self.engine) as session:
             yield session
 
