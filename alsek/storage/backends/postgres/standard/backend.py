@@ -20,11 +20,14 @@ from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.backends.postgres.utils.general import (
     validate_value_within_postgres_notification_size_limit,
 )
-from alsek.storage.backends.postgres.standard._pubsub_listener import PostgresPubSubListener
+from alsek.storage.backends.postgres.standard._pubsub_listener import (
+    PostgresPubSubListener,
+)
 from alsek.storage.backends.postgres.tables import Base
 from alsek.storage.backends.postgres.tables import KeyValue as KeyValueRecord
 from alsek.storage.backends.postgres.tables import KeyValueType
 from alsek.storage.backends.postgres.tables import Priority as PriorityRecord
+from alsek.storage.backends.postgres.utils.maintenance import PostgresCronMaintenanceJob
 from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
@@ -58,10 +61,12 @@ class PostgresBackend(Backend):
         engine: Union[str, URL, Engine, LazyClient],
         namespace: str = DEFAULT_NAMESPACE,
         serializer: Optional[Serializer] = None,
+        maintenance_interval: int = 1,
     ) -> None:
         super().__init__(namespace, serializer=serializer)
-
         self._engine = self._connection_parser(engine)
+        self.maintenance_interval = maintenance_interval
+
         self._tables_created: bool = False
 
     @staticmethod
@@ -89,9 +94,15 @@ class PostgresBackend(Backend):
             with _TABLES_CREATION_LOCK:
                 if not self._tables_created:
                     with self.engine.connect() as conn:
-                        conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {DEFAULT_NAMESPACE}"))
+                        conn.execute(
+                            text(f"CREATE SCHEMA IF NOT EXISTS {DEFAULT_NAMESPACE}")
+                        )
                         conn.commit()
                     Base.metadata.create_all(self.engine)
+                    PostgresCronMaintenanceJob(
+                        engine=self.engine,
+                        interval=self.maintenance_interval,
+                    ).create()
                     self._tables_created = True
 
     @contextmanager

@@ -27,6 +27,7 @@ from alsek.storage.backends.postgres.tables import Base
 from alsek.storage.backends.postgres.tables import KeyValue as KeyValueRecord
 from alsek.storage.backends.postgres.tables import KeyValueType
 from alsek.storage.backends.postgres.tables import Priority as PriorityRecord
+from alsek.storage.backends.postgres.utils.maintenance import PostgresCronMaintenanceJobAsync
 from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
@@ -64,10 +65,12 @@ class PostgresAsyncBackend(AsyncBackend):
         engine: Union[str, URL, AsyncEngine, LazyClient],
         namespace: str = DEFAULT_NAMESPACE,
         serializer: Optional[Serializer] = None,
+        maintenance_interval: int = 1,
     ) -> None:
         super().__init__(namespace, serializer=serializer)
-
         self._engine = self._connection_parser(engine)
+        self.maintenance_interval = maintenance_interval
+
         self._tables_created: bool = False
 
     @staticmethod
@@ -105,6 +108,10 @@ class PostgresAsyncBackend(AsyncBackend):
                             text(f"CREATE SCHEMA IF NOT EXISTS {DEFAULT_NAMESPACE}")
                         )
                         await conn.run_sync(Base.metadata.create_all)
+                    await PostgresCronMaintenanceJobAsync(
+                        engine=self.engine,
+                        interval=self.maintenance_interval,
+                    ).create()
                     self._tables_created = True
 
     @asynccontextmanager
