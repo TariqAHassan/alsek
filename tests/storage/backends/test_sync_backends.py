@@ -314,7 +314,7 @@ def test_pub_sub_serialization(test_data: list[Any], rolling_backend: Backend) -
     if not rolling_backend.SUPPORTS_PUBSUB:
         pytest.skip("Backend does not support pub/sub")
 
-    channel = f"test-serialization-{len(test_data)}"
+    channel = f"test-pubsub-{len(test_data)}"
     received_messages = list()
 
     def publisher() -> None:

@@ -25,7 +25,7 @@ async def test_pub_sub_serialization_async(test_data: list[Any], rolling_async_b
     if not rolling_async_backend.SUPPORTS_PUBSUB:
         pytest.skip("Backend does not support pub/sub")
 
-    channel = f"test-serialization-{len(test_data)}"
+    channel = f"test-pubsub-{len(test_data)}"
     received_messages = list()
 
     async def publisher() -> None:
