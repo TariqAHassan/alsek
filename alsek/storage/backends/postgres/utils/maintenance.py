@@ -39,7 +39,7 @@ class BasePostgresCronMaintenance(ABC):
     AND expires_at <= (now() AT TIME ZONE 'UTC')
     """
 
-    __JOB_NAME__: str = "alsek_cleanup_expired_keyvalue"
+    __JOB_NAME__: str = f"{DEFAULT_NAMESPACE}_cleanup_expired_keyvalue"
     __UNSCHEDULE_SQL__: str = "SELECT cron.unschedule(:job_name)"
     __SCHEDULE_SQL__: str = "SELECT cron.schedule(:job_name, :schedule, :command)"
 
