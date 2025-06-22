@@ -18,8 +18,8 @@ from alsek.defaults import DEFAULT_NAMESPACE
 log = logging.getLogger(__name__)
 
 NO_PG_CRON_ERROR_MESSAGE = (
-    "Failed to create pg_cron extension, unable to automatically remove expired entries. "
-    "Please Install pg_cron manually."
+    "Failed to create `pg_cron` extension in Postgres, unable to automatically remove expired records in key-value store.\n"
+    "Please install pg_cron in your Postgres instance."
 )
 
 
