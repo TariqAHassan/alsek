@@ -33,7 +33,7 @@ class BasePostgresCronMaintenanceJob(ABC):
     __CREATE_DB_EXTENSION_SQL__ = "CREATE EXTENSION IF NOT EXISTS pg_cron"
 
     # noinspection SqlDialectInspection
-    __CLEANUP_SQL__ = f"""
+    __REMOVE_EXPIRED_RECORDS_SQL__ = f"""
     DELETE FROM {DEFAULT_NAMESPACE}.key_value 
     WHERE expires_at IS NOT NULL 
     AND expires_at <= (now() AT TIME ZONE 'UTC')
@@ -116,7 +116,7 @@ class PostgresCronMaintenanceJob(BasePostgresCronMaintenanceJob):
                     {
                         "job_name": self.__JOB_NAME__,
                         "schedule": self._get_cron_schedule(),
-                        "command": self.__CLEANUP_SQL__,
+                        "command": self.__REMOVE_EXPIRED_RECORDS_SQL__,
                     },
                 )
 
@@ -179,7 +179,7 @@ class PostgresCronMaintenanceJobAsync(BasePostgresCronMaintenanceJob):
                     {
                         "job_name": self.__JOB_NAME__,
                         "schedule": self._get_cron_schedule(),
-                        "command": self.__CLEANUP_SQL__,
+                        "command": self.__REMOVE_EXPIRED_RECORDS_SQL__,
                     },
                 )
 
