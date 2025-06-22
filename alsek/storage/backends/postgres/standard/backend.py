@@ -51,6 +51,7 @@ class PostgresBackend(Backend):
         namespace (str): Prefix to use when inserting names in the backend.
         serializer (Serializer, optional): Tool for encoding and decoding
             values written into the backend.
+        eager_initialize (bool): if `True` initialize the backend immediately.
 
     """
 
@@ -62,12 +63,17 @@ class PostgresBackend(Backend):
         namespace: str = DEFAULT_NAMESPACE,
         serializer: Optional[Serializer] = None,
         maintenance_interval: int = 1,
+        eager_initialize: bool = True,
     ) -> None:
         super().__init__(namespace, serializer=serializer)
         self._engine = self._connection_parser(engine)
         self.maintenance_interval = maintenance_interval
+        self.eager_initialize = eager_initialize
 
         self._tables_created: bool = False
+
+        if self.eager_initialize:
+            self.initialize()
 
     @staticmethod
     def _connection_parser(
