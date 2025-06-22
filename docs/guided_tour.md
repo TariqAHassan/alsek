@@ -222,12 +222,12 @@ def my_task() -> int:
 ```
 
 !!! warning
-    Enforcement of timeouts for tasks which use `mechansim='thread'` is only available
+    Enforcement of timeouts for tasks which use `mechanism='thread'` is only available
     for [CPython](https://en.wikipedia.org/wiki/CPython) (see below).
 
 !!! warning
-    Timeout enforcement for tasks which use `mechansim='thread'` is not as reliable as it
-    is for tasks which use `mechansim='process'`. This is because Alsek effectuates timeouts in 
+    Timeout enforcement for tasks which use `mechanism='thread'` is not as reliable as it
+    is for tasks which use `mechanism='process'`. This is because Alsek effectuates timeouts in 
     thread tasks by asynchronously setting a `TimeoutError` inside them. In order for this error 
     to be raised, the thread in question must first acquire the GIL (see above). If the thread
     never acquires the GIL, the error will _never_ be raised. Conversely, Alsek implements timeouts
