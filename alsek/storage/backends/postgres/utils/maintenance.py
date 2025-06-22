@@ -58,19 +58,19 @@ class BasePostgresCronMaintenance(ABC):
 
     @abstractmethod
     def has_pg_cron_extension(self) -> bool:
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
     def create_pg_cron_extension(self) -> bool:
-        raise NotImplementedError
+        raise NotImplementedError()
 
     @abstractmethod
-    def setup_cleanup_job(self) -> bool:
-        raise NotImplementedError
+    def create(self) -> bool:
+        raise NotImplementedError()
 
     @abstractmethod
-    def remove_cleanup_job(self) -> bool:
-        raise NotImplementedError
+    def remove(self) -> bool:
+        raise NotImplementedError()
 
 
 class PostgresCronMaintenance(BasePostgresCronMaintenance):
@@ -91,7 +91,7 @@ class PostgresCronMaintenance(BasePostgresCronMaintenance):
         except SQLAlchemyError:
             return False
 
-    def setup_cleanup_job(self) -> bool:
+    def create(self) -> bool:
         if not self.has_pg_cron_extension():
             if not self.create_pg_cron_extension():
                 log.error(NO_PG_CRON_ERROR_MESSAGE)
@@ -121,7 +121,7 @@ class PostgresCronMaintenance(BasePostgresCronMaintenance):
             log.error(f"Failed to setup pg_cron cleanup job", exc_info=True)
             return False
 
-    def remove_cleanup_job(self) -> bool:
+    def remove(self) -> bool:
         try:
             with self.engine.connect() as conn:
                 conn.execute(
@@ -153,7 +153,7 @@ class PostgresCronMaintenanceAsync(BasePostgresCronMaintenance):
         except SQLAlchemyError:
             return False
 
-    async def setup_cleanup_job(self) -> bool:
+    async def create(self) -> bool:
         if not await self.has_pg_cron_extension():
             if not await self.create_pg_cron_extension():
                 log.error(NO_PG_CRON_ERROR_MESSAGE)
@@ -184,7 +184,7 @@ class PostgresCronMaintenanceAsync(BasePostgresCronMaintenance):
             log.error(f"Failed to setup pg_cron cleanup job", exc_info=True)
             return False
 
-    async def remove_cleanup_job(self) -> bool:
+    async def remove(self) -> bool:
         try:
             async with self.engine.connect() as conn:
                 await conn.execute(
