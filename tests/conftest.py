@@ -166,8 +166,8 @@ def rolling_async_backend(
     if request.param == "redis":
         return RedisAsyncBackend(
             RedisAsync(
-                host=custom_redisdb.connection_pool.connection_kwargs["host"],
-                port=custom_redisdb.connection_pool.connection_kwargs["port"],
+                host=custom_redisdb.connection_pool.connection_kwargs.get("host", "localhost"),
+                port=custom_redisdb.connection_pool.connection_kwargs.get("port", 6379),
                 db=custom_redisdb.connection_pool.connection_kwargs.get("db", 0),
                 decode_responses=True,
             )
