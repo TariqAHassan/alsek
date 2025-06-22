@@ -14,10 +14,10 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 class BasePostgresCronMaintenance(ABC):
     # noinspection SqlDialectInspection
-    __CHECK_EXTENSION_SQL__ = "SELECT 1 FROM pg_extension WHERE extname = 'pg_cron'"
+    __CHECK_DB_HAS_EXTENSION_SQL__ = "SELECT 1 FROM pg_extension WHERE extname = 'pg_cron'"
 
     # noinspection SqlDialectInspection
-    __CREATE_EXTENSION_SQL__ = "CREATE EXTENSION IF NOT EXISTS pg_cron"
+    __CREATE_DB_EXTENSION_SQL__ = "CREATE EXTENSION IF NOT EXISTS pg_cron"
 
     # noinspection SqlDialectInspection
     __CLEANUP_SQL__ = """
@@ -67,7 +67,7 @@ class PostgresCronMaintenance(BasePostgresCronMaintenance):
     def has_pg_cron_extension(self) -> bool:
         try:
             with self.engine.connect() as conn:
-                result = conn.execute(text(self.__CHECK_EXTENSION_SQL__))
+                result = conn.execute(text(self.__CHECK_DB_HAS_EXTENSION_SQL__))
                 return result.fetchone() is not None
         except SQLAlchemyError:
             return False
@@ -75,7 +75,7 @@ class PostgresCronMaintenance(BasePostgresCronMaintenance):
     def create_pg_cron_extension(self) -> bool:
         try:
             with self.engine.connect() as conn:
-                conn.execute(text(self.__CREATE_EXTENSION_SQL__))
+                conn.execute(text(self.__CREATE_DB_EXTENSION_SQL__))
                 conn.commit()
                 return True
         except SQLAlchemyError:
@@ -132,7 +132,7 @@ class PostgresCronMaintenanceAsync(BasePostgresCronMaintenance):
     async def has_pg_cron_extension(self) -> bool:
         try:
             async with self.engine.connect() as conn:
-                result = await conn.execute(text(self.__CHECK_EXTENSION_SQL__))
+                result = await conn.execute(text(self.__CHECK_DB_HAS_EXTENSION_SQL__))
                 return result.fetchone() is not None
         except SQLAlchemyError:
             return False
@@ -140,7 +140,7 @@ class PostgresCronMaintenanceAsync(BasePostgresCronMaintenance):
     async def create_pg_cron_extension(self) -> bool:
         try:
             async with self.engine.connect() as conn:
-                await conn.execute(text(self.__CREATE_EXTENSION_SQL__))
+                await conn.execute(text(self.__CREATE_DB_EXTENSION_SQL__))
                 await conn.commit()
                 return True
         except SQLAlchemyError:
