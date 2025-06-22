@@ -12,7 +12,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncEngine
 
 
-class BasePostgresCronCleanup(ABC):
+class BasePostgresCronMaintenance(ABC):
     # noinspection SqlDialectInspection
     __CHECK_EXTENSION_SQL__ = "SELECT 1 FROM pg_extension WHERE extname = 'pg_cron'"
 
@@ -60,7 +60,7 @@ class BasePostgresCronCleanup(ABC):
         raise NotImplementedError
 
 
-class PostgresCronCleanup(BasePostgresCronCleanup):
+class PostgresCronMaintenance(BasePostgresCronMaintenance):
     def __init__(self, engine: Engine, interval_seconds: int = 300) -> None:
         super().__init__(engine, interval_seconds)
 
@@ -125,7 +125,7 @@ class PostgresCronCleanup(BasePostgresCronCleanup):
             return False
 
 
-class PostgresCronCleanupAsync(BasePostgresCronCleanup):
+class PostgresCronMaintenanceAsync(BasePostgresCronMaintenance):
     def __init__(self, engine: AsyncEngine, interval_seconds: int = 300) -> None:
         super().__init__(engine, interval_seconds)
 
