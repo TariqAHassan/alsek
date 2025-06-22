@@ -4,6 +4,8 @@
 
 """
 
+from __future__ import annotations
+
 import json
 import gzip
 from abc import ABC, abstractmethod
