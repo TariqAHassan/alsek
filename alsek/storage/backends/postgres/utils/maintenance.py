@@ -43,17 +43,21 @@ class BasePostgresCronMaintenanceJob(ABC):
     __UNSCHEDULE_SQL__: str = "SELECT cron.unschedule(:job_name)"
     __SCHEDULE_SQL__: str = "SELECT cron.schedule(:job_name, :schedule, :command)"
 
-    def __init__(self, engine: Engine | AsyncEngine, interval_seconds: int = 1) -> None:
+    def __init__(
+        self,
+        engine: Engine | AsyncEngine,
+        interval: int = 1,  # seconds
+    ) -> None:
         self.engine = engine
-        self.interval_seconds = interval_seconds
+        self.interval = interval
 
     def _get_cron_schedule(self) -> str:
-        if self.interval_seconds < 60:
+        if self.interval < 60:
             # For sub-minute intervals, use: */N * * * * * (every N seconds)
-            return f"*/{self.interval_seconds} * * * * *"
+            return f"*/{self.interval} * * * * *"
         else:
             # For minute+ intervals, convert to minutes: */N * * * * (every N minutes)
-            minutes = self.interval_seconds // 60
+            minutes = self.interval // 60
             return f"*/{minutes} * * * *"
 
     @abstractmethod
@@ -89,6 +93,7 @@ class PostgresCronMaintenanceJob(BasePostgresCronMaintenanceJob):
                 conn.commit()
                 return True
         except SQLAlchemyError:
+            log.error(f"Failed to create pg_cron extension", exc_info=True)
             return False
 
     def create(self) -> bool:
@@ -151,6 +156,7 @@ class PostgresCronMaintenanceJobAsync(BasePostgresCronMaintenanceJob):
                 await conn.commit()
                 return True
         except SQLAlchemyError:
+            log.error(f"Failed to create pg_cron extension", exc_info=True)
             return False
 
     async def create(self) -> bool:
