@@ -16,11 +16,7 @@ from alsek.storage.backends import AsyncBackend
     "test_data",
     [
         42,
-        # 3.14,
-        # True,
-        # None,
-        # [1, 2, 3],
-        # {"key": "value"},
+        {"key": "value"},
     ],
 )
 async def test_pub_sub_serialization_async(test_data: Any, rolling_async_backend: AsyncBackend) -> None:

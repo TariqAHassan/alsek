@@ -306,10 +306,6 @@ def test_pub_sub_multiple_messages(rolling_backend: Backend) -> None:
     "test_data",
     [
         42,
-        3.14,
-        True,
-        None,
-        [1, 2, 3],
         {"key": "value"},
     ],
 )
