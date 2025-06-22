@@ -57,6 +57,10 @@ class PostgresAsyncBackend(AsyncBackend):
         serializer (Serializer, optional): Tool for encoding and decoding
             values written into the backend.
 
+    Warnings:
+        The Postgres database used by this backend should have `pg_cron` installed
+        in order to support automatic background removal of expired keys.
+
     """
 
     __IS_ASYNC__: bool = True

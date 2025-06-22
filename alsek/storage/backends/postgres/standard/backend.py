@@ -53,6 +53,10 @@ class PostgresBackend(Backend):
             values written into the backend.
         eager_initialize (bool): if `True` initialize the backend immediately.
 
+    Warnings:
+        The Postgres database used by this backend should have `pg_cron` installed
+        in order to support automatic background removal of expired keys.
+
     """
 
     __SUPPORTS_PUBSUB__: bool = True
