@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from typing import Optional, Union, cast, AsyncIterator, Any, Type, AsyncIterable
 
 import dill
-from sqlalchemy import text, select, delete, or_
+from sqlalchemy import text, select, or_
 from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
 
 from alsek.defaults import DEFAULT_NAMESPACE
@@ -181,58 +181,86 @@ class PostgresAsyncBackend(AsyncBackend):
         unique_id: str,
         priority: int | float,
     ) -> None:
+        full_key = self.full_name(key)
         async with self.session() as session:
-            full_key = self.full_name(key)
-            stmt = select(PriorityRecord).where(
-                PriorityRecord.id == full_key,
-                PriorityRecord.unique_id == unique_id,
-            )
-            result = await session.execute(stmt)
-            obj = result.scalars().first()
-            if obj is None:
-                obj = PriorityRecord(
+            # Ensure the KeyValue record exists for the priority queue
+            kv_obj = await session.get(KeyValueRecord, full_key)
+            if kv_obj is None:
+                kv_obj = KeyValueRecord(
+                    id=full_key,
+                    value="",  # No value needed for priority queue metadata
+                    type=KeyValueType.PRIORITY,
+                )
+                session.add(kv_obj)
+
+            # Insert or update the Priority record
+            if priority_obj := await session.get(PriorityRecord, (full_key, unique_id)):
+                priority_obj.priority = priority
+            else:
+                priority_obj = PriorityRecord(
                     id=full_key,
                     unique_id=unique_id,
                     priority=priority,
                 )
-                session.add(obj)
-            else:
-                obj.priority = priority
+                session.add(priority_obj)
+
             await session.commit()
 
     async def priority_get(self, key: str) -> Optional[str]:
+        full_key = self.full_name(key)
         async with self.session() as session:
-            full_key = self.full_name(key)
             stmt = (
-                select(PriorityRecord)
+                select(PriorityRecord.unique_id)
                 .where(PriorityRecord.id == full_key)
                 .order_by(PriorityRecord.priority.asc())
                 .limit(1)
             )
             result = await session.execute(stmt)
-            obj = result.scalars().first()
-            return obj.unique_id if obj else None
+            return result.scalars().first()
 
     async def priority_iter(self, key: str) -> AsyncIterable[str]:
+        full_key = self.full_name(key)
         async with self.session() as session:
-            full_key = self.full_name(key)
             stmt = (
-                select(PriorityRecord)
+                select(PriorityRecord.unique_id)
                 .where(PriorityRecord.id == full_key)
                 .order_by(PriorityRecord.priority.asc())
             )
             result = await session.execute(stmt)
-            for obj in result.scalars():
-                yield obj.unique_id
+            for unique_id in result.scalars():
+                yield unique_id
 
     async def priority_remove(self, key: str, unique_id: str) -> None:
+        full_key = self.full_name(key)
         async with self.session() as session:
-            full_key = self.full_name(key)
-            stmt = delete(PriorityRecord).where(
-                PriorityRecord.id == full_key,
-                PriorityRecord.unique_id == unique_id,
+            # A. Remove the Priority record
+            priority_obj = await session.get(PriorityRecord, (full_key, unique_id))
+            if priority_obj is None:
+                return  # Nothing to remove
+
+            await session.delete(priority_obj)
+
+            # B. Check if any Priority records remain for this queue
+            remaining_priorities = (
+                (
+                    await session.execute(
+                        select(1)
+                        .where(
+                            PriorityRecord.id == full_key,
+                            # Exclude what we're about to delete
+                            PriorityRecord.unique_id != unique_id,
+                        )
+                        .limit(1)
+                    )
+                )
+                .scalars()
+                .first()
             )
-            await session.execute(stmt)
+
+            # C. If no priorities remain, clean up any KeyValue record
+            if remaining_priorities is None and (kv_obj := await session.get(KeyValueRecord, full_key)):  # fmt: skip
+                await session.delete(kv_obj)
+
             await session.commit()
 
     async def pub(self, channel: str, value: Any) -> None:
