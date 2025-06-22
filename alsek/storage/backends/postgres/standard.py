@@ -20,6 +20,7 @@ from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.backends.postgres.tables import (
     Base,
     KeyValue as KeyValueRecord,
+    Priority as PriorityRecord,
     SCHEMA_NAME,
     KeyValueType,
 )
@@ -173,84 +174,75 @@ class PostgresBackend(Backend):
     def priority_add(self, key: str, unique_id: str, priority: int | float) -> None:
         full_key = self.full_name(key)
         with self.session() as session:
-            obj = session.scalars(
-                select(KeyValueRecord).where(
-                    KeyValueRecord.id == full_key,
-                    KeyValueRecord.type == KeyValueType.PRIORITY,
-                )
-            ).one_or_none()
-
-            if obj is None:
-                obj = KeyValueRecord(
+            kv_obj = session.get(KeyValueRecord, full_key)
+            if kv_obj is None:
+                kv_obj = KeyValueRecord(
                     id=full_key,
-                    value=self.serializer.forward({unique_id: priority}),
+                    value="",  # No value needed for priority queue metadata
                     type=KeyValueType.PRIORITY,
                 )
-                session.add(obj)
+                session.add(kv_obj)
+
+            # Insert or update the Priority record
+            if priority_obj := session.get(PriorityRecord, (full_key, unique_id)):
+                priority_obj.priority = priority
             else:
-                priority_data = self.serializer.reverse(obj.value)
-                priority_data[unique_id] = priority
-                obj.value = self.serializer.forward(priority_data)
+                priority_obj = PriorityRecord(
+                    id=full_key,
+                    unique_id=unique_id,
+                    priority=priority,
+                )
+                session.add(priority_obj)
+
             session.commit()
 
     def priority_get(self, key: str) -> Optional[str]:
         full_key = self.full_name(key)
         with self.session() as session:
-            obj = session.scalars(
-                select(KeyValueRecord).where(
-                    KeyValueRecord.id == full_key,
-                    KeyValueRecord.type == KeyValueType.PRIORITY,
-                )
-            ).one_or_none()
-            if obj is None:
-                return None
-
-            if priority_data := self.serializer.reverse(obj.value):
-                return min(
-                    priority_data.keys(),
-                    key=lambda k: priority_data[k],
-                )
-            else:
-                return None
+            stmt = (
+                select(PriorityRecord.unique_id)
+                .where(PriorityRecord.id == full_key)
+                .order_by(PriorityRecord.priority.asc())
+                .limit(1)
+            )
+            return session.scalars(stmt).first()
 
     def priority_iter(self, key: str) -> Iterable[str]:
         full_key = self.full_name(key)
         with self.session() as session:
-            obj = session.scalars(
-                select(KeyValueRecord).where(
-                    KeyValueRecord.id == full_key,
-                    KeyValueRecord.type == KeyValueType.PRIORITY,
-                )
-            ).one_or_none()
-            if obj is None:
-                return
-
-            for unique_id, _ in sorted(
-                self.serializer.reverse(obj.value).items(),
-                key=lambda x: x[1],
-            ):
-                yield unique_id
+            stmt = (
+                select(PriorityRecord.unique_id)
+                .where(PriorityRecord.id == full_key)
+                .order_by(PriorityRecord.priority.asc())
+            )
+            yield from session.scalars(stmt)
 
     def priority_remove(self, key: str, unique_id: str) -> None:
         full_key = self.full_name(key)
         with self.session() as session:
-            obj = session.scalars(
-                select(KeyValueRecord).where(
-                    KeyValueRecord.id == full_key,
-                    KeyValueRecord.type == KeyValueType.PRIORITY,
-                )
-            ).one_or_none()
-            if obj is None:
+            # Remove the Priority record
+            priority_obj = session.get(PriorityRecord, (full_key, unique_id))
+            if priority_obj is None:
                 return  # Nothing to remove
 
-            priority_data = self.serializer.reverse(obj.value)
-            if unique_id in priority_data:
-                del priority_data[unique_id]
-                if priority_data:
-                    obj.value = self.serializer.forward(priority_data)
-                else:
-                    session.delete(obj)
-                session.commit()
+            session.delete(priority_obj)
+
+            # Check if any Priority records remain for this queue
+            remaining_priorities = session.scalars(
+                select(PriorityRecord.unique_id)
+                .where(
+                    PriorityRecord.id == full_key,
+                    # Exclude what we're about to delete
+                    PriorityRecord.unique_id != unique_id,
+                )
+                .limit(1)
+            ).first()
+
+            # If no priorities remain, clean up any KeyValue record
+            if remaining_priorities is None and (kv_obj := session.get(KeyValueRecord, full_key)):  # fmt: skip
+                session.delete(kv_obj)
+
+            session.commit()
 
     def pub(self, channel: str, value: Any) -> None:
         """Publish a message to a PostgreSQL channel using NOTIFY.

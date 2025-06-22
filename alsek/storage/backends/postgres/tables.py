@@ -7,7 +7,15 @@
 from __future__ import annotations
 from enum import Enum, unique
 
-from sqlalchemy import Column, String, DateTime, text, Text, DOUBLE_PRECISION
+from sqlalchemy import (
+    Column,
+    String,
+    DateTime,
+    text,
+    Text,
+    DOUBLE_PRECISION,
+    ForeignKey,
+)
 from sqlalchemy.dialects.postgresql import ENUM as PgEnum  # noqa
 from sqlalchemy.orm import declarative_base
 
@@ -72,13 +80,8 @@ class Priority(Base):
 
     id = Column(
         String,
+        ForeignKey(f"{SCHEMA_NAME}.key_value.id", ondelete="CASCADE"),
         primary_key=True,
-    )
-    created_at = Column(
-        DateTime(timezone=False),
-        server_default=text("(now() AT TIME ZONE 'UTC')"),
-        nullable=False,
-        index=True,
     )
     unique_id = Column(
         String,
