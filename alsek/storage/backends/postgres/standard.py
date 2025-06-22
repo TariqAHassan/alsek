@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import threading
 from contextlib import contextmanager
 from functools import cached_property
 from typing import Any, Iterable, Iterator, Optional, Type, Union, cast
@@ -29,6 +30,10 @@ from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
 from alsek.utils.temporal import compute_expiry_datetime, utcnow
+
+# Global lock to prevent race conditions when multiple backend instances
+# try to create schema/tables on the same database simultaneously
+_TABLES_CREATION_LOCK = threading.Lock()
 
 
 class PostgresBackend(Backend):
@@ -67,12 +72,15 @@ class PostgresBackend(Backend):
         return cast(Engine, self._engine)
 
     def _ensure_schema_and_tables_exist(self) -> None:
+        # Double-checked locking pattern for thread safety
         if not self._tables_created:
-            with self.engine.connect() as conn:
-                conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}"))
-                conn.commit()
-            Base.metadata.create_all(self.engine)
-            self._tables_created = True
+            with _TABLES_CREATION_LOCK:
+                if not self._tables_created:
+                    with self.engine.connect() as conn:
+                        conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}"))
+                        conn.commit()
+                    Base.metadata.create_all(self.engine)
+                    self._tables_created = True
 
     @contextmanager
     def session(self) -> Iterator[Session]:

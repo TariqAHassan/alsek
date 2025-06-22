@@ -6,6 +6,7 @@
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from contextlib import asynccontextmanager
 from typing import Any, AsyncIterable, AsyncIterator, Optional, Type, Union, cast
@@ -31,6 +32,10 @@ from alsek.utils.printing import auto_repr
 from alsek.utils.temporal import compute_expiry_datetime, utcnow
 
 log = logging.getLogger(__name__)
+
+# Global lock to prevent race conditions when multiple backend instances
+# try to create schema/tables on the same database simultaneously
+_TABLES_CREATION_LOCK = asyncio.Lock()
 
 
 class PostgresAsyncBackend(AsyncBackend):
@@ -76,11 +81,16 @@ class PostgresAsyncBackend(AsyncBackend):
         return cast(AsyncEngine, self._engine)
 
     async def _ensure_schema_and_tables_exist(self) -> None:
+        # Double-checked locking pattern for thread safety
         if not self._tables_created:
-            async with self.engine.begin() as conn:
-                await conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}"))
-                await conn.run_sync(Base.metadata.create_all)
-            self._tables_created = True
+            async with _TABLES_CREATION_LOCK:
+                if not self._tables_created:
+                    async with self.engine.begin() as conn:
+                        await conn.execute(
+                            text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}")
+                        )
+                        await conn.run_sync(Base.metadata.create_all)
+                    self._tables_created = True
 
     @asynccontextmanager
     async def session(self) -> AsyncIterator[AsyncSession]:
