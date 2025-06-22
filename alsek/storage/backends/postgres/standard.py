@@ -18,9 +18,9 @@ from sqlalchemy.orm import Session
 from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
 from alsek.storage.backends.postgres._utils import (
-    PostgresPubSubListener,
     validate_value_within_postgres_notification_size_limit,
 )
+from alsek.storage.backends.postgres._pubsub.standard import PostgresPubSubListener
 from alsek.storage.backends.postgres.tables import SCHEMA_NAME, Base
 from alsek.storage.backends.postgres.tables import KeyValue as KeyValueRecord
 from alsek.storage.backends.postgres.tables import KeyValueType
