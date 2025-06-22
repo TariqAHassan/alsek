@@ -11,7 +11,7 @@ from contextlib import asynccontextmanager
 from typing import Any, AsyncIterable, AsyncIterator, Optional, Type, Union, cast
 
 import dill
-from sqlalchemy import or_, select, text
+from sqlalchemy import or_, select, text, URL
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 
 from alsek.defaults import DEFAULT_NAMESPACE
@@ -41,7 +41,7 @@ class PostgresAsyncBackend(AsyncBackend):
 
     def __init__(
         self,
-        engine: Union[str, AsyncEngine, LazyClient],
+        engine: Union[str, URL, AsyncEngine, LazyClient],
         namespace: str = DEFAULT_NAMESPACE,
         serializer: Optional[Serializer] = None,
     ) -> None:
@@ -52,15 +52,18 @@ class PostgresAsyncBackend(AsyncBackend):
 
     @staticmethod
     def _connection_parser(
-        engine: Union[str, AsyncEngine, LazyClient],
+        engine: Union[str, URL, AsyncEngine, LazyClient],
     ) -> Union[AsyncEngine, LazyClient]:
         if isinstance(engine, LazyClient):
             return engine
         elif isinstance(engine, AsyncEngine):
             return engine
+        elif isinstance(engine, URL):
+            if engine.drivername != "postgresql+asyncpg":
+                engine.drivername = "postgresql+asyncpg"
+            return create_async_engine(engine)
         elif isinstance(engine, str):
-            # Convert sync URL to async URL if needed
-            if "://" in engine and "+asyncpg" not in engine:
+            if "://" in engine and engine.startswith("postgresql://"):
                 engine = engine.replace("postgresql://", "postgresql+asyncpg://")
             return create_async_engine(engine)
         else:
