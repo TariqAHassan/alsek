@@ -7,6 +7,8 @@
 from typing import Optional
 
 from alsek.core.message import Message
+from alsek.exceptions import ValidationError
+
 
 QUEUES_NAMESPACE_KEY: str = "queues"
 TASK_NAMESPACE_KEY: str = "tasks"
@@ -123,3 +125,75 @@ def get_dlq_message_name(message: Message) -> str:
 
     """
     return f"{DLQ_NAMESPACE_KEY}:{get_message_name(message)}"
+
+
+def get_stable_result_prefix(message: Message) -> str:
+    """Get a prefix that does not change based on
+    whether the message has a progenitor.
+
+    Args:
+        message (Message): an Alsek message
+
+    Returns:
+        prefix (str): a stable prefix for results
+
+    """
+    return f"results:{message.progenitor_uuid if message.progenitor_uuid else message.uuid}"
+
+
+def get_result_name(message: Message) -> str:
+    """Get the key for ``message`` in the backend.
+
+    Args:
+        message (Message): an Alsek message
+
+    Returns:
+        name (str): message-specific name
+
+    """
+    if message.uuid is None:
+        raise ValueError("Message does not have a uuid")
+
+    if message.progenitor_uuid:
+        return f"results:{message.progenitor_uuid}:descendants:{message.uuid}"
+    else:
+        return f"results:{message.uuid}"
+
+
+def get_status_name(message: Message) -> str:
+    """Get the key for the status information about the message.
+
+    Args:
+        message (Message): an Alsek message
+
+    Returns:
+        name (string): the key for the status information
+
+    """
+    if (
+        not message.uuid
+        or not message.queue
+        or not message.task_name
+        or not message.uuid
+    ):
+        raise ValidationError("Required attributes not set for message")
+    return f"status:{message.queue}:{message.task_name}:{message.uuid}"
+
+
+def get_pubsub_channel_name(message: Message) -> str:
+    """Get the channel for status updates about the message.
+
+    Args:
+        message (Message): an Alsek message
+
+    Returns:
+        name (string): the channel for the status information
+
+    """
+    # Note: we don't include the `message.queue` or `message.task_name`
+    #   because they're variable and postgres `notify` can only have support channels of length 63.
+    #   The number of characters in the name returned here will always be 52 characters.
+    #   (16 for the prefix and 36 for the v4 uuid).
+    if not message.uuid:
+        raise ValidationError("Required attributes not set for message")
+    return f"channel:message:{message.uuid}"

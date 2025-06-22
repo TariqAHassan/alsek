@@ -16,6 +16,8 @@ from alsek.utils.namespacing import (
     get_priority_namespace,
     get_priority_namespace_from_message,
     get_subnamespace,
+    get_result_name,
+    get_stable_result_prefix,
 )
 
 
@@ -126,3 +128,34 @@ def test_get_priority_namespace_from_message(message: Message, expected: str) ->
 )
 def test_get_dlq_message_name(message: Message, expected: str) -> None:
     assert get_dlq_message_name(message) == expected
+
+
+@pytest.mark.parametrize(
+    "message,expected",
+    [
+        (Message("task", uuid="uuid"), "results:uuid"),
+        (Message("task", uuid="uuid-1", progenitor_uuid="uuid-0"), "results:uuid-0"),
+    ],
+)
+def test_get_stable_prefix(
+    message: Message,
+    expected: str,
+) -> None:
+    assert get_stable_result_prefix(message) == expected
+
+
+@pytest.mark.parametrize(
+    "message,expected",
+    [
+        (Message("task", uuid="uuid"), "results:uuid"),
+        (
+            Message("task", uuid="uuid-1", progenitor_uuid="uuid-0"),
+            "results:uuid-0:descendants:uuid-1",
+        ),
+    ],
+)
+def test_get_result_name(
+    message: Message,
+    expected: str,
+) -> None:
+    assert get_result_name(message) == expected

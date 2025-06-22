@@ -12,6 +12,7 @@ import dill
 
 from alsek.core.message import Message
 from alsek.storage.backends import Backend
+from alsek.utils.namespacing import get_result_name, get_stable_result_prefix
 from alsek.utils.temporal import utcnow_timestamp_ms
 from alsek.utils.waiting import waiter
 
@@ -46,48 +47,23 @@ class ResultStore:
             backend=backend,
         )
 
-    @staticmethod
-    def _get_stable_prefix(message: Message) -> str:
-        """Get a prefix that does not change based on
-        whether the message has a progenitor."""
-        return f"results:{message.progenitor_uuid if message.progenitor_uuid else message.uuid}"
-
-    @staticmethod
-    def get_storage_name(message: Message) -> str:
-        """Get the name for ``message`` in the backend.
-
-        Args:
-            message (Message): an Alsek message
-
-        Returns:
-            name (str): message-specific name
-
-        """
-        if message.uuid is None:
-            raise ValueError("Message does not have a uuid")
-
-        if message.progenitor_uuid:
-            return f"results:{message.progenitor_uuid}:descendants:{message.uuid}"
-        else:
-            return f"results:{message.uuid}"
-
     def _get_all_storage_names(self, message: Message, descendants: bool) -> list[str]:
         if descendants:
             if message.descendant_uuids:
                 descendant_names = [
-                    self.get_storage_name(
+                    get_result_name(
                         Message(message.task_name, uuid=u, progenitor_uuid=message.uuid)
                     )
                     for u in message.descendant_uuids
                 ]
-                return [*descendant_names, self.get_storage_name(message)]
+                return [*descendant_names, get_result_name(message)]
             else:
                 return sorted(
-                    self.backend.scan(f"{self._get_stable_prefix(message)}*"),
+                    self.backend.scan(f"{get_stable_result_prefix(message)}*"),
                     key=lambda i: 1 if i == message.uuid else 0,
                 )
         else:
-            return [self.get_storage_name(message)]
+            return [get_result_name(message)]
 
     @staticmethod
     def _extract_uuid(storage_name: str) -> str:
@@ -121,7 +97,7 @@ class ResultStore:
 
         """
         self.backend.set(
-            self.get_storage_name(message),
+            get_result_name(message),
             value={"result": result, "timestamp": utcnow_timestamp_ms()},
             nx=nx,
             ttl=message.result_ttl,
