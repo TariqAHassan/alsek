@@ -20,8 +20,10 @@ from alsek.storage.backends import AsyncBackend, LazyClient
 from alsek.storage.backends.postgres.utils.general import (
     validate_value_within_postgres_notification_size_limit,
 )
-from alsek.storage.backends.postgres.asyncio._pubsub_listener import PostgresAsyncPubSubListener
-from alsek.storage.backends.postgres.tables import SCHEMA_NAME, Base
+from alsek.storage.backends.postgres.asyncio._pubsub_listener import (
+    PostgresAsyncPubSubListener,
+)
+from alsek.storage.backends.postgres.tables import Base
 from alsek.storage.backends.postgres.tables import KeyValue as KeyValueRecord
 from alsek.storage.backends.postgres.tables import KeyValueType
 from alsek.storage.backends.postgres.tables import Priority as PriorityRecord
@@ -100,7 +102,7 @@ class PostgresAsyncBackend(AsyncBackend):
                 if not self._tables_created:
                     async with self.engine.begin() as conn:
                         await conn.execute(
-                            text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}")
+                            text(f"CREATE SCHEMA IF NOT EXISTS {DEFAULT_NAMESPACE}")
                         )
                         await conn.run_sync(Base.metadata.create_all)
                     self._tables_created = True

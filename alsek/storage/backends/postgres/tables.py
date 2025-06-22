@@ -20,11 +20,10 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import ENUM as PgEnum  # noqa
 from sqlalchemy.orm import declarative_base
 
+from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.utils.temporal import utcnow
 
 Base = declarative_base()
-
-SCHEMA_NAME: str = "alsek"
 
 
 @unique
@@ -36,7 +35,7 @@ class KeyValueType(Enum):
 
 class KeyValue(Base):
     __tablename__ = "key_value"
-    __table_args__ = {"schema": SCHEMA_NAME}
+    __table_args__ = {"schema": DEFAULT_NAMESPACE}
 
     id = Column(
         String,
@@ -77,11 +76,11 @@ class KeyValue(Base):
 
 class Priority(Base):
     __tablename__ = "priority"
-    __table_args__ = {"schema": SCHEMA_NAME}
+    __table_args__ = {"schema": DEFAULT_NAMESPACE}
 
     id = Column(
         String,
-        ForeignKey(f"{SCHEMA_NAME}.key_value.id", ondelete="CASCADE"),
+        ForeignKey(f"{DEFAULT_NAMESPACE}.key_value.id", ondelete="CASCADE"),
         primary_key=True,
     )
     unique_id = Column(

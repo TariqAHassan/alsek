@@ -21,7 +21,7 @@ from alsek.storage.backends.postgres.utils.general import (
     validate_value_within_postgres_notification_size_limit,
 )
 from alsek.storage.backends.postgres.standard._pubsub_listener import PostgresPubSubListener
-from alsek.storage.backends.postgres.tables import SCHEMA_NAME, Base
+from alsek.storage.backends.postgres.tables import Base
 from alsek.storage.backends.postgres.tables import KeyValue as KeyValueRecord
 from alsek.storage.backends.postgres.tables import KeyValueType
 from alsek.storage.backends.postgres.tables import Priority as PriorityRecord
@@ -89,7 +89,7 @@ class PostgresBackend(Backend):
             with _TABLES_CREATION_LOCK:
                 if not self._tables_created:
                     with self.engine.connect() as conn:
-                        conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {SCHEMA_NAME}"))
+                        conn.execute(text(f"CREATE SCHEMA IF NOT EXISTS {DEFAULT_NAMESPACE}"))
                         conn.commit()
                     Base.metadata.create_all(self.engine)
                     self._tables_created = True
