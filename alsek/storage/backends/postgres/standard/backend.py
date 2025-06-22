@@ -67,7 +67,7 @@ class PostgresBackend(Backend):
         namespace: str = DEFAULT_NAMESPACE,
         serializer: Optional[Serializer] = None,
         maintenance_interval: int = 1,
-        eager_initialize: bool = True,
+        eager_initialize: bool = False,
     ) -> None:
         super().__init__(namespace, serializer=serializer)
         self._engine = self._connection_parser(engine)
