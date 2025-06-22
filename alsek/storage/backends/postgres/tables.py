@@ -51,7 +51,7 @@ class KeyValue(Base):
         Text,
     )
     type = Column(
-        PgEnum(KeyValueType),
+        PgEnum(KeyValueType, schema=DEFAULT_NAMESPACE),
         index=True,
         nullable=False,
     )
