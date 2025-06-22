@@ -2,6 +2,12 @@
 
     Tables
 
+    Notes:
+        * We write ALL keys into the `KeyValue` table so than when we call `scan()`
+          we can see all data stored. This is even true for `Priority` records
+          which are also stored in a separate table to enable fast, database-side
+          sorting by `priority` values.
+
 """
 
 from __future__ import annotations
