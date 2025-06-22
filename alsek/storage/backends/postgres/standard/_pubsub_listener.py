@@ -3,17 +3,17 @@
     Standard PubSub Listener
 
 """
+
 from __future__ import annotations
 
+import logging
 import time
-from typing import Optional, Iterable, Any
+from typing import Any, Iterable, Optional
 
 import psycopg2
 from psycopg2 import sql
 
 from alsek.storage.backends.postgres.utils.pubsub import BasePostgresPubSubListen
-
-import logging
 
 log = logging.getLogger(__name__)
 

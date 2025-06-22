@@ -3,6 +3,7 @@
     Test Async Backends
 
 """
+
 import asyncio
 from typing import Any
 
@@ -20,7 +21,9 @@ from alsek.storage.backends import AsyncBackend
         [42, {"key": "value"}],
     ],
 )
-async def test_pub_sub_serialization_async(test_data: list[Any], rolling_async_backend: AsyncBackend) -> None:
+async def test_pub_sub_serialization_async(
+    test_data: list[Any], rolling_async_backend: AsyncBackend
+) -> None:
     if not rolling_async_backend.__SUPPORTS_PUBSUB__:
         pytest.skip("Backend does not support pub/sub")
 

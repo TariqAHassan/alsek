@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Any, Iterable, AsyncIterable
+from typing import Any, AsyncIterable, Iterable
 
 from sqlalchemy import URL
 

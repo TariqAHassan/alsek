@@ -17,9 +17,6 @@ from sqlalchemy.orm import Session
 
 from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
-from alsek.storage.backends.postgres.utils.general import (
-    validate_value_within_postgres_notification_size_limit,
-)
 from alsek.storage.backends.postgres.standard._pubsub_listener import (
     PostgresPubSubListener,
 )
@@ -27,6 +24,9 @@ from alsek.storage.backends.postgres.tables import Base
 from alsek.storage.backends.postgres.tables import KeyValue as KeyValueRecord
 from alsek.storage.backends.postgres.tables import KeyValueType
 from alsek.storage.backends.postgres.tables import Priority as PriorityRecord
+from alsek.storage.backends.postgres.utils.general import (
+    validate_value_within_postgres_notification_size_limit,
+)
 from alsek.storage.backends.postgres.utils.maintenance import PostgresCronMaintenanceJob
 from alsek.storage.serialization import Serializer
 from alsek.types import Empty

@@ -4,8 +4,8 @@
 
 """
 
-import time
 import threading
+import time
 from typing import Any, Callable, Optional, Union
 
 import dill

@@ -28,8 +28,8 @@ from alsek.core.status import StatusTracker
 from alsek.core.task import task
 from alsek.core.worker.process import ProcessWorkerPool
 from alsek.core.worker.thread import ThreadWorkerPool
-from alsek.storage.backends import Backend, LazyClient, AsyncBackend
-from alsek.storage.backends.postgres import PostgresBackend, PostgresAsyncBackend
+from alsek.storage.backends import AsyncBackend, Backend, LazyClient
+from alsek.storage.backends.postgres import PostgresAsyncBackend, PostgresBackend
 from alsek.storage.backends.redis import RedisAsyncBackend
 from alsek.storage.backends.redis.standard import RedisBackend
 from alsek.storage.result import ResultStore
@@ -166,7 +166,9 @@ def rolling_async_backend(
     if request.param == "redis":
         return RedisAsyncBackend(
             RedisAsync(
-                host=custom_redisdb.connection_pool.connection_kwargs.get("host", "localhost"),
+                host=custom_redisdb.connection_pool.connection_kwargs.get(
+                    "host", "localhost"
+                ),
                 port=custom_redisdb.connection_pool.connection_kwargs.get("port", 6379),
                 db=custom_redisdb.connection_pool.connection_kwargs.get("db", 0),
                 decode_responses=True,

@@ -6,12 +6,12 @@
 
 from __future__ import annotations
 
+import logging
 from abc import ABC, abstractmethod
 
 from sqlalchemy import Engine, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncEngine
-import logging
 
 from alsek.defaults import DEFAULT_NAMESPACE
 

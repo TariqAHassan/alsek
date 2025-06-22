@@ -7,14 +7,13 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 from functools import cached_property
-from typing import AsyncIterable, Any
+from typing import Any, AsyncIterable
 
 import asyncpg
 
 from alsek.storage.backends.postgres.utils.pubsub import BasePostgresPubSubListen
-
-import logging
 
 log = logging.getLogger(__name__)
 
