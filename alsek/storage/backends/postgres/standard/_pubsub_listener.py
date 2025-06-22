@@ -1,3 +1,8 @@
+"""
+
+    Standard PubSub Listener
+
+"""
 from __future__ import annotations
 
 import time
@@ -6,11 +11,7 @@ from typing import Optional, Iterable, Any
 import psycopg2
 from psycopg2 import sql
 
-from alsek.storage.backends.postgres.pubsub._base import (
-    BasePostgresPubSubListen,
-    _parse_notification_data,
-)
-
+from alsek.storage.backends.postgres._utils import BasePostgresPubSubListen
 
 import logging
 
@@ -57,7 +58,7 @@ class PostgresPubSubListener(BasePostgresPubSubListen):
                 while conn.notifies:
                     notify = conn.notifies.pop(0)  # type: ignore
                     if notify.channel == self.channel:
-                        yield _parse_notification_data(
+                        yield self._parse_notification_data(
                             payload=notify.payload,
                             serializer=self.serializer,
                         )

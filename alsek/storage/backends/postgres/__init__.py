@@ -4,5 +4,5 @@
 
 """
 
-from alsek.storage.backends.postgres.asyncio import PostgresAsyncBackend
-from alsek.storage.backends.postgres.standard import PostgresBackend
+from alsek.storage.backends.postgres.asyncio.backend import PostgresAsyncBackend
+from alsek.storage.backends.postgres.standard.backend import PostgresBackend

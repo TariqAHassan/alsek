@@ -1,3 +1,9 @@
+"""
+
+    Async PubSub Listener
+
+"""
+
 from __future__ import annotations
 
 import asyncio
@@ -6,10 +12,7 @@ from typing import AsyncIterable, Any
 
 import asyncpg
 
-from alsek.storage.backends.postgres.pubsub._base import (
-    BasePostgresPubSubListen,
-    _parse_notification_data,
-)
+from alsek.storage.backends.postgres._utils import BasePostgresPubSubListen
 
 import logging
 
@@ -62,7 +65,7 @@ class PostgresAsyncPubSubListener(BasePostgresPubSubListen):
                         self._notification_queue.get(),
                         timeout=self.sleep_time,
                     )
-                    yield _parse_notification_data(
+                    yield self._parse_notification_data(
                         payload=notification,
                         serializer=self.serializer,
                     )
