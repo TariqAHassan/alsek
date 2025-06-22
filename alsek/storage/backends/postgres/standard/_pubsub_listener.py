@@ -56,7 +56,7 @@ class PostgresPubSubListener(BasePostgresPubSubListen):
             while True:
                 conn.poll()
                 while conn.notifies:
-                    notify = conn.notifies.pop(0)  # type: ignore
+                    notify = conn.notifies.pop(0)
                     if notify.channel == self.channel:
                         yield self._parse_notification_data(
                             payload=notify.payload,
