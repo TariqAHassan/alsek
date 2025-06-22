@@ -40,8 +40,8 @@ class BasePostgresCronMaintenanceJob(ABC):
     """
 
     __JOB_NAME__: str = f"{DEFAULT_NAMESPACE}_cleanup_expired_keyvalue"
-    __UNSCHEDULE_SQL__: str = "SELECT cron.unschedule(:job_name)"
     __SCHEDULE_SQL__: str = "SELECT cron.schedule(:job_name, :schedule, :command)"
+    __UNSCHEDULE_SQL__: str = "SELECT cron.unschedule(:job_name)"
 
     def __init__(
         self,
