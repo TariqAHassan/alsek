@@ -179,7 +179,6 @@ class PostgresCronMaintenanceJobAsync(BasePostgresCronMaintenanceJob):
 
                 await conn.commit()
                 return True
-
         except SQLAlchemyError:
             log.error(f"Failed to setup pg_cron cleanup job", exc_info=True)
             return False
