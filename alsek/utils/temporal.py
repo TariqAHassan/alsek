@@ -18,7 +18,7 @@ def utcnow_timestamp_ms() -> int:
     return int(datetime.utcnow().timestamp() * 1000)
 
 
-def fromtimestamp_ms(timestamp: int) -> datetime:
+def from_timestamp_ms(timestamp: int) -> datetime:
     """Construct datetime object from UTC timestamp in milliseconds.
 
     Args:
