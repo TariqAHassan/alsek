@@ -37,6 +37,7 @@ class RedisAsyncBackend(AsyncBackend):
     """
 
     IS_ASYNC: bool = True
+    SUPPORTS_PUBSUB = True
 
     def __init__(
         self,
