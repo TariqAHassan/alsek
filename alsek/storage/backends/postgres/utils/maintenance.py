@@ -30,7 +30,7 @@ class BasePostgresCronMaintenance(ABC):
     __UNSCHEDULE_SQL__: str = "SELECT cron.unschedule(:job_name)"
     __SCHEDULE_SQL__: str = "SELECT cron.schedule(:job_name, :schedule, :command)"
 
-    def __init__(self, engine: Engine | AsyncEngine, interval_seconds: int = 300) -> None:
+    def __init__(self, engine: Engine | AsyncEngine, interval_seconds: int = 1) -> None:
         self.engine = engine
         self.interval_seconds = interval_seconds
 
@@ -61,9 +61,6 @@ class BasePostgresCronMaintenance(ABC):
 
 
 class PostgresCronMaintenance(BasePostgresCronMaintenance):
-    def __init__(self, engine: Engine, interval_seconds: int = 300) -> None:
-        super().__init__(engine, interval_seconds)
-
     def has_pg_cron_extension(self) -> bool:
         try:
             with self.engine.connect() as conn:
@@ -126,9 +123,6 @@ class PostgresCronMaintenance(BasePostgresCronMaintenance):
 
 
 class PostgresCronMaintenanceAsync(BasePostgresCronMaintenance):
-    def __init__(self, engine: AsyncEngine, interval_seconds: int = 300) -> None:
-        super().__init__(engine, interval_seconds)
-
     async def has_pg_cron_extension(self) -> bool:
         try:
             async with self.engine.connect() as conn:
