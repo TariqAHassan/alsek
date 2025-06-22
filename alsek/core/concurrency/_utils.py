@@ -8,21 +8,18 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 from functools import cached_property
-from typing import Optional, Literal
+from typing import Literal, Optional
 
 import redis_lock
-from sqlalchemy import select, or_
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from alsek.exceptions import LockAlreadyAcquiredError, LockNotAcquiredError
-from alsek.storage.backends.postgres.tables import (
-    KeyValueType,
-    KeyValue as KeyValueRecord,
-)
-
-from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.backends.postgres import PostgresBackend
-from alsek.utils.temporal import utcnow, compute_expiry_datetime
+from alsek.storage.backends.postgres.tables import KeyValue as KeyValueRecord
+from alsek.storage.backends.postgres.tables import KeyValueType
+from alsek.storage.backends.redis import RedisBackend
+from alsek.utils.temporal import compute_expiry_datetime, utcnow
 
 IF_ALREADY_ACQUIRED_TYPE = Literal["raise_error", "return_true", "return_false"]
 

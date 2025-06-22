@@ -31,11 +31,10 @@ _expand_to_all_serializers = expand_params_factory(_ALL_SERIALIZERS)
         {"a": [1, 2, 3]},
     ),
 )
-@pytest.mark.parametrize(
-    "compression_level",
-    [None, *range(10)]
-)
-def test_serializer(value: Any, serializer: Serializer, compression_level: Optional[int]) -> None:
+@pytest.mark.parametrize("compression_level", [None, *range(10)])
+def test_serializer(
+    value: Any, serializer: Serializer, compression_level: Optional[int]
+) -> None:
     serializer.compression_level = compression_level
 
     fwd = serializer.forward(value)

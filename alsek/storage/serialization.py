@@ -6,8 +6,8 @@
 
 from __future__ import annotations
 
-import json
 import gzip
+import json
 from abc import ABC, abstractmethod
 from base64 import b64decode, b64encode
 from typing import Any, Optional

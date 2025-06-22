@@ -8,26 +8,22 @@ from __future__ import annotations
 
 from contextlib import contextmanager
 from functools import cached_property
-from typing import Optional, Union, cast, Iterator, Any, Type, Iterable
+from typing import Any, Iterable, Iterator, Optional, Type, Union, cast
 
 import dill
-from sqlalchemy import Engine, create_engine, select, text, or_
+from sqlalchemy import URL, Engine, create_engine, or_, select, text
 from sqlalchemy.orm import Session
-from sqlalchemy import URL
 
 from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import Backend, LazyClient
-from alsek.storage.backends.postgres.tables import (
-    Base,
-    KeyValue as KeyValueRecord,
-    Priority as PriorityRecord,
-    SCHEMA_NAME,
-    KeyValueType,
-)
 from alsek.storage.backends.postgres._utils import (
     PostgresPubSubListener,
     validate_value_within_postgres_notification_size_limit,
 )
+from alsek.storage.backends.postgres.tables import SCHEMA_NAME, Base
+from alsek.storage.backends.postgres.tables import KeyValue as KeyValueRecord
+from alsek.storage.backends.postgres.tables import KeyValueType
+from alsek.storage.backends.postgres.tables import Priority as PriorityRecord
 from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params

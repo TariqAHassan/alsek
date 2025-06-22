@@ -12,7 +12,7 @@ import pytest
 
 from alsek.core.backoff import ConstantBackoff
 from alsek.core.concurrency.lock import Lock
-from alsek.core.message import Message, LinkedLock
+from alsek.core.message import LinkedLock, Message
 from alsek.storage.backends import Backend
 from alsek.utils.parsing import ExceptionDetails
 from alsek.utils.temporal import utcnow_timestamp_ms

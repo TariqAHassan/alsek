@@ -9,7 +9,6 @@ from typing import Optional
 from alsek.core.message import Message
 from alsek.exceptions import ValidationError
 
-
 QUEUES_NAMESPACE_KEY: str = "queues"
 TASK_NAMESPACE_KEY: str = "tasks"
 MESSAGES_NAMESPACE_KEY: str = "messages"
@@ -170,11 +169,7 @@ def get_status_name(message: Message) -> str:
         name (string): the key for the status information
 
     """
-    if (
-        not message.uuid
-        or not message.queue
-        or not message.task_name
-    ):
+    if not message.uuid or not message.queue or not message.task_name:
         raise ValidationError("Required attributes not set for message")
     return f"status:{message.queue}:{message.task_name}:{message.uuid}"
 

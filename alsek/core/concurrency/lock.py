@@ -10,17 +10,17 @@ import os
 import threading
 from socket import gethostname
 from types import TracebackType
-from typing import Optional, Type, get_args, Any
+from typing import Any, Optional, Type, get_args
 
 from alsek.core.concurrency._utils import (
-    RedisLockInterface,
-    PostgresLockInterface,
     IF_ALREADY_ACQUIRED_TYPE,
+    PostgresLockInterface,
+    RedisLockInterface,
 )
 from alsek.exceptions import LockAlreadyAcquiredError, LockNotAcquiredError
 from alsek.storage.backends import Backend
-from alsek.storage.backends.redis import RedisBackend
 from alsek.storage.backends.postgres import PostgresBackend
+from alsek.storage.backends.redis import RedisBackend
 from alsek.utils.printing import auto_repr
 
 CURRENT_HOST_OWNER_ID = f"lock:{gethostname()}"

@@ -5,16 +5,17 @@
 """
 
 from __future__ import annotations
+
 from enum import Enum, unique
 
 from sqlalchemy import (
-    Column,
-    String,
-    DateTime,
-    text,
-    Text,
     DOUBLE_PRECISION,
+    Column,
+    DateTime,
     ForeignKey,
+    String,
+    Text,
+    text,
 )
 from sqlalchemy.dialects.postgresql import ENUM as PgEnum  # noqa
 from sqlalchemy.orm import declarative_base

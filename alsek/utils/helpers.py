@@ -4,8 +4,8 @@
 
 """
 
-from typing import Any, Optional
 from copy import deepcopy
+from typing import Any, Optional
 
 
 def dict_merge_update_into_origin(

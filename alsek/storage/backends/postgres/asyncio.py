@@ -8,25 +8,22 @@ from __future__ import annotations
 
 import logging
 from contextlib import asynccontextmanager
-from typing import Optional, Union, cast, AsyncIterator, Any, Type, AsyncIterable
+from typing import Any, AsyncIterable, AsyncIterator, Optional, Type, Union, cast
 
 import dill
-from sqlalchemy import text, select, or_
-from sqlalchemy.ext.asyncio import AsyncEngine, create_async_engine, AsyncSession
+from sqlalchemy import or_, select, text
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, create_async_engine
 
 from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends import AsyncBackend, LazyClient
-from alsek.storage.backends.postgres.tables import (
-    Base,
-    KeyValue as KeyValueRecord,
-    Priority as PriorityRecord,
-    SCHEMA_NAME,
-    KeyValueType,
-)
 from alsek.storage.backends.postgres._utils import (
     PostgresAsyncPubSubListener,
     validate_value_within_postgres_notification_size_limit,
 )
+from alsek.storage.backends.postgres.tables import SCHEMA_NAME, Base
+from alsek.storage.backends.postgres.tables import KeyValue as KeyValueRecord
+from alsek.storage.backends.postgres.tables import KeyValueType
+from alsek.storage.backends.postgres.tables import Priority as PriorityRecord
 from alsek.storage.serialization import Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params

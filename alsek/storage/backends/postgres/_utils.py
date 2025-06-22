@@ -7,15 +7,15 @@
 from __future__ import annotations
 
 import asyncio
+import logging
 import time
-from abc import abstractmethod, ABC
+from abc import ABC, abstractmethod
 from functools import cached_property
 from typing import Any, AsyncIterable, Iterable, Optional
 
 import asyncpg
 import psycopg2
 from sqlalchemy import URL
-import logging
 
 from alsek.storage.serialization import Serializer
 
