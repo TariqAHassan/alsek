@@ -39,7 +39,7 @@ async def test_pub_sub_serialization_async(test_data: list[Any], rolling_async_b
 
     # Subscribe and collect messages
     if test_data:
-        async for payload in rolling_async_backend.sub(channel):
+        async for payload in rolling_async_backend.sub(channel):  # noqa
             if isinstance(payload, dict) and payload.get("type") == "message":
                 received_messages.append(payload["data"])
             if len(received_messages) == len(test_data):
