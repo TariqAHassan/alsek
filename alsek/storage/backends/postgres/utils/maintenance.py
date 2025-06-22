@@ -23,7 +23,7 @@ NO_PG_CRON_ERROR_MESSAGE = (
 )
 
 
-class BasePostgresCronMaintenance(ABC):
+class BasePostgresCronMaintenanceJob(ABC):
     # noinspection SqlDialectInspection
     __CHECK_DB_HAS_EXTENSION_SQL__ = (
         "SELECT 1 FROM pg_extension WHERE extname = 'pg_cron'"
@@ -73,7 +73,7 @@ class BasePostgresCronMaintenance(ABC):
         raise NotImplementedError()
 
 
-class PostgresCronMaintenance(BasePostgresCronMaintenance):
+class PostgresCronMaintenanceJob(BasePostgresCronMaintenanceJob):
     def has_pg_cron_extension(self) -> bool:
         try:
             with self.engine.connect() as conn:
@@ -135,7 +135,7 @@ class PostgresCronMaintenance(BasePostgresCronMaintenance):
             return False
 
 
-class PostgresCronMaintenanceAsync(BasePostgresCronMaintenance):
+class PostgresCronMaintenanceJobAsync(BasePostgresCronMaintenanceJob):
     async def has_pg_cron_extension(self) -> bool:
         try:
             async with self.engine.connect() as conn:
