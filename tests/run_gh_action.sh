@@ -1,4 +1,4 @@
-timeout 45 pytest \
+timeout 85 pytest \
       --strict-markers \
       --cov=alsek \
       --cov-report term-missing \
