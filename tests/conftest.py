@@ -18,6 +18,7 @@ from pytest_postgresql import factories as postgresql_factories
 from pytest_redis import factories as redis_factories
 from redis import Redis
 from redis.asyncio import Redis as RedisAsync
+from sqlalchemy import URL
 
 from alsek.cli.cli import main as alsek_cli
 from alsek.core.broker import Broker
@@ -122,14 +123,16 @@ def redis_backend(custom_redisdb: Redis) -> RedisBackend:
 
 
 @pytest.fixture()
-def postgres_backend(custom_postgresql) -> PostgresBackend:
-    # Create connection string from the postgresql fixture
-    connection_string = (
-        f"postgresql://{custom_postgresql.info.user}:"
-        f"@{custom_postgresql.info.host}:{custom_postgresql.info.port}"
-        f"/{custom_postgresql.info.dbname}"
+def postgres_backend(custom_postgresql: psycopg.Connection) -> PostgresBackend:
+    # Create SQLAlchemy URL from the postgresql fixture
+    url = URL.create(
+        drivername="postgresql",
+        username=custom_postgresql.info.user,
+        host=custom_postgresql.info.host,
+        port=custom_postgresql.info.port,
+        database=custom_postgresql.info.dbname,
     )
-    return PostgresBackend(connection_string)
+    return PostgresBackend(url)
 
 
 @pytest.fixture(params=["redis", "postgres"])
@@ -141,11 +144,14 @@ def rolling_backend(
     if request.param == "redis":
         return RedisBackend(custom_redisdb)
     elif request.param == "postgres":
-        # Create connection string from the postgresql fixture
         return PostgresBackend(
-            f"postgresql://{custom_postgresql.info.user}:"
-            f"@{custom_postgresql.info.host}:{custom_postgresql.info.port}"
-            f"/{custom_postgresql.info.dbname}"
+            URL.create(
+                drivername="postgresql",
+                username=custom_postgresql.info.user,
+                host=custom_postgresql.info.host,
+                port=custom_postgresql.info.port,
+                database=custom_postgresql.info.dbname,
+            )
         )
     else:
         raise ValueError(f"Unknown backend '{request.param}'")
@@ -167,11 +173,14 @@ def rolling_async_backend(
             )
         )
     elif request.param == "postgres":
-        # Create connection string from the postgresql fixture
         return PostgresAsyncBackend(
-            f"postgresql://{custom_postgresql.info.user}:"
-            f"@{custom_postgresql.info.host}:{custom_postgresql.info.port}"
-            f"/{custom_postgresql.info.dbname}"
+            URL.create(
+                drivername="postgresql+asyncpg",
+                username=custom_postgresql.info.user,
+                host=custom_postgresql.info.host,
+                port=custom_postgresql.info.port,
+                database=custom_postgresql.info.dbname,
+            )
         )
     else:
         raise ValueError(f"Unknown backend '{request.param}'")
