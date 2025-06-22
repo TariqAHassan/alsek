@@ -6,7 +6,7 @@ from typing import Optional, Iterable, Any
 import psycopg2
 from psycopg2 import sql
 
-from alsek.storage.backends.postgres._pubsub.base import (
+from alsek.storage.backends.postgres.pubsub._base import (
     BasePostgresPubSubListen,
     _parse_notification_data,
 )

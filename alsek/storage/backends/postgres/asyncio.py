@@ -20,7 +20,7 @@ from alsek.storage.backends import AsyncBackend, LazyClient
 from alsek.storage.backends.postgres._utils import (
     validate_value_within_postgres_notification_size_limit,
 )
-from alsek.storage.backends.postgres._pubsub.asyncio import PostgresAsyncPubSubListener
+from alsek.storage.backends.postgres.pubsub.asyncio import PostgresAsyncPubSubListener
 from alsek.storage.backends.postgres.tables import SCHEMA_NAME, Base
 from alsek.storage.backends.postgres.tables import KeyValue as KeyValueRecord
 from alsek.storage.backends.postgres.tables import KeyValueType

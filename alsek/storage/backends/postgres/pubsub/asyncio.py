@@ -6,7 +6,7 @@ from typing import AsyncIterable, Any
 
 import asyncpg
 
-from alsek.storage.backends.postgres._pubsub.base import (
+from alsek.storage.backends.postgres.pubsub._base import (
     BasePostgresPubSubListen,
     _parse_notification_data,
 )
