@@ -43,3 +43,11 @@ class TerminationError(AlsekError):
 
 class RevokedError(AlsekError):
     """Alsek task revoked error."""
+
+
+class LockAlreadyAcquiredError(AlsekError):
+    """Lock already acquired."""
+
+
+class LockNotAcquiredError(AlsekError):
+    """Lock not acquired."""

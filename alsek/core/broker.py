@@ -7,7 +7,6 @@
 import logging
 from typing import Optional
 
-from alsek.core.concurrency import Lock
 from alsek.core.message import Message
 from alsek.defaults import DEFAULT_TTL
 from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsError
@@ -39,7 +38,7 @@ class Broker:
         self.backend = backend
         self.dlq_ttl = dlq_ttl
 
-        if self.backend.IS_ASYNC:
+        if self.backend.__IS_ASYNC__:
             raise AttributeError("Asynchronous backends are not yet supported")
 
     def __repr__(self) -> str:

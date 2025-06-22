@@ -11,17 +11,16 @@ from copy import deepcopy
 from typing import Any, Iterable, Optional, TypedDict, Union
 from uuid import uuid1
 
-import redis_lock
-
 from alsek.core.backoff import ExponentialBackoff, settings2backoff
-from alsek.core.concurrency import Lock
+from alsek.core.concurrency.lock import Lock
 from alsek.defaults import DEFAULT_MECHANISM, DEFAULT_QUEUE, DEFAULT_TASK_TIMEOUT
+from alsek.exceptions import LockNotAcquiredError
 from alsek.storage.backends import Backend
 from alsek.types import SupportedMechanismType
 from alsek.utils.helpers import dict_merge_update_into_origin
 from alsek.utils.parsing import ExceptionDetails
 from alsek.utils.printing import auto_repr
-from alsek.utils.temporal import fromtimestamp_ms, utcnow_timestamp_ms
+from alsek.utils.temporal import from_timestamp_ms, utcnow_timestamp_ms
 
 log = logging.getLogger(__name__)
 
@@ -205,7 +204,7 @@ class Message:
     def __repr__(self) -> str:
         params = self.data
         for k in ("created_at", "updated_at"):
-            params[k] = fromtimestamp_ms(params[k])
+            params[k] = from_timestamp_ms(params[k])
         return auto_repr(self, **params)
 
     @property
@@ -311,7 +310,7 @@ class Message:
                 log.info("Released lock for %s.", self.summary)
                 self.linked_lock = None
                 return True
-            except redis_lock.NotAcquired:  # noqa
+            except LockNotAcquiredError:
                 log.critical(
                     "Failed to release lock for %s",
                     self.summary,

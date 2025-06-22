@@ -51,6 +51,7 @@ def _queue_has_items(q: Queue) -> bool:
 # ------------------------------------------------------------------ #
 
 
+@pytest.mark.timeout(20)
 def test_tasks_consumed(rolling_thread_worker_pool: ThreadWorkerPool) -> None:
     pool = rolling_thread_worker_pool
     # emit one message per task

@@ -5,9 +5,11 @@
 """
 
 from __future__ import annotations
-import pytest  # noqa
+
 from copy import deepcopy
 from typing import Any
+
+import pytest  # noqa
 
 from alsek.utils.helpers import dict_merge_update_into_origin
 

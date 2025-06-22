@@ -36,11 +36,11 @@ Requires Python 3.9+
 
 ### Development
 
-For development, it might also be helpful to install `redis`.
+For development, it might also be helpful to install `redis` and `postgres`.
 
 ```shell
 # MacOS
-brew install redis
+brew install redis postgresql
 brew services start redis
 ```
 

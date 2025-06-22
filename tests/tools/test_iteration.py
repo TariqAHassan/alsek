@@ -70,6 +70,7 @@ def test_validation(
             rolling_result_pool._validate(messages)
 
 
+@pytest.mark.timeout(15)
 @pytest.mark.parametrize(
     "messages",
     [
@@ -109,6 +110,7 @@ def test_istream(
     assert expected_results == actual_results
 
 
+@pytest.mark.timeout(15)
 @pytest.mark.parametrize(
     "messages",
     [

@@ -10,21 +10,27 @@ from functools import partial, wraps
 from subprocess import PIPE, Popen
 from typing import Any, Iterable, Optional, Type, Union
 
+import psycopg
 import pytest
 from _pytest.fixtures import SubRequest
 from click.testing import CliRunner
+from pytest_postgresql import factories as postgresql_factories
 from pytest_redis import factories as redis_factories
 from redis import Redis
+from redis.asyncio import Redis as RedisAsync
+from sqlalchemy import URL
 
 from alsek.cli.cli import main as alsek_cli
 from alsek.core.broker import Broker
-from alsek.core.concurrency import Lock, ProcessLock, ThreadLock
+from alsek.core.concurrency.lock import Lock, ProcessLock, ThreadLock
 from alsek.core.message import Message
 from alsek.core.status import StatusTracker
 from alsek.core.task import task
 from alsek.core.worker.process import ProcessWorkerPool
 from alsek.core.worker.thread import ThreadWorkerPool
-from alsek.storage.backends import Backend
+from alsek.storage.backends import AsyncBackend, Backend, LazyClient
+from alsek.storage.backends.postgres import PostgresAsyncBackend, PostgresBackend
+from alsek.storage.backends.redis import RedisAsyncBackend
 from alsek.storage.backends.redis.standard import RedisBackend
 from alsek.storage.result import ResultStore
 from alsek.tools.iteration import ResultPool
@@ -46,6 +52,11 @@ custom_redisdb_proc = redis_factories.redis_proc(
 )
 custom_redisdb = redis_factories.redisdb("custom_redisdb_proc", decode=True)
 
+custom_postgresql_proc = postgresql_factories.postgresql_proc(
+    port=None,
+)
+custom_postgresql = postgresql_factories.postgresql("custom_postgresql_proc")
+
 
 @pytest.fixture()
 def cli_runner() -> CliRunner:
@@ -64,6 +75,9 @@ def base_backend() -> Backend:
             nx: bool = False,
             ttl: Optional[int] = None,
         ) -> None:
+            raise NotImplementedError()
+
+        def _connection_parser(*args: Any, **kwargs: Any) -> Union[Any, LazyClient]:
             raise NotImplementedError()
 
         def get(
@@ -108,13 +122,68 @@ def redis_backend(custom_redisdb: Redis) -> RedisBackend:
     return RedisBackend(custom_redisdb)
 
 
-@pytest.fixture(params=["redis"])
+@pytest.fixture()
+def postgres_backend(custom_postgresql: psycopg.Connection) -> PostgresBackend:
+    # Create SQLAlchemy URL from the postgresql fixture
+    url = URL.create(
+        drivername="postgresql",
+        username=custom_postgresql.info.user,
+        host=custom_postgresql.info.host,
+        port=custom_postgresql.info.port,
+        database=custom_postgresql.info.dbname,
+    )
+    return PostgresBackend(url)
+
+
+@pytest.fixture(params=["redis", "postgres"])
 def rolling_backend(
     request: SubRequest,
-    custom_redisdb: Redis,
+    custom_redisdb: Redis,  # noqa
+    custom_postgresql: psycopg.Connection,  # noqa
 ) -> Backend:
     if request.param == "redis":
         return RedisBackend(custom_redisdb)
+    elif request.param == "postgres":
+        return PostgresBackend(
+            URL.create(
+                drivername="postgresql",
+                username=custom_postgresql.info.user,
+                host=custom_postgresql.info.host,
+                port=custom_postgresql.info.port,
+                database=custom_postgresql.info.dbname,
+            )
+        )
+    else:
+        raise ValueError(f"Unknown backend '{request.param}'")
+
+
+@pytest.fixture(params=["redis", "postgres"])
+def rolling_async_backend(
+    request: SubRequest,
+    custom_redisdb: Redis,  # noqa
+    custom_postgresql: psycopg.Connection,  # noqa
+) -> AsyncBackend:
+    if request.param == "redis":
+        return RedisAsyncBackend(
+            RedisAsync(
+                host=custom_redisdb.connection_pool.connection_kwargs.get(
+                    "host", "localhost"
+                ),
+                port=custom_redisdb.connection_pool.connection_kwargs.get("port", 6379),
+                db=custom_redisdb.connection_pool.connection_kwargs.get("db", 0),
+                decode_responses=True,
+            )
+        )
+    elif request.param == "postgres":
+        return PostgresAsyncBackend(
+            URL.create(
+                drivername="postgresql+asyncpg",
+                username=custom_postgresql.info.user,
+                host=custom_postgresql.info.host,
+                port=custom_postgresql.info.port,
+                database=custom_postgresql.info.dbname,
+            )
+        )
     else:
         raise ValueError(f"Unknown backend '{request.param}'")
 
@@ -191,7 +260,7 @@ def rolling_process_worker_pool(rolling_broker: Broker) -> ProcessWorkerPool:
     A pool that will exit after one successful submit_message, and uses
     ._poll() so run() returns once.
     """
-    # create 3 trivial “process” tasks
+    # create 3 trivial "process" tasks
     tasks = [
         task(
             rolling_broker,

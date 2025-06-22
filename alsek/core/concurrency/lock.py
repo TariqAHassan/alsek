@@ -8,18 +8,20 @@ from __future__ import annotations
 
 import os
 import threading
-from functools import cached_property
 from socket import gethostname
 from types import TracebackType
-from typing import Any, Literal, Optional, Type, cast, get_args
+from typing import Any, Optional, Type, get_args
 
-import redis_lock
-
+from alsek.core.concurrency._utils import (
+    IF_ALREADY_ACQUIRED_TYPE,
+    PostgresLockInterface,
+    RedisLockInterface,
+)
+from alsek.exceptions import LockAlreadyAcquiredError, LockNotAcquiredError
 from alsek.storage.backends import Backend
+from alsek.storage.backends.postgres import PostgresBackend
 from alsek.storage.backends.redis import RedisBackend
 from alsek.utils.printing import auto_repr
-
-IF_ALREADY_ACQUIRED_TYPE = Literal["raise_error", "return_true", "return_false"]
 
 CURRENT_HOST_OWNER_ID = f"lock:{gethostname()}"
 
@@ -80,27 +82,24 @@ class Lock:
         self.auto_release = auto_release
         self._owner_id = owner_id
 
-        if not isinstance(backend, RedisBackend):
-            raise NotImplementedError("Only RedisBackend is supported.")
+        if isinstance(backend, RedisBackend):
+            self.lock_interface = RedisLockInterface(
+                name=name,
+                backend=backend,
+                ttl=ttl,
+                owner_id=owner_id,
+            )
+        elif isinstance(backend, PostgresBackend):
+            self.lock_interface = PostgresLockInterface(
+                name=name,
+                backend=backend,
+                ttl=ttl,
+                owner_id=owner_id,
+            )
+        else:
+            raise NotImplementedError(f"Unsupported backend '{backend}'")
 
         self.validate()
-
-        self._lock = redis_lock.Lock(
-            backend.conn,
-            name=self.full_name,
-            expire=None if ttl is None else round(ttl / 1000),
-            id=self.owner_id,
-        )
-
-    def validate(self) -> None:
-        if not self.name:
-            raise ValueError("`name` must be provided.")
-        elif not self.owner_id:
-            raise ValueError("`owner_id` must be provided.")
-
-    @property
-    def owner_id(self) -> str:
-        return self._owner_id
 
     def __repr__(self) -> str:
         return auto_repr(
@@ -111,15 +110,24 @@ class Lock:
             auto_release=self.auto_release,
         )
 
+    def validate(self) -> None:
+        if not self.name:
+            raise ValueError(f"Name not provided")
+
     @property
-    def full_name(self) -> str:
+    def lock_id(self) -> str:
         """The full name of the lock including its namespace prefix."""
-        return f"{self.backend.namespace}:{self.name}"
+        return self.lock_interface.lock_id
+
+    @property
+    def owner_id(self) -> str:
+        """The ID of the owner of the lock."""
+        return self._owner_id
 
     @property
     def holder(self) -> Optional[str]:
         """Name of the owner that currently holds the lock, if any."""
-        return self._lock.get_owner_id()
+        return self.lock_interface.get_holder_id()
 
     @property
     def held(self) -> bool:
@@ -148,8 +156,12 @@ class Lock:
             raise ValueError(f"Invalid `on_already_acquired`, got  {if_already_acquired}")  # fmt: skip
 
         try:
-            return self._lock.acquire(blocking=bool(wait), timeout=wait)
-        except redis_lock.AlreadyAcquired as error:
+            return self.lock_interface.acquire(
+                if_already_acquired=if_already_acquired,
+                blocking=bool(wait),
+                timeout=wait,
+            )
+        except LockAlreadyAcquiredError as error:
             if if_already_acquired == "return_true":
                 return True
             elif if_already_acquired == "return_false":
@@ -170,9 +182,9 @@ class Lock:
 
         """
         try:
-            self._lock.release()
+            self.lock_interface.release()
             return True
-        except redis_lock.NotAcquired as error:
+        except LockNotAcquiredError as error:
             if raise_if_not_acquired:
                 raise error
             else:
@@ -212,15 +224,11 @@ class Lock:
 
 class ProcessLock(Lock):
     """Distributed mutual exclusion (MUTEX) lock for controlling
-    concurrency accross processes on the same host.
+    concurrency across processes on the same host.
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs, owner_id="")
-
-    def validate(self) -> None:
-        if not self.name:
-            raise ValueError("`name` must be provided.")
+        super().__init__(*args, **kwargs, owner_id=_get_process_lock_owner_id())
 
     @property
     def owner_id(self) -> str:
@@ -232,15 +240,11 @@ class ProcessLock(Lock):
 
 class ThreadLock(Lock):
     """Distributed mutual exclusion (MUTEX) lock for controlling
-    concurrency accross processes and threads on the same host.
+    concurrency across processes and threads on the same host.
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs, owner_id="")
-
-    def validate(self) -> None:
-        if not self.name:
-            raise ValueError("`name` must be provided.")
+        super().__init__(*args, **kwargs, owner_id=_get_thread_lock_owner_id())
 
     @property
     def owner_id(self) -> str:

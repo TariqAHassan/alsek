@@ -9,7 +9,7 @@ from typing import Optional
 import pytest
 
 from alsek.core.broker import Broker
-from alsek.core.concurrency import Lock
+from alsek.core.concurrency.lock import Lock
 from alsek.core.message import Message
 from alsek.defaults import DEFAULT_TTL
 from alsek.exceptions import MessageDoesNotExistsError

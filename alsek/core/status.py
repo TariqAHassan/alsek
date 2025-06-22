@@ -21,6 +21,7 @@ from alsek.core.message import Message
 from alsek.defaults import DEFAULT_TTL
 from alsek.exceptions import ValidationError
 from alsek.storage.backends import Backend
+from alsek.utils.namespacing import get_pubsub_channel_name, get_status_name
 
 
 class TaskStatus(Enum):
@@ -76,9 +77,9 @@ class StatusTracker:
     ) -> None:
         self.backend = backend
         self.ttl = ttl
-        self.enable_pubsub = backend.SUPPORTS_PUBSUB if enable_pubsub is None else enable_pubsub  # fmt: skip
+        self.enable_pubsub = backend.__SUPPORTS_PUBSUB__ if enable_pubsub is None else enable_pubsub  # fmt: skip
 
-        if enable_pubsub and not backend.SUPPORTS_PUBSUB:
+        if enable_pubsub and not backend.__SUPPORTS_PUBSUB__:
             raise AssertionError("Backend does not support PUBSUB")
 
     def serialize(self) -> dict[str, Any]:
@@ -98,36 +99,6 @@ class StatusTracker:
             enable_pubsub=data["enable_pubsub"],
         )
 
-    @staticmethod
-    def get_storage_name(message: Message) -> str:
-        """Get the key for the status information about the message
-
-        Args:
-            message (Message): an Alsek message
-
-        Returns:
-            name (string): the key for the status information
-
-        """
-        if not message.queue or not message.task_name or not message.uuid:
-            raise ValidationError("Required attributes not set for message")
-        return f"status:{message.queue}:{message.task_name}:{message.uuid}"
-
-    @staticmethod
-    def get_pubsub_name(message: Message) -> str:
-        """Get the channel for status updates about the message.
-
-        Args:
-            message (Message): an Alsek message
-
-        Returns:
-            name (string): the channel for the status information
-
-        """
-        if not message.queue or not message.task_name or not message.uuid:
-            raise ValidationError("Required attributes not set for message")
-        return f"channel:{message.queue}:{message.task_name}:{message.uuid}"
-
     def exists(self, message: Message) -> bool:
         """Check if a status for ``message`` exists in the backend.
 
@@ -138,7 +109,7 @@ class StatusTracker:
             bool
 
         """
-        return self.backend.exists(self.get_storage_name(message))
+        return self.backend.exists(get_status_name(message))
 
     def publish_update(self, message: Message, update: StatusUpdate) -> None:
         """Publish a PUBSUB update for a message.
@@ -152,7 +123,7 @@ class StatusTracker:
 
         """
         self.backend.pub(
-            self.get_pubsub_name(message),
+            get_pubsub_channel_name(message),
             value=update.as_dict(),  # converting to dict makes this serializer-agnostic
         )
 
@@ -175,7 +146,7 @@ class StatusTracker:
         if not self.enable_pubsub:
             raise ValueError("PUBSUB not enabled")
 
-        for i in self.backend.sub(self.get_pubsub_name(message)):
+        for i in self.backend.sub(get_pubsub_channel_name(message)):
             if i.get("type", "").lower() == "message":
                 update = StatusUpdate(
                     status=TaskStatus[i["data"]["status"]],  # noqa
@@ -204,7 +175,7 @@ class StatusTracker:
         """
         update = StatusUpdate(status=status, details=details)
         self.backend.set(
-            self.get_storage_name(message),
+            get_status_name(message),
             value=update.as_dict(),
             ttl=self.ttl if status == TaskStatus.SUBMITTED else None,
         )
@@ -221,7 +192,7 @@ class StatusTracker:
             status (StatusUpdate): the status of ``message``
 
         """
-        if value := self.backend.get(self.get_storage_name(message)):
+        if value := self.backend.get(get_status_name(message)):
             return StatusUpdate(
                 status=TaskStatus[value["status"]],  # noqa
                 details=value["details"],
@@ -288,7 +259,7 @@ class StatusTracker:
         """
         if check and self.get(message).status not in TERMINAL_TASK_STATUSES:
             raise ValidationError(f"Message '{message.uuid}' in a non-terminal state")
-        self.backend.delete(self.get_storage_name(message), missing_ok=False)
+        self.backend.delete(get_status_name(message), missing_ok=False)
 
 
 class StatusTrackerIntegryScanner:
