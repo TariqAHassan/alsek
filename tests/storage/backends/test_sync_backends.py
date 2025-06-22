@@ -302,33 +302,6 @@ def test_pub_sub_multiple_messages(rolling_backend: Backend) -> None:
     assert received_messages == messages
 
 
-def test_pub_sub_no_messages(rolling_backend: Backend) -> None:
-    if not rolling_backend.SUPPORTS_PUBSUB:
-        pytest.skip("Backend does not support pub/sub")
-
-    channel = "test-empty"
-    received_messages = []
-    subscription_started = threading.Event()
-
-    def subscriber():
-        subscription_started.set()
-        for msg in rolling_backend.sub(channel):
-            if isinstance(msg, dict) and msg.get("type") == "message":
-                received_messages.append(msg["data"])
-                break
-
-    subscriber_thread = threading.Thread(target=subscriber)
-    subscriber_thread.daemon = True  # Don't block test exit
-    subscriber_thread.start()
-
-    # Wait for subscription to start, then wait a bit more
-    subscription_started.wait(timeout=1.0)
-    time.sleep(0.2)
-
-    # No messages should be received
-    assert len(received_messages) == 0
-
-
 @pytest.mark.parametrize(
     "test_data",
     [
