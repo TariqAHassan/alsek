@@ -124,9 +124,13 @@ class StatusTracker:
             name (string): the channel for the status information
 
         """
-        if not message.queue or not message.task_name or not message.uuid:
+        # Note: we don't include the `message.queue` or `message.task_name`
+        #   because they're variable and postgres `notify` can only have support channels of length 63.
+        #   The number of characters in the name returned here will always be 52 characters.
+        #   (16 for the prefix and 36 for the v4 uuid).
+        if not message.uuid:
             raise ValidationError("Required attributes not set for message")
-        return f"channel:{message.queue}:{message.task_name}:{message.uuid}"
+        return f"channel:message:{message.uuid}"
 
     def exists(self, message: Message) -> bool:
         """Check if a status for ``message`` exists in the backend.
