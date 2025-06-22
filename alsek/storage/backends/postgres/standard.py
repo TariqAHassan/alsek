@@ -26,7 +26,7 @@ from alsek.storage.backends.postgres.tables import (
 )
 from alsek.storage.backends.postgres._utils import (
     PostgresPubSubListener,
-    make_postgres_safe_channel_name,
+    validate_value_within_postgres_notification_size_limit,
 )
 from alsek.storage.serialization import Serializer
 from alsek.types import Empty
@@ -259,17 +259,9 @@ class PostgresBackend(Backend):
 
         """
         with self.session() as session:
-            # Serialize the value
             serialized_value = self.serializer.forward(value)
 
-            # Use NOTIFY to publish the message
-            # PostgreSQL NOTIFY has a payload limit of 8000 bytes
-            if len(serialized_value) > 8000:
-                raise ValueError(
-                    "Message payload too large for PostgreSQL NOTIFY (max 8000 bytes)"
-                )
-
-            # Channel name must be directly embedded, cannot be parameterized
+            validate_value_within_postgres_notification_size_limit(serialized_value)
             session.execute(
                 text("SELECT pg_notify(:channel, :payload)"),
                 {"channel": channel, "payload": serialized_value},
