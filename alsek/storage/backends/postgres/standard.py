@@ -220,16 +220,16 @@ class PostgresBackend(Backend):
     def priority_remove(self, key: str, unique_id: str) -> None:
         full_key = self.full_name(key)
         with self.session() as session:
-            # Remove the Priority record
+            # A. Remove the Priority record
             priority_obj = session.get(PriorityRecord, (full_key, unique_id))
             if priority_obj is None:
                 return  # Nothing to remove
 
             session.delete(priority_obj)
 
-            # Check if any Priority records remain for this queue
+            # B. Check if any Priority records remain for this queue
             remaining_priorities = session.scalars(
-                select(PriorityRecord.unique_id)
+                select(1)
                 .where(
                     PriorityRecord.id == full_key,
                     # Exclude what we're about to delete
@@ -238,7 +238,7 @@ class PostgresBackend(Backend):
                 .limit(1)
             ).first()
 
-            # If no priorities remain, clean up any KeyValue record
+            # C. If no priorities remain, clean up any KeyValue record
             if remaining_priorities is None and (kv_obj := session.get(KeyValueRecord, full_key)):  # fmt: skip
                 session.delete(kv_obj)
 
