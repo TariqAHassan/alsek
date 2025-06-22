@@ -174,7 +174,6 @@ def get_status_name(message: Message) -> str:
         not message.uuid
         or not message.queue
         or not message.task_name
-        or not message.uuid
     ):
         raise ValidationError("Required attributes not set for message")
     return f"status:{message.queue}:{message.task_name}:{message.uuid}"
