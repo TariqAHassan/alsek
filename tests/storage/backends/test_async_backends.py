@@ -21,7 +21,7 @@ from alsek.storage.backends import AsyncBackend
     ],
 )
 async def test_pub_sub_serialization_async(test_data: list[Any], rolling_async_backend: AsyncBackend) -> None:
-    if not rolling_async_backend.SUPPORTS_PUBSUB:
+    if not rolling_async_backend.__SUPPORTS_PUBSUB__:
         pytest.skip("Backend does not support pub/sub")
 
     channel = f"test-pubsub-{len(test_data)}"

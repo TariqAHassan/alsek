@@ -77,9 +77,9 @@ class StatusTracker:
     ) -> None:
         self.backend = backend
         self.ttl = ttl
-        self.enable_pubsub = backend.SUPPORTS_PUBSUB if enable_pubsub is None else enable_pubsub  # fmt: skip
+        self.enable_pubsub = backend.__SUPPORTS_PUBSUB__ if enable_pubsub is None else enable_pubsub  # fmt: skip
 
-        if enable_pubsub and not backend.SUPPORTS_PUBSUB:
+        if enable_pubsub and not backend.__SUPPORTS_PUBSUB__:
             raise AssertionError("Backend does not support PUBSUB")
 
     def serialize(self) -> dict[str, Any]:

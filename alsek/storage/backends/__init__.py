@@ -57,8 +57,8 @@ class BaseBackend(ABC):
 
     """
 
-    IS_ASYNC: bool = False
-    SUPPORTS_PUBSUB: bool = False
+    __IS_ASYNC__: bool = False
+    __SUPPORTS_PUBSUB__: bool = False
 
     def __init__(
         self,
@@ -333,7 +333,7 @@ class BaseBackend(ABC):
 
 
 class Backend(BaseBackend, ABC):
-    IS_ASYNC: bool = False
+    __IS_ASYNC__: bool = False
 
     def _get_engine(
         self,
@@ -365,7 +365,7 @@ class Backend(BaseBackend, ABC):
 
 
 class AsyncBackend(BaseBackend, ABC):
-    IS_ASYNC: bool = True
+    __IS_ASYNC__: bool = True
 
     @abstractmethod
     async def exists(self, name: str) -> bool:

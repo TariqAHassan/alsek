@@ -44,7 +44,7 @@ class RedisBackend(Backend):
 
     """
 
-    SUPPORTS_PUBSUB: bool = True
+    __SUPPORTS_PUBSUB__: bool = True
 
     def __init__(
         self,

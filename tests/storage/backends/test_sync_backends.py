@@ -212,7 +212,7 @@ def test_priority_add_overwrite(rolling_backend: Backend) -> None:
 
 def test_pub_sub_simple(rolling_backend: Backend) -> None:
     """Test basic pub/sub functionality with simple string message."""
-    if not rolling_backend.SUPPORTS_PUBSUB:
+    if not rolling_backend.__SUPPORTS_PUBSUB__:
         pytest.skip("Backend does not support pub/sub")
 
     channel = "test_channel"
@@ -242,7 +242,7 @@ def test_pub_sub_simple(rolling_backend: Backend) -> None:
 
 def test_pub_sub_complex_data(rolling_backend: Backend) -> None:
     """Test pub/sub with complex data structures."""
-    if not rolling_backend.SUPPORTS_PUBSUB:
+    if not rolling_backend.__SUPPORTS_PUBSUB__:
         pytest.skip("Backend does not support pub/sub")
 
     channel = "test-complex"
@@ -273,7 +273,7 @@ def test_pub_sub_complex_data(rolling_backend: Backend) -> None:
 
 def test_pub_sub_multiple_messages(rolling_backend: Backend) -> None:
     """Test pub/sub with multiple messages."""
-    if not rolling_backend.SUPPORTS_PUBSUB:
+    if not rolling_backend.__SUPPORTS_PUBSUB__:
         pytest.skip("Backend does not support pub/sub")
 
     channel = "test-multiple"
@@ -311,7 +311,7 @@ def test_pub_sub_multiple_messages(rolling_backend: Backend) -> None:
     ],
 )
 def test_pub_sub_serialization(test_data: list[Any], rolling_backend: Backend) -> None:
-    if not rolling_backend.SUPPORTS_PUBSUB:
+    if not rolling_backend.__SUPPORTS_PUBSUB__:
         pytest.skip("Backend does not support pub/sub")
 
     channel = f"test-pubsub-{len(test_data)}"

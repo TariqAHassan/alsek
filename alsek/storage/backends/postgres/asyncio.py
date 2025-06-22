@@ -41,8 +41,8 @@ _TABLES_CREATION_LOCK = asyncio.Lock()
 class PostgresAsyncBackend(AsyncBackend):
     """Asynchronous PostgreSQL backend powered by SQLAlchemy and asyncpg."""
 
-    IS_ASYNC: bool = True
-    SUPPORTS_PUBSUB: bool = True
+    __IS_ASYNC__: bool = True
+    __SUPPORTS_PUBSUB__: bool = True
 
     def __init__(
         self,

@@ -39,7 +39,7 @@ _TABLES_CREATION_LOCK = threading.Lock()
 class PostgresBackend(Backend):
     """PostgreSQL backend powered by SQLAlchemy."""
 
-    SUPPORTS_PUBSUB: bool = True
+    __SUPPORTS_PUBSUB__: bool = True
 
     def __init__(
         self,
