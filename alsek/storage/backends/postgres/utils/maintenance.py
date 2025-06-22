@@ -3,6 +3,7 @@
     Maintenance
 
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
@@ -10,11 +11,21 @@ from abc import ABC, abstractmethod
 from sqlalchemy import Engine, text
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncEngine
+import logging
+
+log = logging.getLogger(__name__)
+
+NO_PG_CRON_ERROR_MESSAGE = (
+    "Failed to create pg_cron extension, unable to automatically remove expired entries. "
+    "Please Install pg_cron manually."
+)
 
 
 class BasePostgresCronMaintenance(ABC):
     # noinspection SqlDialectInspection
-    __CHECK_DB_HAS_EXTENSION_SQL__ = "SELECT 1 FROM pg_extension WHERE extname = 'pg_cron'"
+    __CHECK_DB_HAS_EXTENSION_SQL__ = (
+        "SELECT 1 FROM pg_extension WHERE extname = 'pg_cron'"
+    )
 
     # noinspection SqlDialectInspection
     __CREATE_DB_EXTENSION_SQL__ = "CREATE EXTENSION IF NOT EXISTS pg_cron"
@@ -81,6 +92,7 @@ class PostgresCronMaintenance(BasePostgresCronMaintenance):
     def setup_cleanup_job(self) -> bool:
         if not self.has_pg_cron_extension():
             if not self.create_pg_cron_extension():
+                log.error(NO_PG_CRON_ERROR_MESSAGE)
                 return False
 
         try:
@@ -143,6 +155,7 @@ class PostgresCronMaintenanceAsync(BasePostgresCronMaintenance):
     async def setup_cleanup_job(self) -> bool:
         if not await self.has_pg_cron_extension():
             if not await self.create_pg_cron_extension():
+                log.error(NO_PG_CRON_ERROR_MESSAGE)
                 return False
 
         try:
