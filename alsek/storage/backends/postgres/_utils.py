@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+from psycopg2 import sql
 from abc import ABC, abstractmethod
 from functools import cached_property
 from typing import Any, AsyncIterable, Iterable, Optional
@@ -80,7 +81,9 @@ class PostgresPubSubListener(BasePostgresPubSubListen):
     ) -> None:
         try:
             if cursor:
-                cursor.execute(f"UNLISTEN {self.channel}")
+                cursor.execute(
+                    sql.SQL("UNLISTEN {}").format(sql.Identifier(self.channel))
+                )
                 cursor.close()
             conn.close()
         except Exception:  # noqa
@@ -91,11 +94,13 @@ class PostgresPubSubListener(BasePostgresPubSubListen):
         cursor: Optional[psycopg2.extensions.cursor] = None
         try:
             cursor = conn.cursor()
-            cursor.execute(f"LISTEN {self.channel}")
+            cursor.execute(
+                sql.SQL("LISTEN {}").format(sql.Identifier(self.channel)),
+            )
             while True:
                 conn.poll()
                 while conn.notifies:
-                    notify = conn.notifies.popleft()  # type: ignore
+                    notify = conn.notifies.pop(0)  # type: ignore
                     if notify.channel == self.channel:
                         yield _parse_notification_data(
                             payload=notify.payload,
