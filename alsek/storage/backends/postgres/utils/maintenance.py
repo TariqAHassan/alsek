@@ -93,7 +93,7 @@ class PostgresCronMaintenanceJob(BasePostgresCronMaintenanceJob):
                 conn.commit()
                 return True
         except SQLAlchemyError:
-            log.error(f"Failed to create pg_cron extension", exc_info=True)
+            log.error("Failed to create pg_cron extension", exc_info=True)
             return False
 
     def create(self) -> bool:
@@ -104,13 +104,13 @@ class PostgresCronMaintenanceJob(BasePostgresCronMaintenanceJob):
 
         try:
             with self.engine.connect() as conn:
-                # First, unschedule any existing job with the same name
+                # unschedule is safe even if job doesn't exist (returns false, no error)
                 conn.execute(
                     text(self.__UNSCHEDULE_SQL__),
                     {"job_name": self.__JOB_NAME__},
                 )
 
-                # Schedule the new job
+                # Create the job
                 conn.execute(
                     text(self.__SCHEDULE_SQL__),
                     {
@@ -123,7 +123,7 @@ class PostgresCronMaintenanceJob(BasePostgresCronMaintenanceJob):
                 conn.commit()
                 return True
         except SQLAlchemyError:
-            log.error(f"Failed to setup pg_cron cleanup job", exc_info=True)
+            log.error("Failed to setup pg_cron cleanup job", exc_info=True)
             return False
 
     def remove(self) -> bool:
@@ -136,7 +136,7 @@ class PostgresCronMaintenanceJob(BasePostgresCronMaintenanceJob):
                 conn.commit()
                 return True
         except SQLAlchemyError:
-            log.error(f"Failed to remove pg_cron cleanup job", exc_info=True)
+            log.error("Failed to remove pg_cron cleanup job", exc_info=True)
             return False
 
 
@@ -156,7 +156,7 @@ class PostgresCronMaintenanceJobAsync(BasePostgresCronMaintenanceJob):
                 await conn.commit()
                 return True
         except SQLAlchemyError:
-            log.error(f"Failed to create pg_cron extension", exc_info=True)
+            log.error("Failed to create pg_cron extension", exc_info=True)
             return False
 
     async def create(self) -> bool:
@@ -167,13 +167,13 @@ class PostgresCronMaintenanceJobAsync(BasePostgresCronMaintenanceJob):
 
         try:
             async with self.engine.connect() as conn:
-                # First, unschedule any existing job with the same name
+                # unschedule is safe even if job doesn't exist (returns false, no error)
                 await conn.execute(
                     text(self.__UNSCHEDULE_SQL__),
                     {"job_name": self.__JOB_NAME__},
                 )
 
-                # Schedule the new job
+                # Create the job
                 await conn.execute(
                     text(self.__SCHEDULE_SQL__),
                     {
@@ -186,7 +186,7 @@ class PostgresCronMaintenanceJobAsync(BasePostgresCronMaintenanceJob):
                 await conn.commit()
                 return True
         except SQLAlchemyError:
-            log.error(f"Failed to setup pg_cron cleanup job", exc_info=True)
+            log.error("Failed to setup pg_cron cleanup job", exc_info=True)
             return False
 
     async def remove(self) -> bool:
@@ -199,5 +199,5 @@ class PostgresCronMaintenanceJobAsync(BasePostgresCronMaintenanceJob):
                 await conn.commit()
                 return True
         except SQLAlchemyError:
-            log.error(f"Failed to remove pg_cron cleanup job", exc_info=True)
+            log.error("Failed to remove pg_cron cleanup job", exc_info=True)
             return False
