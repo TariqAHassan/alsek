@@ -305,11 +305,12 @@ def test_pub_sub_multiple_messages(rolling_backend: Backend) -> None:
 @pytest.mark.parametrize(
     "test_data",
     [
-        42,
-        {"key": "value"},
+        [],
+        [42],
+        [42, {"key": "value"}],
     ],
 )
-def test_pub_sub_serialization(test_data: Any, rolling_backend: Backend) -> None:
+def test_pub_sub_serialization(test_data: list[Any], rolling_backend: Backend) -> None:
     if not rolling_backend.SUPPORTS_PUBSUB:
         pytest.skip("Backend does not support pub/sub")
 
@@ -318,18 +319,19 @@ def test_pub_sub_serialization(test_data: Any, rolling_backend: Backend) -> None
 
     def publisher() -> None:
         time.sleep(0.1)
-        rolling_backend.pub(channel, test_data)
+        for i in test_data:
+            rolling_backend.pub(channel, i)
 
     publisher_thread = threading.Thread(target=publisher)
     publisher_thread.start()
 
-    for msg in rolling_backend.sub(channel):
-        if isinstance(msg, dict) and msg.get("type") == "message":
-            received_messages.append(msg["data"])
-            break
+    if test_data:
+        for payload in rolling_backend.sub(channel):
+            if isinstance(payload, dict) and payload.get("type") == "message":
+                received_messages.append(payload["data"])
+            if len(received_messages) == len(test_data):
+                break
 
     publisher_thread.join(timeout=2.0)
-
-    assert len(received_messages) == 1
-    assert received_messages[0] == test_data
-    assert type(received_messages[0]) == type(test_data)
+    assert len(received_messages) == len(test_data)
+    assert received_messages == test_data
