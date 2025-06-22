@@ -13,6 +13,8 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.ext.asyncio import AsyncEngine
 import logging
 
+from alsek.defaults import DEFAULT_NAMESPACE
+
 log = logging.getLogger(__name__)
 
 NO_PG_CRON_ERROR_MESSAGE = (
@@ -31,8 +33,8 @@ class BasePostgresCronMaintenance(ABC):
     __CREATE_DB_EXTENSION_SQL__ = "CREATE EXTENSION IF NOT EXISTS pg_cron"
 
     # noinspection SqlDialectInspection
-    __CLEANUP_SQL__ = """
-    DELETE FROM alsek.key_value 
+    __CLEANUP_SQL__ = f"""
+    DELETE FROM {DEFAULT_NAMESPACE}.key_value 
     WHERE expires_at IS NOT NULL 
     AND expires_at <= (now() AT TIME ZONE 'UTC')
     """
