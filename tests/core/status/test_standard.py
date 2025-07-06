@@ -4,9 +4,11 @@
 
 """
 
+from __future__ import annotations
+
 import threading
 import time
-from typing import Any
+from typing import Any, Type
 
 import pytest  # noqa
 
@@ -14,11 +16,10 @@ from alsek.core.message import Message
 from alsek.core.status.standard import StatusTracker
 from alsek.core.status.types import TERMINAL_TASK_STATUSES, TaskStatus
 from alsek.exceptions import ValidationError
-
-from ._helpers import TestCaseForStatusTrackingGenerator
+from tests.core.status._helpers import StatusTrackingTestCaseGenerator
 
 # Initialize test case generator for sync tests
-test_case_generator = TestCaseForStatusTrackingGenerator(is_async=False)
+test_case_generator = StatusTrackingTestCaseGenerator(is_async=False)
 
 
 @pytest.mark.parametrize(
@@ -105,7 +106,7 @@ def test_wait_for_various_cases(
     status_arg,
     final_status,
     should_set: bool,
-    expected: bool,
+    expected: TaskStatus | Type[Exception],
 ) -> None:
     msg = Message("task")
     if should_set:
@@ -116,13 +117,22 @@ def test_wait_for_various_cases(
 
         threading.Thread(target=_delayed_set, daemon=True).start()
 
-    result = rolling_status_tracker.wait_for(
-        message=msg,
-        status=status_arg,
-        timeout=0.2,
-        poll_interval=0.01,
-    )
-    assert result is expected
+    if isinstance(expected, type) and issubclass(expected, Exception):
+        with pytest.raises(expected):
+            rolling_status_tracker.wait_for(
+                message=msg,
+                status=status_arg,
+                timeout=0.5,
+                poll_interval=0.01,
+            )
+    else:
+        result = rolling_status_tracker.wait_for(
+            message=msg,
+            status=status_arg,
+            timeout=0.5,
+            poll_interval=0.01,
+        )
+        assert result == expected
 
 
 @pytest.mark.parametrize(
@@ -136,6 +146,39 @@ def test_wait_for_invalid_status_types_raise(
     msg = Message("task", uuid="wf-invalid")
     with pytest.raises(ValueError):
         rolling_status_tracker.wait_for(message=msg, status=bad_status)  # type: ignore[arg-type]
+
+
+@pytest.mark.parametrize(
+    "status_arg, final_status, should_set, expected",
+    test_case_generator.wait_for_no_raise_on_timeout_test_cases,
+)
+def test_wait_for_no_raise_on_timeout(
+    rolling_status_tracker: StatusTracker,
+    status_arg,
+    final_status,
+    should_set: bool,
+    expected: TaskStatus,
+) -> None:
+    msg = Message(
+        "task",
+        uuid=f"wf-no-raise-{str(status_arg).replace(' ', '')}-{final_status}-{should_set}",
+    )
+    if should_set:
+        # delay then set the final_status
+        def _delayed_set() -> None:
+            time.sleep(0.05)
+            rolling_status_tracker.set(msg, status=final_status)  # type: ignore[arg-type]
+
+        threading.Thread(target=_delayed_set, daemon=True).run()
+
+    result = rolling_status_tracker.wait_for(
+        message=msg,
+        status=status_arg,
+        timeout=0.5,
+        poll_interval=0.01,
+        raise_on_timeout=False,
+    )
+    assert result == expected
 
 
 def test_status_tracker_serialize_deserialize(

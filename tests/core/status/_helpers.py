@@ -10,7 +10,7 @@ from alsek import Message
 from alsek.core.status.types import TaskStatus
 
 
-class TestCaseForStatusTrackingGenerator:
+class StatusTrackingTestCaseGenerator:
     def __init__(self, is_async: bool) -> None:
         self.is_async = is_async
 
@@ -92,12 +92,12 @@ class TestCaseForStatusTrackingGenerator:
     def wait_for_various_cases_test_cases(self) -> list[tuple[Any, ...]]:
         # fmt: off
         return [
-            # single-status arg, status will be set → True
-            (TaskStatus.SUCCEEDED, TaskStatus.SUCCEEDED, True, True),
-            # iterable-status arg, status will be set to a matching terminal → True
-            ([TaskStatus.FAILED, TaskStatus.SUCCEEDED], TaskStatus.FAILED, True, True),
-            # status never set → timeout → False
-            (TaskStatus.SUCCEEDED, None, False, False),
+            # single-status arg, status will be set → return the matching status
+            (TaskStatus.SUCCEEDED, TaskStatus.SUCCEEDED, True, TaskStatus.SUCCEEDED),
+            # iterable-status arg, status will be set to a matching terminal → return the matching status
+            ([TaskStatus.FAILED, TaskStatus.SUCCEEDED], TaskStatus.FAILED, True, TaskStatus.FAILED),
+            # status never set → timeout → should raise TimeoutError (raise_on_timeout=True by default)
+            (TaskStatus.SUCCEEDED, None, False, TimeoutError),
         ]
         # fmt: on
 
@@ -108,5 +108,17 @@ class TestCaseForStatusTrackingGenerator:
             "not-a-status",
             123,
             object(),
+        ]
+        # fmt: on
+
+    @property
+    def wait_for_no_raise_on_timeout_test_cases(self) -> list[tuple[Any, ...]]:
+        """Test cases for wait_for with raise_on_timeout=False"""
+        # fmt: off
+        return [
+            # status never set → timeout → should return TaskStatus.UNKNOWN
+            (TaskStatus.SUCCEEDED, None, False, TaskStatus.UNKNOWN),
+            # status set to different value → timeout → should return current status
+            (TaskStatus.SUCCEEDED, TaskStatus.RUNNING, True, TaskStatus.RUNNING),
         ]
         # fmt: on
