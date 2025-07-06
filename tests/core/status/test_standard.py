@@ -169,7 +169,7 @@ def test_wait_for_no_raise_on_timeout(
             time.sleep(0.05)
             rolling_status_tracker.set(msg, status=final_status)  # type: ignore[arg-type]
 
-        threading.Thread(target=_delayed_set, daemon=True).start()
+        threading.Thread(target=_delayed_set, daemon=True).run()
 
     result = rolling_status_tracker.wait_for(
         message=msg,
