@@ -1,6 +1,6 @@
 """
 
-    Test Status
+    Test Standard Status
 
 """
 
@@ -11,7 +11,7 @@ import pytest
 
 from alsek import Broker
 from alsek.core.message import Message
-from alsek.core.status import (
+from alsek.core.statuss.standard import (
     TERMINAL_TASK_STATUSES,
     StatusTracker,
     StatusTrackerIntegryScanner,

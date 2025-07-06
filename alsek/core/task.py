@@ -22,7 +22,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
 from alsek.core.broker import Broker
 from alsek.core.message import Message
-from alsek.core.status import TERMINAL_TASK_STATUSES, StatusTracker, TaskStatus
+from alsek.core.statuss.standard import TERMINAL_TASK_STATUSES, StatusTracker, TaskStatus
 from alsek.defaults import (
     DEFAULT_MAX_RETRIES,
     DEFAULT_MECHANISM,
