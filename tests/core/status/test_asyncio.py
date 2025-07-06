@@ -13,8 +13,7 @@ from alsek.core.message import Message
 from alsek.core.status.asyncio import AsyncStatusTracker
 from alsek.core.status.types import TERMINAL_TASK_STATUSES, TaskStatus
 from alsek.exceptions import ValidationError
-
-from ._helpers import StatusTrackingTestCaseGenerator
+from tests.core.status._helpers import StatusTrackingTestCaseGenerator
 
 # Initialize test case generator for async tests
 test_case_generator = StatusTrackingTestCaseGenerator(is_async=True)
