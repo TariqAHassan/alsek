@@ -6,8 +6,9 @@
 
 import threading
 import time
+from typing import Any
 
-import pytest
+import pytest  # noqa
 
 from alsek.core.message import Message
 from alsek.core.status.standard import StatusTracker
@@ -163,7 +164,7 @@ def test_wait_for_various_cases(
 )
 def test_wait_for_invalid_status_types_raise(
     rolling_status_tracker: StatusTracker,
-    bad_status,
+    bad_status: Any,
 ) -> None:
     msg = Message("task", uuid="wf-invalid")
     with pytest.raises(ValueError):
