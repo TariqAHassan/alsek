@@ -17,11 +17,6 @@ from alsek.core.status.types import TaskStatus, TERMINAL_TASK_STATUSES, StatusUp
 from alsek.exceptions import ValidationError
 
 
-def _name2message(name: str) -> Message:
-    *_, queue, task_name, uuid = name.split(":")
-    return Message(task_name, queue=queue, uuid=uuid)
-
-
 class StatusTracker(BaseStatusTracker):
     __doc__ = BaseStatusTracker.__doc__
 
