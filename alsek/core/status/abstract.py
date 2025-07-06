@@ -10,7 +10,7 @@ from typing import Any, Optional, AsyncIterable, Iterable
 from alsek import Message
 from alsek.core.status.types import StatusUpdate, TaskStatus
 from alsek.defaults import DEFAULT_TTL
-from alsek.storage.backends import Backend
+from alsek.storage.backends import BaseBackend
 from alsek.exceptions import ValidationError
 
 
@@ -18,7 +18,7 @@ class BaseStatusTracker(ABC):
     """Alsek Status Tracker.
 
     Args:
-        backend (Backend): backend to persists results to. (In almost all cases, this
+        backend (BaseBackend): backend to persists results to. (In almost all cases, this
             should be the same backend used by the Broker).
         ttl (int, optional): time to live (in milliseconds) for the status
         enable_pubsub (bool, optional): if ``True`` automatically publish PUBSUB updates.
@@ -29,7 +29,7 @@ class BaseStatusTracker(ABC):
 
     def __init__(
         self,
-        backend: Backend,
+        backend: BaseBackend,
         ttl: Optional[int] = DEFAULT_TTL,
         enable_pubsub: Optional[bool] = None,
     ) -> None:
