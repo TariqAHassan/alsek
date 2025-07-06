@@ -16,6 +16,9 @@ from click.testing import CliRunner
 from pytest_redis import factories as redis_factories
 from redis import Redis
 
+from redis.asyncio import Redis as RedisAsync
+
+from alsek.core.status.asyncio import AsyncStatusTracker
 from alsek.cli.cli import main as alsek_cli
 from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock, ProcessLock, ThreadLock
@@ -24,7 +27,8 @@ from alsek.core.status.standard import StatusTracker
 from alsek.core.task import task
 from alsek.core.worker.process import ProcessWorkerPool
 from alsek.core.worker.thread import ThreadWorkerPool
-from alsek.storage.backends.abstract import Backend
+from alsek.storage.backends.abstract import Backend, AsyncBackend
+from alsek.storage.backends.redis import RedisAsyncBackend
 from alsek.storage.backends.redis.standard import RedisBackend
 from alsek.storage.result import ResultStore
 from alsek.tools.iteration import ResultPool
@@ -119,6 +123,28 @@ def rolling_backend(
         raise ValueError(f"Unknown backend '{request.param}'")
 
 
+@pytest.fixture(params=["redis"])
+def rolling_async_backend(
+    request: SubRequest,
+    custom_redisdb: Redis,  # noqa
+    custom_postgresql: psycopg.Connection,  # noqa
+) -> AsyncBackend:
+    if request.param == "redis":
+        return RedisAsyncBackend(
+            RedisAsync(
+                host=custom_redisdb.connection_pool.connection_kwargs.get(
+                    "host",
+                    "localhost",
+                ),
+                port=custom_redisdb.connection_pool.connection_kwargs.get("port", 6379),
+                db=custom_redisdb.connection_pool.connection_kwargs.get("db", 0),
+                decode_responses=True,
+            )
+        )
+    else:
+        raise ValueError(f"Unknown backend '{request.param}'")
+
+
 @pytest.fixture(
     params=[
         Lock.__name__,
@@ -161,6 +187,13 @@ def rolling_status_tracker(rolling_backend: Backend) -> StatusTracker:
 
 
 @pytest.fixture()
+def rolling_status_tracker_async(
+    rolling_async_backend: AsyncBackend,
+) -> AsyncStatusTracker:
+    return AsyncStatusTracker(rolling_async_backend)
+
+
+@pytest.fixture()
 def rolling_thread_worker_pool(rolling_broker):
     n = 3
     tasks = [
@@ -169,7 +202,7 @@ def rolling_thread_worker_pool(rolling_broker):
     ]
 
     pool = ThreadWorkerPool(tasks=tasks)
-    pool.stream = pool._poll  # single scan → finite run
+    pool.stream = pool._poll  # noqa; single scan → finite run
 
     # ---- wrap submit_message so it stops the pool after one hit ----
     original_submit = pool.submit_message
