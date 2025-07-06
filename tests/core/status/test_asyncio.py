@@ -168,7 +168,7 @@ async def test_wait_for_no_raise_on_timeout(
     should_set: bool,
     expected: TaskStatus,
 ) -> None:
-    msg = Message("task", uuid="async-wf-no-raise")
+    msg = Message("task", uuid=f"async-wf-no-raise-{str(status_arg).replace(' ', '')}-{final_status}-{should_set}")
     if should_set:
         # delay then set the final_status
         async def _delayed_set() -> None:
