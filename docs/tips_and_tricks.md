@@ -24,7 +24,8 @@ A short example of how to do this is provided below.
 from typing import Optional, Any
 
 from alsek.core.message import Message
-from alsek.core.status import StatusTracker, TaskStatus
+from alsek.core.status.standard import StatusTracker
+from alsek.core.status.types import TaskStatus
 
 from sqlalchemy import Column, String, create_engine
 from sqlalchemy.dialects.postgresql import UUID
@@ -39,14 +40,14 @@ session = Session()
 
 class Status(Base):
     __tablename__ = "status"
-    
+
     id = Column(UUID, primary_key=True)
     status = Column(String)
 
     def __repr__(self) -> str:
         return f"<Status(id='{self.id}', status='{self.status}')>"
 
-    
+
 class CustomStatusTracker(StatusTracker):
     def set(self, message: Message, status: TaskStatus, detail: Optional[Any] = None) -> None:
         super().set(message, status=status, detail=detail)

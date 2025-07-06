@@ -8,7 +8,8 @@ import pytest
 
 from alsek import Broker
 from alsek.core.futures import ProcessTaskFuture
-from alsek.core.status import StatusTracker, TaskStatus
+from alsek.core.status.standard import StatusTracker
+from alsek.core.status.types import TaskStatus
 from alsek.core.task import task
 from alsek.core.worker.process import ProcessWorkerPool
 from alsek.storage.result import ResultStore
@@ -262,7 +263,8 @@ def test_process_task_timeout_causes_failed_status(rolling_broker: Broker) -> No
 
     assert status.wait_for(msg, TaskStatus.FAILED, timeout=5)
     assert isinstance(
-        rolling_broker.sync_from_backend(msg).exception_details.as_exception(), TimeoutError
+        rolling_broker.sync_from_backend(msg).exception_details.as_exception(),
+        TimeoutError,
     )
 
 

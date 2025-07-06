@@ -15,7 +15,7 @@ import pytest
 import redis_lock
 
 from alsek.core.concurrency import Lock, ProcessLock, ThreadLock
-from alsek.storage.backends import Backend
+from alsek.storage.backends.abstract import Backend
 
 
 def test_repr(rolling_lock: Lock) -> None:

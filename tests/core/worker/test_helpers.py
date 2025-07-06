@@ -13,7 +13,7 @@ from alsek.core.task import Task, task
 from alsek.core.worker._helpers import derive_consumer_subset, extract_broker  # noqa
 from alsek.defaults import DEFAULT_QUEUE
 from alsek.exceptions import MultipleBrokersError, NoTasksFoundError
-from alsek.storage.backends import Backend
+from alsek.storage.backends.abstract import Backend
 
 
 def _task_factory(name: str, broker: Broker, queue: Optional[str] = None) -> Task:

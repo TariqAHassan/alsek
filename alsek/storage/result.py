@@ -11,7 +11,7 @@ from typing import Any, Iterable, Union
 import dill
 
 from alsek.core.message import Message
-from alsek.storage.backends import Backend
+from alsek.storage.backends.abstract import Backend
 from alsek.utils.temporal import utcnow_timestamp_ms
 from alsek.utils.waiting import waiter
 

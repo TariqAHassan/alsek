@@ -1,3 +1,5 @@
+from alsek.storage.backends.redis import AsyncRedisBackend
+
 # Guided Tour 🥾
 
 This document provides a guided tour of Alsek. <br>
@@ -9,6 +11,8 @@ Alsek currently provides 'out of the box' support for [`Redis`](https://redis.io
 
 #### Redis
 
+#### Synchronous
+
 ```python
 from alsek.storage.backends.redis import RedisBackend
 
@@ -16,6 +20,19 @@ from alsek.storage.backends.redis import RedisBackend
 # connect to an instance of Redis running on localhost.
 backend = RedisBackend()
 ```
+
+#### Asynchronous
+
+```python
+from alsek.storage.backends.redis import AsyncRedisBackend
+
+# Note: by default, `AsyncRedisBackend()` will attempt to 
+# connect to an instance of Redis running on localhost.
+async_backend = AsyncRedisBackend()
+```
+
+!!!warning
+   Currently, not all parts of Avalis support asynchronous backends.
 
 ### Lazy Initialization
 
@@ -28,7 +45,7 @@ of this mode is provided below.
 
 ```python
 from redis import Redis
-from alsek.storage.backends import LazyClient
+from alsek.storage.backends.lazy import LazyClient
 from alsek.storage.backends.redis import RedisBackend
 
 # Initialize the backend with LazyClient
@@ -607,6 +624,23 @@ and can be any one of the following:
 
     The frequency of status integrity scans can be changed by altering the
     ``trigger`` parameter of `StatusTrackerIntegryScanner()`..
+
+### Asynchronous Status Tracking
+
+An asynchronous status tracker is also available, `AsyncStatusTracker()`.
+
+```python
+from alsek.storage.backends.redis.asyncio import AsyncRedisBackend
+from alsek.core.status.asyncio import AsyncStatusTracker
+
+backend = AsyncRedisBackend("<connection_url>")
+status_tracker = AsyncStatusTracker(backend)
+...
+```
+
+!!!warning
+   Currently, the `Task()` class, used by the `task()` decorator by default, does _not_ support 
+   instances of `AsyncStatusTracker()` and will raise an error if one is provided to it.
 
 ## Result Storage
 

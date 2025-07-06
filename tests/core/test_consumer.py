@@ -11,7 +11,7 @@ import pytest
 from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock
 from alsek.core.consumer import Consumer, Message, MessageMutex
-from alsek.storage.backends import Backend
+from alsek.storage.backends.abstract import Backend
 from alsek.utils.namespacing import get_message_name, get_message_signature
 
 

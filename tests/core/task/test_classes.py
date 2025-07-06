@@ -18,7 +18,7 @@ from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.core.task import Task, TriggerTask
 from alsek.exceptions import SchedulingError, ValidationError
-from alsek.storage.backends import Backend
+from alsek.storage.backends.abstract import Backend
 from alsek.storage.result import ResultStore
 from tests._helpers import sleeper
 

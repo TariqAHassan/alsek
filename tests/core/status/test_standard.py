@@ -1,32 +1,29 @@
 """
 
-    Test Status
+    Test Standard Status
 
 """
 
 import threading
 import time
+from typing import Any
 
-import pytest
+import pytest  # noqa
 
-from alsek import Broker
 from alsek.core.message import Message
-from alsek.core.status import (
-    TERMINAL_TASK_STATUSES,
-    StatusTracker,
-    StatusTrackerIntegryScanner,
-    TaskStatus,
-    _name2message,
-)
+from alsek.core.status.standard import StatusTracker
+from alsek.core.status.types import TERMINAL_TASK_STATUSES, TaskStatus
 from alsek.exceptions import ValidationError
+
+from ._helpers import TestCaseForStatusTrackingGenerator
+
+# Initialize test case generator for sync tests
+test_case_generator = TestCaseForStatusTrackingGenerator(is_async=False)
 
 
 @pytest.mark.parametrize(
     "message,status,do_set",
-    [
-        (Message("task", uuid="1"), TaskStatus.SUBMITTED, True),
-        (Message("task", uuid="1"), TaskStatus.SUBMITTED, False),
-    ],
+    test_case_generator.status_exists_test_cases,
 )
 def test_status_exists(
     message: Message,
@@ -43,13 +40,7 @@ def test_status_exists(
 
 @pytest.mark.parametrize(
     "message,status",
-    [
-        (Message("task", uuid="1"), TaskStatus.SUBMITTED),
-        (Message("task", uuid="2"), TaskStatus.RUNNING),
-        (Message("task", uuid="3"), TaskStatus.RETRYING),
-        (Message("task", uuid="4"), TaskStatus.FAILED),
-        (Message("task", uuid="5"), TaskStatus.SUCCEEDED),
-    ],
+    test_case_generator.status_set_test_cases,
 )
 def test_status_set(
     message: Message,
@@ -61,13 +52,7 @@ def test_status_set(
 
 @pytest.mark.parametrize(
     "message,status",
-    [
-        (Message("task", uuid="1"), TaskStatus.SUBMITTED),
-        (Message("task", uuid="2"), TaskStatus.RUNNING),
-        (Message("task", uuid="3"), TaskStatus.RETRYING),
-        (Message("task", uuid="4"), TaskStatus.FAILED),
-        (Message("task", uuid="5"), TaskStatus.SUCCEEDED),
-    ],
+    test_case_generator.status_get_test_cases,
 )
 def test_status_get(
     message: Message,
@@ -81,13 +66,7 @@ def test_status_get(
 
 @pytest.mark.parametrize(
     "message,status",
-    [
-        (Message("task", uuid="1"), TaskStatus.SUBMITTED),
-        (Message("task", uuid="2"), TaskStatus.RUNNING),
-        (Message("task", uuid="3"), TaskStatus.RETRYING),
-        (Message("task", uuid="4"), TaskStatus.FAILED),
-        (Message("task", uuid="5"), TaskStatus.SUCCEEDED),
-    ],
+    test_case_generator.status_delete_check_test_cases,
 )
 def test_status_delete_check(
     message: Message,
@@ -105,13 +84,7 @@ def test_status_delete_check(
 
 @pytest.mark.parametrize(
     "message,status",
-    [
-        (Message("task", uuid="1"), TaskStatus.SUBMITTED),
-        (Message("task", uuid="2"), TaskStatus.RUNNING),
-        (Message("task", uuid="3"), TaskStatus.RETRYING),
-        (Message("task", uuid="4"), TaskStatus.FAILED),
-        (Message("task", uuid="5"), TaskStatus.SUCCEEDED),
-    ],
+    test_case_generator.status_delete_no_check_test_cases,
 )
 def test_status_delete_no_check(
     message: Message,
@@ -124,28 +97,8 @@ def test_status_delete_no_check(
 
 
 @pytest.mark.parametrize(
-    "name,expected",
-    [
-        ("status:queue1:task1:uuid1", ("task1", "queue1", "uuid1")),
-        ("namespace:status:queue2:task2:uuid2", ("task2", "queue2", "uuid2")),
-    ],
-)
-def test_name2message(name, expected: tuple[str, str, str]) -> None:
-    message = _name2message(name)
-    actual = (message.task_name, message.queue, message.uuid)
-    assert actual == expected
-
-
-@pytest.mark.parametrize(
     "status_arg, final_status, should_set, expected",
-    [
-        # single-status arg, status will be set → True
-        (TaskStatus.SUCCEEDED, TaskStatus.SUCCEEDED, True, True),
-        # iterable-status arg, status will be set to a matching terminal → True
-        ([TaskStatus.FAILED, TaskStatus.SUCCEEDED], TaskStatus.FAILED, True, True),
-        # status never set → timeout → False
-        (TaskStatus.SUCCEEDED, None, False, False),
-    ],
+    test_case_generator.wait_for_various_cases_test_cases,
 )
 def test_wait_for_various_cases(
     rolling_status_tracker: StatusTracker,
@@ -174,37 +127,15 @@ def test_wait_for_various_cases(
 
 @pytest.mark.parametrize(
     "bad_status",
-    [
-        "not-a-status",
-        123,
-        object(),
-    ],
+    test_case_generator.wait_for_invalid_status_test_cases,
 )
 def test_wait_for_invalid_status_types_raise(
     rolling_status_tracker: StatusTracker,
-    bad_status,
+    bad_status: Any,
 ) -> None:
     msg = Message("task", uuid="wf-invalid")
     with pytest.raises(ValueError):
         rolling_status_tracker.wait_for(message=msg, status=bad_status)  # type: ignore[arg-type]
-
-
-def test_integrity_scaner(rolling_status_tracker: StatusTracker) -> None:
-    # Simulate a message expiring from the broker by setting the
-    # status for a message that has never actually been added to the broker.
-    message = Message("task1")
-    rolling_status_tracker.set(message, status=TaskStatus.RUNNING)
-    broker = Broker(rolling_status_tracker.backend)
-    integry_scanner = StatusTrackerIntegryScanner(
-        status_tracker=rolling_status_tracker,
-        broker=broker,
-    )
-
-    # Run a scan
-    integry_scanner.scan()
-
-    # Check that the status of this message is now 'UNKNOWN'.
-    assert rolling_status_tracker.get(message).status == TaskStatus.UNKNOWN
 
 
 def test_status_tracker_serialize_deserialize(

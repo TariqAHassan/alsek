@@ -22,7 +22,8 @@ from apscheduler.triggers.interval import IntervalTrigger
 from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
 from alsek.core.broker import Broker
 from alsek.core.message import Message
-from alsek.core.status import TERMINAL_TASK_STATUSES, StatusTracker, TaskStatus
+from alsek.core.status.standard import StatusTracker
+from alsek.core.status.types import TERMINAL_TASK_STATUSES, TaskStatus
 from alsek.defaults import (
     DEFAULT_MAX_RETRIES,
     DEFAULT_MECHANISM,
@@ -170,6 +171,8 @@ class Task:
 
         if mechanism not in SUPPORTED_MECHANISMS:
             raise ValueError(f"Unsupported mechanism '{mechanism}'")
+        elif status_tracker and status_tracker.backend.IS_ASYNC:
+            raise ValueError("Status tracker does not support async backends")
 
         self._deferred: bool = False
 
