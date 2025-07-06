@@ -4,11 +4,12 @@
 
 """
 
+import threading
 import time
 from typing import Any, Callable, Optional, Union
 
 import dill
-import pytest
+import pytest  # noqa
 from redis import Redis
 
 from alsek.storage.backends.abstract import Backend
@@ -39,7 +40,7 @@ def test_invalid_conn(backend: Backend) -> None:
         LazyClient(lambda: Redis()),
     ],
 )
-def test_redis_conn_parse(
+def test_redis_connection_parser(
     conn: Optional[Union[Delayed, LazyClient]],
     redis_backend: RedisBackend,
 ) -> None:
@@ -208,3 +209,130 @@ def test_priority_add_overwrite(rolling_backend: Backend) -> None:
     # Should now reflect the new priority order
     items = list(rolling_backend.priority_iter(key))
     assert items == [uid]
+
+
+def test_pub_sub_simple(rolling_backend: Backend) -> None:
+    """Test basic pub/sub functionality with simple string message."""
+    if not rolling_backend.SUPPORTS_PUBSUB:
+        pytest.skip("Backend does not support pub/sub")
+
+    channel = "test_channel"
+    message = "hello world"
+    received_messages = []
+
+    def publisher():
+        # Small delay to ensure subscriber is ready
+        time.sleep(0.1)
+        rolling_backend.pub(channel, message)
+
+    # Start publisher in background thread
+    publisher_thread = threading.Thread(target=publisher)
+    publisher_thread.start()
+
+    # Subscribe and collect messages
+    for msg in rolling_backend.sub(channel):
+        if isinstance(msg, dict) and msg.get("type") == "message":
+            received_messages.append(msg["data"])
+            break
+
+    publisher_thread.join(timeout=2.0)
+
+    assert len(received_messages) == 1
+    assert received_messages[0] == message
+
+
+def test_pub_sub_complex_data(rolling_backend: Backend) -> None:
+    """Test pub/sub with complex data structures."""
+    if not rolling_backend.SUPPORTS_PUBSUB:
+        pytest.skip("Backend does not support pub/sub")
+
+    channel = "test-complex"
+    complex_message = {
+        "id": 12345,
+        "data": ["item1", "item2", "item3"],
+        "metadata": {"priority": "high", "timestamp": 1234567890},
+    }
+    received_messages = []
+
+    def publisher():
+        time.sleep(0.1)
+        rolling_backend.pub(channel, complex_message)
+
+    publisher_thread = threading.Thread(target=publisher)
+    publisher_thread.start()
+
+    for msg in rolling_backend.sub(channel):
+        if isinstance(msg, dict) and msg.get("type") == "message":
+            received_messages.append(msg["data"])
+            break
+
+    publisher_thread.join(timeout=2.0)
+
+    assert len(received_messages) == 1
+    assert received_messages[0] == complex_message
+
+
+def test_pub_sub_multiple_messages(rolling_backend: Backend) -> None:
+    """Test pub/sub with multiple messages."""
+    if not rolling_backend.SUPPORTS_PUBSUB:
+        pytest.skip("Backend does not support pub/sub")
+
+    channel = "test-multiple"
+    messages = ["message1", "message2", "message3"]
+    received_messages = []
+
+    def publisher():
+        time.sleep(0.1)
+        for msg in messages:
+            rolling_backend.pub(channel, msg)
+            time.sleep(0.05)  # Small delay between messages
+
+    publisher_thread = threading.Thread(target=publisher)
+    publisher_thread.start()
+
+    # Collect messages until we get all expected ones
+    for msg in rolling_backend.sub(channel):
+        if isinstance(msg, dict) and msg.get("type") == "message":
+            received_messages.append(msg["data"])
+            if len(received_messages) >= len(messages):
+                break
+
+    publisher_thread.join(timeout=3.0)
+
+    assert len(received_messages) == len(messages)
+    assert received_messages == messages
+
+
+@pytest.mark.parametrize(
+    "test_data",
+    [
+        [],
+        [42],
+        [42, {"key": "value"}],
+    ],
+)
+def test_pub_sub_serialization(test_data: list[Any], rolling_backend: Backend) -> None:
+    if not rolling_backend.SUPPORTS_PUBSUB:
+        pytest.skip("Backend does not support pub/sub")
+
+    channel = f"test-pubsub-{len(test_data)}"
+    received_messages = list()
+
+    def publisher() -> None:
+        time.sleep(0.1)
+        for i in test_data:
+            rolling_backend.pub(channel, i)
+
+    publisher_thread = threading.Thread(target=publisher)
+    publisher_thread.start()
+
+    if test_data:
+        for payload in rolling_backend.sub(channel):
+            if isinstance(payload, dict) and payload.get("type") == "message":
+                received_messages.append(payload["data"])
+            if len(received_messages) == len(test_data):
+                break
+
+    publisher_thread.join(timeout=2.0)
+    assert len(received_messages) == len(test_data)
+    assert received_messages == test_data
