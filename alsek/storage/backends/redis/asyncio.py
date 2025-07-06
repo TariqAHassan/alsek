@@ -25,7 +25,7 @@ from alsek.utils.printing import auto_repr
 log = logging.getLogger(__name__)
 
 
-class RedisAsyncBackend(AsyncBackend):
+class AsyncRedisBackend(AsyncBackend):
     """Asynchronous Redis Backend.
 
     This backend is powered by Redis and provides asynchronous support
@@ -117,7 +117,7 @@ class RedisAsyncBackend(AsyncBackend):
         return dill.dumps(data)
 
     @classmethod
-    def _from_settings(cls, settings: dict[str, Any]) -> RedisAsyncBackend:
+    def _from_settings(cls, settings: dict[str, Any]) -> AsyncRedisBackend:
         settings["conn"] = RedisAsync(
             connection_pool=AsyncConnectionPool(
                 connection_class=settings["conn"]["connection_class"],
