@@ -127,7 +127,6 @@ def rolling_backend(
 def rolling_async_backend(
     request: SubRequest,
     custom_redisdb: Redis,  # noqa
-    custom_postgresql: psycopg.Connection,  # noqa
 ) -> AsyncBackend:
     if request.param == "redis":
         return RedisAsyncBackend(
