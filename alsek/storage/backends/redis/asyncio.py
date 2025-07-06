@@ -13,9 +13,11 @@ import dill
 from redis.asyncio import ConnectionPool as AsyncConnectionPool
 from redis.asyncio import Redis as RedisAsync
 
+from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends.abstract import AsyncBackend
 from alsek.storage.backends.lazy import LazyClient
 from alsek.storage.backends.redis.standard import parse_sub_data
+from alsek.storage.serialization import Serializer, JsonSerializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
@@ -33,7 +35,10 @@ class RedisAsyncBackend(AsyncBackend):
         conn (Optional[Union[str, AsyncRedis, LazyClient]]): A connection URL,
             an `AsyncRedis` instance, or a `LazyClient`. If `None`, a default
             `AsyncRedis` instance is created.
-        **kwargs: Additional keyword arguments passed to the base class initializer.
+        namespace (str): prefix to use when inserting
+            names in the backend
+        serializer (Serializer): tool for encoding and decoding
+            values written into the backend.
 
     """
 
@@ -43,9 +48,13 @@ class RedisAsyncBackend(AsyncBackend):
     def __init__(
         self,
         conn: Optional[Union[str, RedisAsync, LazyClient]] = None,
-        **kwargs: Any,
+        namespace: str = DEFAULT_NAMESPACE,
+        serializer: Serializer = JsonSerializer(),
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(
+            namespace=namespace,
+            serializer=serializer,
+        )
         self._conn = self._conn_parse(conn)
 
     @staticmethod
