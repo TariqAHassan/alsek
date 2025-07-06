@@ -170,7 +170,8 @@ class BaseStatusTracker(ABC):
         status: TaskStatus | tuple[TaskStatus, ...] | list[TaskStatus],
         timeout: Optional[float] = 5.0,
         poll_interval: float = 0.05,
-    ) -> bool:
+        raise_on_timeout: bool = True,
+    ) -> TaskStatus:
         """Wait for a message to reach a desired status.
 
         Args:
@@ -178,9 +179,12 @@ class BaseStatusTracker(ABC):
             status (TaskStatus, tuple[TaskStatus...], list[TaskStatus]): the target status
             timeout (float, optional): max time to wait (in seconds). None means wait forever.
             poll_interval (float): how often to check (in seconds)
+           raise_on_timeout (bool): if ``True`` raise a ``TimeoutError`` if waiting times out
+                otherwise return the current status
 
         Returns:
-            bool: True if desired status reached, False if timed out
+            status (TaskStatus): the status of ``message`` after waiting.
+
         """
         raise NotImplementedError()
 

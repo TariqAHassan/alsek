@@ -137,7 +137,8 @@ class StatusTracker(BaseStatusTracker):
         status: TaskStatus | tuple[TaskStatus, ...] | list[TaskStatus],
         timeout: Optional[float] = 5.0,
         poll_interval: float = 0.05,
-    ) -> bool:
+        raise_on_timeout: bool = True,
+    ) -> TaskStatus:
         """Wait for a message to reach a desired status.
 
         Args:
@@ -145,15 +146,21 @@ class StatusTracker(BaseStatusTracker):
             status (TaskStatus, tuple[TaskStatus...], list[TaskStatus]): the target status
             timeout (float, optional): max time to wait (in seconds). None means wait forever.
             poll_interval (float): how often to check (in seconds)
+            raise_on_timeout (bool): if ``True`` raise a ``TimeoutError`` if waiting times out
+                otherwise return the current status
 
         Returns:
-            bool: True if desired status reached, False if timed out
+            status (TaskStatus): the status of ``message`` after waiting
+
         """
+        current_status: Optional[TaskStatus] = None
         if not isinstance(status, TaskStatus) and not isinstance(status, (list, tuple)):
             raise ValueError(f"Invalid status type: {type(status)}")
 
-        def is_match(current_status: TaskStatus) -> bool:
-            if isinstance(status, TaskStatus):
+        def is_current_status_match() -> bool:
+            if current_status is None:
+                return False
+            elif isinstance(status, TaskStatus):
                 return current_status == status
             elif isinstance(status, (list, tuple)):
                 return current_status in status
@@ -163,12 +170,16 @@ class StatusTracker(BaseStatusTracker):
         deadline = None if timeout is None else time.time() + timeout
         while True:
             try:
-                if is_match(self.get(message).status):
-                    return True
+                current_status: TaskStatus = self.get(message).status
+                if is_current_status_match():
+                    return current_status
             except KeyError:
                 pass
             if deadline is not None and time.time() > deadline:
-                return False
+                if raise_on_timeout:
+                    raise TimeoutError(f"Timeout waiting for '{message.summary}'")
+                else:
+                    return TaskStatus.UNKNOWN if current_status is None else current_status  # fmt: skip
             time.sleep(poll_interval)
 
     def delete(self, message: Message, check: bool = True) -> None:
