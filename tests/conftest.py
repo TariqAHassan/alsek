@@ -115,7 +115,7 @@ def redis_backend(custom_redisdb: Redis) -> RedisBackend:
 @pytest.fixture(params=["redis"])
 def rolling_backend(
     request: SubRequest,
-    custom_redisdb: Redis,
+    custom_redisdb: Redis,  # noqa
 ) -> Backend:
     if request.param == "redis":
         return RedisBackend(custom_redisdb)
