@@ -12,10 +12,9 @@ from typing import Any, Iterable, Optional
 import dill
 
 from alsek.core.message import Message
+from alsek.core.status.abstract import BaseStatusTracker
 from alsek.core.status.types import TaskStatus, TERMINAL_TASK_STATUSES, StatusUpdate
-from alsek.defaults import DEFAULT_TTL
 from alsek.exceptions import ValidationError
-from alsek.storage.backends import Backend
 
 
 def _name2message(name: str) -> Message:
@@ -23,38 +22,8 @@ def _name2message(name: str) -> Message:
     return Message(task_name, queue=queue, uuid=uuid)
 
 
-class StatusTracker:
-    """Alsek Status Tracker.
-
-    Args:
-        backend (Backend): backend to persists results to. (In almost all cases, this
-            should be the same backend used by the Broker).
-        ttl (int, optional): time to live (in milliseconds) for the status
-        enable_pubsub (bool, optional): if ``True`` automatically publish PUBSUB updates.
-            If ``None`` determine automatically given the capabilities of the backend
-            used by ``broker``.
-
-    """
-
-    def __init__(
-        self,
-        backend: Backend,
-        ttl: Optional[int] = DEFAULT_TTL,
-        enable_pubsub: Optional[bool] = None,
-    ) -> None:
-        self.backend = backend
-        self.ttl = ttl
-        self.enable_pubsub = backend.SUPPORTS_PUBSUB if enable_pubsub is None else enable_pubsub  # fmt: skip
-
-        if enable_pubsub and not backend.SUPPORTS_PUBSUB:
-            raise AssertionError("Backend does not support PUBSUB")
-
-    def serialize(self) -> dict[str, Any]:
-        return {
-            "backend": self.backend.encode(),
-            "ttl": self.ttl,
-            "enable_pubsub": self.enable_pubsub,
-        }
+class StatusTracker(BaseStatusTracker):
+    __doc__ = BaseStatusTracker.__doc__
 
     @staticmethod
     def deserialize(data: dict[str, Any]) -> StatusTracker:
@@ -65,36 +34,6 @@ class StatusTracker:
             ttl=data["ttl"],
             enable_pubsub=data["enable_pubsub"],
         )
-
-    @staticmethod
-    def get_storage_name(message: Message) -> str:
-        """Get the key for the status information about the message
-
-        Args:
-            message (Message): an Alsek message
-
-        Returns:
-            name (string): the key for the status information
-
-        """
-        if not message.queue or not message.task_name or not message.uuid:
-            raise ValidationError("Required attributes not set for message")
-        return f"status:{message.queue}:{message.task_name}:{message.uuid}"
-
-    @staticmethod
-    def get_pubsub_name(message: Message) -> str:
-        """Get the channel for status updates about the message.
-
-        Args:
-            message (Message): an Alsek message
-
-        Returns:
-            name (string): the channel for the status information
-
-        """
-        if not message.queue or not message.task_name or not message.uuid:
-            raise ValidationError("Required attributes not set for message")
-        return f"channel:{message.queue}:{message.task_name}:{message.uuid}"
 
     def exists(self, message: Message) -> bool:
         """Check if a status for ``message`` exists in the backend.
