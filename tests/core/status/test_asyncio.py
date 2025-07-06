@@ -5,7 +5,7 @@
 """
 
 import asyncio
-from typing import Any
+from typing import Any, Type
 
 import pytest
 
@@ -111,7 +111,7 @@ async def test_wait_for_various_cases(
     status_arg,
     final_status,
     should_set: bool,
-    expected: bool,
+    expected: TaskStatus | Type[Exception],
 ) -> None:
     msg = Message(
         "task",
@@ -125,13 +125,22 @@ async def test_wait_for_various_cases(
 
         asyncio.create_task(_delayed_set())
 
-    result = await rolling_status_tracker_async.wait_for(
-        message=msg,
-        status=status_arg,
-        timeout=0.2,
-        poll_interval=0.01,
-    )
-    assert result is expected
+    if isinstance(expected, type) and issubclass(expected, Exception):
+        with pytest.raises(expected):
+            await rolling_status_tracker_async.wait_for(
+                message=msg,
+                status=status_arg,
+                timeout=0.5,
+                poll_interval=0.01,
+            )
+    else:
+        result = await rolling_status_tracker_async.wait_for(
+            message=msg,
+            status=status_arg,
+            timeout=0.5,
+            poll_interval=0.01,
+        )
+        assert result == expected
 
 
 @pytest.mark.asyncio
@@ -146,6 +155,37 @@ async def test_wait_for_invalid_status_types_raise(
     msg = Message("task", uuid=f"async-wf-invalid-{str(bad_status).replace(' ', '')}")
     with pytest.raises(ValueError):
         await rolling_status_tracker_async.wait_for(message=msg, status=bad_status)  # type: ignore[arg-type]
+
+
+@pytest.mark.asyncio
+@pytest.mark.parametrize(
+    "status_arg, final_status, should_set, expected",
+    test_case_generator.wait_for_no_raise_on_timeout_test_cases,
+)
+async def test_wait_for_no_raise_on_timeout(
+    rolling_status_tracker_async: AsyncStatusTracker,
+    status_arg,
+    final_status,
+    should_set: bool,
+    expected: TaskStatus,
+) -> None:
+    msg = Message("task", uuid="async-wf-no-raise")
+    if should_set:
+        # delay then set the final_status
+        async def _delayed_set() -> None:
+            await asyncio.sleep(0.05)
+            await rolling_status_tracker_async.set(msg, status=final_status)  # type: ignore[arg-type]
+
+        asyncio.create_task(_delayed_set())
+
+    result = await rolling_status_tracker_async.wait_for(
+        message=msg,
+        status=status_arg,
+        timeout=0.5,
+        poll_interval=0.01,
+        raise_on_timeout=False,
+    )
+    assert result == expected
 
 
 @pytest.mark.asyncio
