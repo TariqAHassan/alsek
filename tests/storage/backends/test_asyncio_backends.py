@@ -4,12 +4,6 @@
 
 """
 
-"""
-
-    Test Async Backends
-
-"""
-
 import asyncio
 from typing import Any
 
