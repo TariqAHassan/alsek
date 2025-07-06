@@ -10,7 +10,7 @@ from alsek import Message
 from alsek.core.status.types import TaskStatus
 
 
-class TestCaseForStatusTrackingGenerator:
+class StatusTrackingTestCaseGenerator:
     def __init__(self, is_async: bool) -> None:
         self.is_async = is_async
 

@@ -15,10 +15,10 @@ from alsek.core.status.standard import StatusTracker
 from alsek.core.status.types import TERMINAL_TASK_STATUSES, TaskStatus
 from alsek.exceptions import ValidationError
 
-from ._helpers import TestCaseForStatusTrackingGenerator
+from ._helpers import StatusTrackingTestCaseGenerator
 
 # Initialize test case generator for sync tests
-test_case_generator = TestCaseForStatusTrackingGenerator(is_async=False)
+test_case_generator = StatusTrackingTestCaseGenerator(is_async=False)
 
 
 @pytest.mark.parametrize(
