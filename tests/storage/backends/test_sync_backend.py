@@ -28,7 +28,7 @@ class Delayed:
 @pytest.mark.parametrize("backend", [RedisBackend])
 def test_invalid_conn(backend: Backend) -> None:
     with pytest.raises(ValueError):
-        backend._conn_parse(-1)
+        backend._conn_parse(-1)  # noqa
 
 
 @pytest.mark.parametrize(
