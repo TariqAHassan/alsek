@@ -3,6 +3,7 @@
     Types
 
 """
+
 from __future__ import annotations
 
 from enum import Enum
@@ -20,7 +21,10 @@ class TaskStatus(Enum):
     SUCCEEDED = 5
 
 
-TERMINAL_TASK_STATUSES = (TaskStatus.FAILED, TaskStatus.SUCCEEDED)
+TERMINAL_TASK_STATUSES: tuple[TaskStatus, ...] = (
+    TaskStatus.FAILED,
+    TaskStatus.SUCCEEDED,
+)
 
 
 class StatusUpdate(NamedTuple):
