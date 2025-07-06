@@ -12,7 +12,7 @@ import dill
 from redis import ConnectionPool, Redis
 
 from alsek.defaults import DEFAULT_NAMESPACE
-from alsek.storage.backends import Backend, LazyClient
+from alsek.storage.backends.abstract import LazyClient, Backend
 from alsek.storage.serialization import JsonSerializer, Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params

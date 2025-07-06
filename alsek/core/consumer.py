@@ -12,7 +12,7 @@ from alsek.core.backoff import Backoff, ConstantBackoff, LinearBackoff
 from alsek.core.broker import Broker
 from alsek.core.concurrency import ProcessLock
 from alsek.core.message import Message
-from alsek.storage.backends import Backend
+from alsek.storage.backends.abstract import Backend
 from alsek.utils.namespacing import (
     get_message_signature,
     get_priority_namespace,

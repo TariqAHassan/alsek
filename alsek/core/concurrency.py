@@ -15,7 +15,7 @@ from typing import Any, Literal, Optional, Type, cast, get_args
 
 import redis_lock
 
-from alsek.storage.backends import Backend
+from alsek.storage.backends.abstract import Backend
 from alsek.storage.backends.redis import RedisBackend
 from alsek.utils.printing import auto_repr
 

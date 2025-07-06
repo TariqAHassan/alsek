@@ -11,7 +11,7 @@ import dill
 import pytest
 from redis import Redis
 
-from alsek.storage.backends import Backend, LazyClient
+from alsek.storage.backends.abstract import LazyClient, Backend
 from alsek.storage.backends.redis.standard import RedisBackend
 
 

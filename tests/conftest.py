@@ -24,7 +24,7 @@ from alsek.core.status.standard import StatusTracker
 from alsek.core.task import task
 from alsek.core.worker.process import ProcessWorkerPool
 from alsek.core.worker.thread import ThreadWorkerPool
-from alsek.storage.backends import Backend
+from alsek.storage.backends.abstract import Backend
 from alsek.storage.backends.redis.standard import RedisBackend
 from alsek.storage.result import ResultStore
 from alsek.tools.iteration import ResultPool

@@ -16,7 +16,7 @@ import redis_lock
 from alsek.core.backoff import ExponentialBackoff, settings2backoff
 from alsek.core.concurrency import Lock
 from alsek.defaults import DEFAULT_MECHANISM, DEFAULT_QUEUE, DEFAULT_TASK_TIMEOUT
-from alsek.storage.backends import Backend
+from alsek.storage.backends.abstract import Backend
 from alsek.types import SupportedMechanismType
 from alsek.utils.helpers import dict_merge_update_into_origin
 from alsek.utils.parsing import ExceptionDetails

@@ -10,7 +10,7 @@ from typing import Any, Optional, AsyncIterable, Iterable
 from alsek import Message
 from alsek.core.status.types import StatusUpdate, TaskStatus
 from alsek.defaults import DEFAULT_TTL
-from alsek.storage.backends import BaseBackend
+from alsek.storage.backends.abstract import BaseBackend
 from alsek.exceptions import ValidationError
 
 
