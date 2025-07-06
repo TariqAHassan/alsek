@@ -8,7 +8,8 @@ import pytest
 from redis import Redis
 
 from alsek.defaults import DEFAULT_NAMESPACE
-from alsek.storage.backends.abstract import LazyClient, Backend
+from alsek.storage.backends.abstract import Backend
+from alsek.storage.backends.lazy import LazyClient
 
 
 def test_lazy_client() -> None:

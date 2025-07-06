@@ -28,7 +28,7 @@ of this mode is provided below.
 
 ```python
 from redis import Redis
-from alsek.storage.backends.abstract import LazyClient
+from alsek.storage.backends.lazy import LazyClient
 from alsek.storage.backends.redis import RedisBackend
 
 # Initialize the backend with LazyClient
