@@ -13,7 +13,7 @@ import dill
 
 from alsek.core.message import Message
 from alsek.core.status.abstract import BaseStatusTracker
-from alsek.core.status.types import TaskStatus, TERMINAL_TASK_STATUSES, StatusUpdate
+from alsek.core.status.types import TERMINAL_TASK_STATUSES, StatusUpdate, TaskStatus
 from alsek.exceptions import ValidationError
 
 

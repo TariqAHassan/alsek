@@ -3,21 +3,21 @@
     Abstract
 
 """
+
 from __future__ import annotations
 
+import logging
 import re
 from abc import ABC, abstractmethod
-
-from typing import Callable, Any, cast, Optional, Union, Type, Iterable
+from typing import Any, Callable, Iterable, Optional, Type, Union, cast
 
 import dill
 
 from alsek.defaults import DEFAULT_NAMESPACE
-from alsek.storage.serialization import Serializer, JsonSerializer
+from alsek.storage.serialization import JsonSerializer, Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr
-import logging
 
 log = logging.getLogger(__name__)
 

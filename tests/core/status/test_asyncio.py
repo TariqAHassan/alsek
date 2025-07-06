@@ -11,10 +11,10 @@ import pytest
 
 from alsek.core.message import Message
 from alsek.core.status.asyncio import AsyncStatusTracker
-from alsek.core.status.types import TaskStatus, TERMINAL_TASK_STATUSES
+from alsek.core.status.types import TERMINAL_TASK_STATUSES, TaskStatus
 from alsek.exceptions import ValidationError
-from ._helpers import TestCaseForStatusTrackingGenerator
 
+from ._helpers import TestCaseForStatusTrackingGenerator
 
 # Initialize test case generator for async tests
 test_case_generator = TestCaseForStatusTrackingGenerator(is_async=True)
@@ -113,7 +113,10 @@ async def test_wait_for_various_cases(
     should_set: bool,
     expected: bool,
 ) -> None:
-    msg = Message("task", uuid=f"async-wait-{str(status_arg).replace(' ', '')}-{final_status}-{should_set}")
+    msg = Message(
+        "task",
+        uuid=f"async-wait-{str(status_arg).replace(' ', '')}-{final_status}-{should_set}",
+    )
     if should_set:
         # delay then set the final_status
         async def _delayed_set() -> None:

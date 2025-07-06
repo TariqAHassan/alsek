@@ -17,7 +17,7 @@ from alsek.defaults import DEFAULT_NAMESPACE
 from alsek.storage.backends.abstract import AsyncBackend
 from alsek.storage.backends.lazy import LazyClient
 from alsek.storage.backends.redis.standard import parse_sub_data
-from alsek.storage.serialization import Serializer, JsonSerializer
+from alsek.storage.serialization import JsonSerializer, Serializer
 from alsek.types import Empty
 from alsek.utils.aggregation import gather_init_params
 from alsek.utils.printing import auto_repr

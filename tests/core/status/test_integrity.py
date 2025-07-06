@@ -6,12 +6,9 @@
 
 import pytest
 
-from alsek import Broker, Message
-from alsek import StatusTracker
-from alsek.core.status.integrity import (
-    _name2message,  # noqa
-    StatusTrackerIntegrityScanner,
-)
+from alsek import Broker, Message, StatusTracker
+from alsek.core.status.integrity import _name2message  # noqa
+from alsek.core.status.integrity import StatusTrackerIntegrityScanner
 from alsek.core.status.types import TaskStatus
 
 

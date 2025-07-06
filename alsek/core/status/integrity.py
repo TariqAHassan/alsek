@@ -3,6 +3,7 @@
     Integrity
 
 """
+
 from __future__ import annotations
 
 from typing import Union
@@ -12,9 +13,9 @@ from apscheduler.triggers.cron import CronTrigger
 from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
-from alsek import StatusTracker, Broker
+from alsek import Broker, StatusTracker
 from alsek.core.message import Message
-from alsek.core.status.types import TaskStatus, TERMINAL_TASK_STATUSES
+from alsek.core.status.types import TERMINAL_TASK_STATUSES, TaskStatus
 
 
 def _name2message(name: str) -> Message:

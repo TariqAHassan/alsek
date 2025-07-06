@@ -15,19 +15,18 @@ from _pytest.fixtures import SubRequest
 from click.testing import CliRunner
 from pytest_redis import factories as redis_factories
 from redis import Redis
-
 from redis.asyncio import Redis as RedisAsync
 
-from alsek.core.status.asyncio import AsyncStatusTracker
 from alsek.cli.cli import main as alsek_cli
 from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock, ProcessLock, ThreadLock
 from alsek.core.message import Message
+from alsek.core.status.asyncio import AsyncStatusTracker
 from alsek.core.status.standard import StatusTracker
 from alsek.core.task import task
 from alsek.core.worker.process import ProcessWorkerPool
 from alsek.core.worker.thread import ThreadWorkerPool
-from alsek.storage.backends.abstract import Backend, AsyncBackend
+from alsek.storage.backends.abstract import AsyncBackend, Backend
 from alsek.storage.backends.redis import AsyncRedisBackend
 from alsek.storage.backends.redis.standard import RedisBackend
 from alsek.storage.result import ResultStore

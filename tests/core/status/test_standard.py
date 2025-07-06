@@ -12,10 +12,10 @@ import pytest  # noqa
 
 from alsek.core.message import Message
 from alsek.core.status.standard import StatusTracker
-from alsek.core.status.types import TaskStatus, TERMINAL_TASK_STATUSES
+from alsek.core.status.types import TERMINAL_TASK_STATUSES, TaskStatus
 from alsek.exceptions import ValidationError
-from ._helpers import TestCaseForStatusTrackingGenerator
 
+from ._helpers import TestCaseForStatusTrackingGenerator
 
 # Initialize test case generator for sync tests
 test_case_generator = TestCaseForStatusTrackingGenerator(is_async=False)

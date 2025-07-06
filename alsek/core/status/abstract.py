@@ -3,15 +3,17 @@
     Abstract Status
 
 """
+
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Any, Optional, AsyncIterable, Iterable
+from typing import Any, AsyncIterable, Iterable, Optional
 
 from alsek import Message
 from alsek.core.status.types import StatusUpdate, TaskStatus
 from alsek.defaults import DEFAULT_TTL
-from alsek.storage.backends.abstract import BaseBackend
 from alsek.exceptions import ValidationError
+from alsek.storage.backends.abstract import BaseBackend
 
 
 class BaseStatusTracker(ABC):

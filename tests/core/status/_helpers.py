@@ -4,8 +4,9 @@
 
 """
 
-from alsek import Message
 from typing import Any
+
+from alsek import Message
 from alsek.core.status.types import TaskStatus
 
 

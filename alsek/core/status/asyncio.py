@@ -8,14 +8,13 @@ from __future__ import annotations
 
 import asyncio
 import time
-from typing import Any, AsyncIterable, Optional
+from typing import Any, AsyncIterable, Optional, cast
 
 import dill
 
-from typing import cast
 from alsek.core.message import Message
 from alsek.core.status.abstract import BaseStatusTracker
-from alsek.core.status.types import TaskStatus, TERMINAL_TASK_STATUSES, StatusUpdate
+from alsek.core.status.types import TERMINAL_TASK_STATUSES, StatusUpdate, TaskStatus
 from alsek.exceptions import ValidationError
 from alsek.storage.backends.abstract import AsyncBackend
 

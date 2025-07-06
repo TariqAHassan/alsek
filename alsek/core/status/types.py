@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 from enum import Enum
-from typing import NamedTuple, Optional, Any
+from typing import Any, NamedTuple, Optional
 
 
 class TaskStatus(Enum):

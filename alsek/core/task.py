@@ -23,7 +23,7 @@ from alsek.core.backoff import Backoff, ConstantBackoff, ExponentialBackoff
 from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.core.status.standard import StatusTracker
-from alsek.core.status.types import TaskStatus, TERMINAL_TASK_STATUSES
+from alsek.core.status.types import TERMINAL_TASK_STATUSES, TaskStatus
 from alsek.defaults import (
     DEFAULT_MAX_RETRIES,
     DEFAULT_MECHANISM,
