@@ -11,13 +11,9 @@ import pytest
 
 from alsek import Broker
 from alsek.core.message import Message
-from alsek.core.status.standard import (
-    TERMINAL_TASK_STATUSES,
-    StatusTracker,
-    TaskStatus,
-    _name2message,
-)
-from alsek.core.status.integry import StatusTrackerIntegryScanner
+from alsek.core.status.standard import StatusTracker
+from alsek.core.status.types import TaskStatus, TERMINAL_TASK_STATUSES
+from alsek.core.status.integrity import StatusTrackerIntegryScanner
 from alsek.exceptions import ValidationError
 
 
@@ -121,19 +117,6 @@ def test_status_delete_no_check(
     rolling_status_tracker.set(message, status=status)
     rolling_status_tracker.delete(message, check=False)
     assert not rolling_status_tracker.exists(message)
-
-
-@pytest.mark.parametrize(
-    "name,expected",
-    [
-        ("status:queue1:task1:uuid1", ("task1", "queue1", "uuid1")),
-        ("namespace:status:queue2:task2:uuid2", ("task2", "queue2", "uuid2")),
-    ],
-)
-def test_name2message(name, expected: tuple[str, str, str]) -> None:
-    message = _name2message(name)
-    actual = (message.task_name, message.queue, message.uuid)
-    assert actual == expected
 
 
 @pytest.mark.parametrize(

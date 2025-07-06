@@ -7,42 +7,15 @@
 from __future__ import annotations
 
 import time
-from enum import Enum
-from typing import Any, Iterable, NamedTuple, Optional
+from typing import Any, Iterable, Optional
 
 import dill
 
 from alsek.core.message import Message
+from alsek.core.status.types import TaskStatus, TERMINAL_TASK_STATUSES, StatusUpdate
 from alsek.defaults import DEFAULT_TTL
 from alsek.exceptions import ValidationError
 from alsek.storage.backends import Backend
-
-
-class TaskStatus(Enum):
-    """Alsek task statuses."""
-
-    UNKNOWN = 0
-    SUBMITTED = 1
-    RUNNING = 2
-    RETRYING = 3
-    FAILED = 4
-    SUCCEEDED = 5
-
-
-TERMINAL_TASK_STATUSES = (TaskStatus.FAILED, TaskStatus.SUCCEEDED)
-
-
-class StatusUpdate(NamedTuple):
-    """Status information."""
-
-    status: TaskStatus
-    details: Optional[Any]
-
-    def as_dict(self) -> dict[str, Any]:
-        return dict(
-            status=self.status.name,
-            details=self.details,
-        )
 
 
 def _name2message(name: str) -> Message:

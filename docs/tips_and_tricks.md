@@ -24,7 +24,8 @@ A short example of how to do this is provided below.
 from typing import Optional, Any
 
 from alsek.core.message import Message
-from alsek.core.status.standard import StatusTracker, TaskStatus
+from alsek.core.status.standard import StatusTracker
+from alsek.core.status.types import TaskStatus
 
 from sqlalchemy import Column, String, create_engine
 from sqlalchemy.dialects.postgresql import UUID

@@ -17,7 +17,7 @@ import dill
 
 from alsek import Message
 from alsek.core import Event, Process, Queue
-from alsek.core.status.standard import TaskStatus
+from alsek.core.status.types import TaskStatus
 from alsek.core.task import Task
 from alsek.exceptions import RevokedError, TerminationError
 from alsek.utils.decorators import suppress_exception
