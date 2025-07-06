@@ -8,7 +8,7 @@ from apscheduler.triggers.date import DateTrigger
 from apscheduler.triggers.interval import IntervalTrigger
 
 from alsek import StatusTracker, Broker
-from alsek.core.statuss.standard import _name2message, TERMINAL_TASK_STATUSES, TaskStatus
+from alsek.core.status.standard import _name2message, TERMINAL_TASK_STATUSES, TaskStatus
 
 
 class StatusTrackerIntegryScanner:

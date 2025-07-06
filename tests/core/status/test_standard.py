@@ -11,13 +11,13 @@ import pytest
 
 from alsek import Broker
 from alsek.core.message import Message
-from alsek.core.statuss.standard import (
+from alsek.core.status.standard import (
     TERMINAL_TASK_STATUSES,
     StatusTracker,
     TaskStatus,
     _name2message,
 )
-from alsek.core.statuss.integry import StatusTrackerIntegryScanner
+from alsek.core.status.integry import StatusTrackerIntegryScanner
 from alsek.exceptions import ValidationError
 
 

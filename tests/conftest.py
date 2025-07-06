@@ -20,7 +20,7 @@ from alsek.cli.cli import main as alsek_cli
 from alsek.core.broker import Broker
 from alsek.core.concurrency import Lock, ProcessLock, ThreadLock
 from alsek.core.message import Message
-from alsek.core.statuss.standard import StatusTracker
+from alsek.core.status.standard import StatusTracker
 from alsek.core.task import task
 from alsek.core.worker.process import ProcessWorkerPool
 from alsek.core.worker.thread import ThreadWorkerPool

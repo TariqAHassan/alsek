@@ -21,7 +21,7 @@ import dill
 import pytest
 
 from alsek import Broker, Message, StatusTracker
-from alsek.core.statuss.standard import TERMINAL_TASK_STATUSES, TaskStatus
+from alsek.core.status.standard import TERMINAL_TASK_STATUSES, TaskStatus
 from alsek.core.task import task
 from alsek.core.worker.thread import (
     ProcessGroup,
