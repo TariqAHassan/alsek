@@ -17,7 +17,7 @@ def _name2message(name: str) -> Message:
     return Message(task_name, queue=queue, uuid=uuid)
 
 
-class StatusTrackerIntegryScanner:
+class StatusTrackerIntegrityScanner:
     """Tool to ensure the integrity of statuses scanning a ``StatusTracker()``
     with non-terminal statuses (i.e., ``TaskStatus.FAILED`` or ``TaskStatus.SUCCEEDED``)
     that no longer exist in the broker. Entries which meet this criteria will have

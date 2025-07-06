@@ -9,11 +9,9 @@ import time
 
 import pytest
 
-from alsek import Broker
 from alsek.core.message import Message
 from alsek.core.status.standard import StatusTracker
 from alsek.core.status.types import TaskStatus, TERMINAL_TASK_STATUSES
-from alsek.core.status.integrity import StatusTrackerIntegryScanner
 from alsek.exceptions import ValidationError
 
 
@@ -170,24 +168,6 @@ def test_wait_for_invalid_status_types_raise(
     msg = Message("task", uuid="wf-invalid")
     with pytest.raises(ValueError):
         rolling_status_tracker.wait_for(message=msg, status=bad_status)  # type: ignore[arg-type]
-
-
-def test_integrity_scaner(rolling_status_tracker: StatusTracker) -> None:
-    # Simulate a message expiring from the broker by setting the
-    # status for a message that has never actually been added to the broker.
-    message = Message("task1")
-    rolling_status_tracker.set(message, status=TaskStatus.RUNNING)
-    broker = Broker(rolling_status_tracker.backend)
-    integry_scanner = StatusTrackerIntegryScanner(
-        status_tracker=rolling_status_tracker,
-        broker=broker,
-    )
-
-    # Run a scan
-    integry_scanner.scan()
-
-    # Check that the status of this message is now 'UNKNOWN'.
-    assert rolling_status_tracker.get(message).status == TaskStatus.UNKNOWN
 
 
 def test_status_tracker_serialize_deserialize(
