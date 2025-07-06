@@ -171,6 +171,8 @@ class Task:
 
         if mechanism not in SUPPORTED_MECHANISMS:
             raise ValueError(f"Unsupported mechanism '{mechanism}'")
+        elif status_tracker and status_tracker.backend.IS_ASYNC:
+            raise ValueError("Status tracker does not support async backends")
 
         self._deferred: bool = False
 
