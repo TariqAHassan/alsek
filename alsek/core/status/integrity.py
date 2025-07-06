@@ -46,7 +46,7 @@ class StatusTrackerIntegrityScanner:
         self.trigger = trigger
 
         if status_tracker.backend.IS_ASYNC:
-            raise ValueError("StatusTrackerIntegrityScanner does not support async backends")
+            raise ValueError("Async backends not supported")
 
         self.scheduler: BackgroundScheduler = BackgroundScheduler()
         if trigger:
