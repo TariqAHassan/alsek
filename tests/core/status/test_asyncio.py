@@ -13,15 +13,17 @@ from alsek.core.message import Message
 from alsek.core.status.asyncio import AsyncStatusTracker
 from alsek.core.status.types import TaskStatus, TERMINAL_TASK_STATUSES
 from alsek.exceptions import ValidationError
+from ._helpers import TestCaseForStatusTrackingGenerator
+
+
+# Initialize test case generator for async tests
+test_case_generator = TestCaseForStatusTrackingGenerator(is_async=True)
 
 
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "message,status,do_set",
-    [
-        (Message("task", uuid="async-test-1"), TaskStatus.SUBMITTED, True),
-        (Message("task", uuid="async-test-2"), TaskStatus.SUBMITTED, False),
-    ],
+    test_case_generator.status_exists_test_cases,
 )
 async def test_status_exists(
     message: Message,
@@ -39,13 +41,7 @@ async def test_status_exists(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "message,status",
-    [
-        (Message("task", uuid="async-set-1"), TaskStatus.SUBMITTED),
-        (Message("task", uuid="async-set-2"), TaskStatus.RUNNING),
-        (Message("task", uuid="async-set-3"), TaskStatus.RETRYING),
-        (Message("task", uuid="async-set-4"), TaskStatus.FAILED),
-        (Message("task", uuid="async-set-5"), TaskStatus.SUCCEEDED),
-    ],
+    test_case_generator.status_set_test_cases,
 )
 async def test_status_set(
     message: Message,
@@ -59,13 +55,7 @@ async def test_status_set(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "message,status",
-    [
-        (Message("task", uuid="async-get-1"), TaskStatus.SUBMITTED),
-        (Message("task", uuid="async-get-2"), TaskStatus.RUNNING),
-        (Message("task", uuid="async-get-3"), TaskStatus.RETRYING),
-        (Message("task", uuid="async-get-4"), TaskStatus.FAILED),
-        (Message("task", uuid="async-get-5"), TaskStatus.SUCCEEDED),
-    ],
+    test_case_generator.status_get_test_cases,
 )
 async def test_status_get(
     message: Message,
@@ -80,13 +70,7 @@ async def test_status_get(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "message,status",
-    [
-        (Message("task", uuid="async-del-check-1"), TaskStatus.SUBMITTED),
-        (Message("task", uuid="async-del-check-2"), TaskStatus.RUNNING),
-        (Message("task", uuid="async-del-check-3"), TaskStatus.RETRYING),
-        (Message("task", uuid="async-del-check-4"), TaskStatus.FAILED),
-        (Message("task", uuid="async-del-check-5"), TaskStatus.SUCCEEDED),
-    ],
+    test_case_generator.status_delete_check_test_cases,
 )
 async def test_status_delete_check(
     message: Message,
@@ -105,13 +89,7 @@ async def test_status_delete_check(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "message,status",
-    [
-        (Message("task", uuid="async-del-no-check-1"), TaskStatus.SUBMITTED),
-        (Message("task", uuid="async-del-no-check-2"), TaskStatus.RUNNING),
-        (Message("task", uuid="async-del-no-check-3"), TaskStatus.RETRYING),
-        (Message("task", uuid="async-del-no-check-4"), TaskStatus.FAILED),
-        (Message("task", uuid="async-del-no-check-5"), TaskStatus.SUCCEEDED),
-    ],
+    test_case_generator.status_delete_no_check_test_cases,
 )
 async def test_status_delete_no_check(
     message: Message,
@@ -126,14 +104,7 @@ async def test_status_delete_no_check(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "status_arg, final_status, should_set, expected",
-    [
-        # single-status arg, status will be set → True
-        (TaskStatus.SUCCEEDED, TaskStatus.SUCCEEDED, True, True),
-        # iterable-status arg, status will be set to a matching terminal → True
-        ([TaskStatus.FAILED, TaskStatus.SUCCEEDED], TaskStatus.FAILED, True, True),
-        # status never set → timeout → False
-        (TaskStatus.SUCCEEDED, None, False, False),
-    ],
+    test_case_generator.wait_for_various_cases_test_cases,
 )
 async def test_wait_for_various_cases(
     rolling_status_tracker_async: AsyncStatusTracker,
@@ -163,11 +134,7 @@ async def test_wait_for_various_cases(
 @pytest.mark.asyncio
 @pytest.mark.parametrize(
     "bad_status",
-    [
-        "not-a-status",
-        123,
-        object(),
-    ],
+    test_case_generator.wait_for_invalid_status_test_cases,
 )
 async def test_wait_for_invalid_status_types_raise(
     rolling_status_tracker_async: AsyncStatusTracker,
