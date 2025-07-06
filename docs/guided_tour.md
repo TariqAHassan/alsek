@@ -1,3 +1,5 @@
+from alsek.storage.backends.redis import AsyncRedisBackend
+
 # Guided Tour 🥾
 
 This document provides a guided tour of Alsek. <br>
@@ -607,6 +609,23 @@ and can be any one of the following:
 
     The frequency of status integrity scans can be changed by altering the
     ``trigger`` parameter of `StatusTrackerIntegryScanner()`..
+
+### Asynchronous Status Tracking
+
+An asynchronous status tracker is also available, `AsyncStatusTracker()`.
+
+```python
+from alsek.storage.backends.redis.asyncio import AsyncRedisBackend
+from alsek.core.status.asyncio import AsyncStatusTracker
+
+backend = AsyncRedisBackend("<connection_url>")
+status_tracker = AsyncStatusTracker(backend)
+...
+```
+
+!!!warning
+   Currently, the `Task()` class, used by the `task()` decorator by default, does _not_ support 
+   instances of `AsyncStatusTracker()` and will raise an error if one is provided to it.
 
 ## Result Storage
 
