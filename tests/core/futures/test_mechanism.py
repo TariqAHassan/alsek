@@ -10,7 +10,6 @@ import pytest
 
 from alsek.core.broker import Broker
 from alsek.core.futures import ProcessTaskFuture, TaskFuture, ThreadTaskFuture
-from alsek.core.message import Message
 from alsek.core.task import task
 from alsek.exceptions import TerminationError
 from alsek.utils.waiting import waiter
