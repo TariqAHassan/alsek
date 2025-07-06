@@ -11,6 +11,8 @@ Alsek currently provides 'out of the box' support for [`Redis`](https://redis.io
 
 #### Redis
 
+#### Synchronous
+
 ```python
 from alsek.storage.backends.redis import RedisBackend
 
@@ -18,6 +20,19 @@ from alsek.storage.backends.redis import RedisBackend
 # connect to an instance of Redis running on localhost.
 backend = RedisBackend()
 ```
+
+#### Asynchronous
+
+```python
+from alsek.storage.backends.redis import AsyncRedisBackend
+
+# Note: by default, `AsyncRedisBackend()` will attempt to 
+# connect to an instance of Redis running on localhost.
+async_backend = AsyncRedisBackend()
+```
+
+!!!warning
+   Currently, not all parts of Avalis support asynchronous backends.
 
 ### Lazy Initialization
 
