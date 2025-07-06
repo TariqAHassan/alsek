@@ -14,10 +14,10 @@ from alsek.core.message import Message
 from alsek.core.statuss.standard import (
     TERMINAL_TASK_STATUSES,
     StatusTracker,
-    StatusTrackerIntegryScanner,
     TaskStatus,
     _name2message,
 )
+from alsek.core.statuss.integry import StatusTrackerIntegryScanner
 from alsek.exceptions import ValidationError
 
 
