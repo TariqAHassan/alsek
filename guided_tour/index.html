@@ -1,0 +1,2257 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+      
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../tips_and_tricks/">
+      
+      
+      <link rel="icon" href="../assets/images/favicon.ico">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.12">
+    
+    
+      
+        <title>Guided tour - ALSEK</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.2afb09e1.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#guided-tour" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="ALSEK" class="md-header__button md-logo" aria-label="ALSEK" data-md-component="logo">
+      
+  <img src="../assets/images/favicon.ico" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            ALSEK
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Guided tour
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 6H7c-3.31 0-6 2.69-6 6s2.69 6 6 6h10c3.31 0 6-2.69 6-6s-2.69-6-6-6m0 10H7c-2.21 0-4-1.79-4-4s1.79-4 4-4h10c2.21 0 4 1.79 4 4s-1.79 4-4 4M7 9c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 7H7a5 5 0 0 0-5 5 5 5 0 0 0 5 5h10a5 5 0 0 0 5-5 5 5 0 0 0-5-5m0 8a3 3 0 0 1-3-3 3 3 0 0 1 3-3 3 3 0 0 1 3 3 3 3 0 0 1-3 3"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/TariqAHassan/alsek" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="ALSEK" class="md-nav__button md-logo" aria-label="ALSEK" data-md-component="logo">
+      
+  <img src="../assets/images/favicon.ico" alt="logo">
+
+    </a>
+    ALSEK
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/TariqAHassan/alsek" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2024 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Alsek ⛰
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Guided tour
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    Guided tour
+    
+  </span>
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#backends" class="md-nav__link">
+    <span class="md-ellipsis">
+      Backends
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Backends">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Redis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synchronous" class="md-nav__link">
+    <span class="md-ellipsis">
+      Synchronous
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asynchronous" class="md-nav__link">
+    <span class="md-ellipsis">
+      Asynchronous
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lazy-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lazy Initialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#namespaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Namespaces
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#serializers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Serializers
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Messages
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Messages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Properties
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#brokers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Brokers
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tasks
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tasks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mechanisms" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mechanisms
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Timeouts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      Priority
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#triggers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Triggers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#message-passing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Message Passing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#callbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Callbacks
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Callbacks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nested" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nested
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#control" class="md-nav__link">
+    <span class="md-ellipsis">
+      Control
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepost-ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pre/Post Ops
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Retries
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backoff" class="md-nav__link">
+    <span class="md-ellipsis">
+      Backoff
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#status-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Status Tracking
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Status Tracking">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#asynchronous-status-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Asynchronous Status Tracking
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#result-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result Storage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Result Storage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#triggers-result-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Triggers &amp; Result Storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result-iteration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result Iteration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      Concurrency
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consumers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Consumers
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worker-pools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Worker Pools
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Worker Pools">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#thread-worker-pool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Thread Worker Pool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#process-worker-pool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Process Worker Pool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance Considerations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      CLI
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CLI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basics
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Basics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nested-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nested files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recursive" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recursive
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#queue-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Queue Selection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker-capacity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Worker Capacity
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Worker Capacity">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#thread-based-worker-pools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Thread-based Worker Pools
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#process-based-worker-pools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Process-based Worker Pools
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance Tuning
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../tips_and_tricks/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Tips &amp; Tricks ⛷️
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../reference/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    Reference 📚
+    
+  </span>
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#backends" class="md-nav__link">
+    <span class="md-ellipsis">
+      Backends
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Backends">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      Redis
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#synchronous" class="md-nav__link">
+    <span class="md-ellipsis">
+      Synchronous
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#asynchronous" class="md-nav__link">
+    <span class="md-ellipsis">
+      Asynchronous
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lazy-initialization" class="md-nav__link">
+    <span class="md-ellipsis">
+      Lazy Initialization
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#namespaces" class="md-nav__link">
+    <span class="md-ellipsis">
+      Namespaces
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#serializers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Serializers
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#messages" class="md-nav__link">
+    <span class="md-ellipsis">
+      Messages
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Messages">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      Properties
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#brokers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Brokers
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tasks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Tasks
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tasks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#mechanisms" class="md-nav__link">
+    <span class="md-ellipsis">
+      Mechanisms
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#timeouts" class="md-nav__link">
+    <span class="md-ellipsis">
+      Timeouts
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#priority" class="md-nav__link">
+    <span class="md-ellipsis">
+      Priority
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#triggers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Triggers
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#message-passing" class="md-nav__link">
+    <span class="md-ellipsis">
+      Message Passing
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#callbacks" class="md-nav__link">
+    <span class="md-ellipsis">
+      Callbacks
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Callbacks">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nested" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nested
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#control" class="md-nav__link">
+    <span class="md-ellipsis">
+      Control
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#prepost-ops" class="md-nav__link">
+    <span class="md-ellipsis">
+      Pre/Post Ops
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#retries" class="md-nav__link">
+    <span class="md-ellipsis">
+      Retries
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#backoff" class="md-nav__link">
+    <span class="md-ellipsis">
+      Backoff
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#status-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Status Tracking
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Status Tracking">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#asynchronous-status-tracking" class="md-nav__link">
+    <span class="md-ellipsis">
+      Asynchronous Status Tracking
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#result-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result Storage
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Result Storage">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#triggers-result-storage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Triggers &amp; Result Storage
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#result-iteration" class="md-nav__link">
+    <span class="md-ellipsis">
+      Result Iteration
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#concurrency" class="md-nav__link">
+    <span class="md-ellipsis">
+      Concurrency
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#consumers" class="md-nav__link">
+    <span class="md-ellipsis">
+      Consumers
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worker-pools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Worker Pools
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Worker Pools">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#thread-worker-pool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Thread Worker Pool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#process-worker-pool" class="md-nav__link">
+    <span class="md-ellipsis">
+      Process Worker Pool
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-considerations" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance Considerations
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#cli" class="md-nav__link">
+    <span class="md-ellipsis">
+      CLI
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="CLI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basics" class="md-nav__link">
+    <span class="md-ellipsis">
+      Basics
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Basics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#nested-files" class="md-nav__link">
+    <span class="md-ellipsis">
+      Nested files
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#recursive" class="md-nav__link">
+    <span class="md-ellipsis">
+      Recursive
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#advanced-options" class="md-nav__link">
+    <span class="md-ellipsis">
+      Advanced options
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Advanced options">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#queue-selection" class="md-nav__link">
+    <span class="md-ellipsis">
+      Queue Selection
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#worker-capacity" class="md-nav__link">
+    <span class="md-ellipsis">
+      Worker Capacity
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Worker Capacity">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#thread-based-worker-pools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Thread-based Worker Pools
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#process-based-worker-pools" class="md-nav__link">
+    <span class="md-ellipsis">
+      Process-based Worker Pools
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#performance-tuning" class="md-nav__link">
+    <span class="md-ellipsis">
+      Performance Tuning
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<p>from alsek.storage.backends.redis import AsyncRedisBackend</p>
+<h1 id="guided-tour">Guided Tour 🥾</h1>
+<p>This document provides a guided tour of Alsek. <br>
+Please feel free to feed the functions. 🙂</p>
+<h2 id="backends">Backends</h2>
+<p>Alsek currently provides 'out of the box' support for <a href="https://redis.io"><code>Redis</code></a>.</p>
+<h4 id="redis">Redis</h4>
+<h4 id="synchronous">Synchronous</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBackend</span>
+
+<span class="c1"># Note: by default, `RedisBackend()` will attempt to </span>
+<span class="c1"># connect to an instance of Redis running on localhost.</span>
+<span class="n">backend</span> <span class="o">=</span> <span class="n">RedisBackend</span><span class="p">()</span>
+</code></pre></div>
+<h4 id="asynchronous">Asynchronous</h4>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncRedisBackend</span>
+
+<span class="c1"># Note: by default, `AsyncRedisBackend()` will attempt to </span>
+<span class="c1"># connect to an instance of Redis running on localhost.</span>
+<span class="n">async_backend</span> <span class="o">=</span> <span class="n">AsyncRedisBackend</span><span class="p">()</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+</div>
+<p>Currently, not all parts of Avalis support asynchronous backends.</p>
+<h3 id="lazy-initialization">Lazy Initialization</h3>
+<p>The <code>RedisBackend</code> supports lazy initialization.
+In this mode, an attempt to establish a connection with the database will be 
+deferred until the first time it is absolutely needed (e.g., for a <code>SET</code>, <code>GET</code>, 
+<code>DELETE</code>, etc.). This can be useful in applications such as REST APIs where the 
+backend may not be available precisely when the application boots up. A small example 
+of this mode is provided below.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">redis</span><span class="w"> </span><span class="kn">import</span> <span class="n">Redis</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.lazy</span><span class="w"> </span><span class="kn">import</span> <span class="n">LazyClient</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBackend</span>
+
+<span class="c1"># Initialize the backend with LazyClient</span>
+<span class="n">lazy_backend</span> <span class="o">=</span> <span class="n">RedisBackend</span><span class="p">(</span><span class="n">LazyClient</span><span class="p">(</span><span class="k">lambda</span><span class="p">:</span> <span class="n">Redis</span><span class="p">()))</span>
+
+<span class="c1"># Run an operation. </span>
+<span class="c1"># This will cause LazyClient to evaluate the</span>
+<span class="c1"># lambda and return a usable client connection.</span>
+<span class="n">lazy_backend</span><span class="o">.</span><span class="n">count</span><span class="p">(</span><span class="s2">&quot;queues:math_ops&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h3 id="namespaces">Namespaces</h3>
+<p>Backends store all of their data in a predefined <em>namespace</em>.
+This is simply a prefix that will be prepended to all "keys" (names) 
+the backend writes to storage.</p>
+<h2 id="serializers">Serializers</h2>
+<p>Prior to being written into the backend, Alsek requires that data is
+first serialized. When data is read from the backend, it is deserialized
+prior to use.</p>
+<p>By default, Alsek uses JSON serialization, as implemented in 
+<code>alsek.storage.serialization.JsonSerializer()</code>. However, another 
+approach can be used, provided it is supported by the backend.
+To use a different serialization procedure, one must:</p>
+<ul>
+<li>
+<p>create a new from serializer on top of the base <code>Serializer()</code> and </p>
+</li>
+<li>
+<p>pass the new serializer to the relevant backend at initialization time.</p>
+</li>
+</ul>
+<h2 id="messages">Messages</h2>
+<p>Messages are the "lingua franca" of Alsek. This is because the data they 
+contain can be "understood" by all parts of the library from brokers and 
+result stores, to tasks and worker pools.</p>
+<h3 id="properties">Properties</h3>
+<p>Messages have a lot of helpful functionality, the most
+notable of which is explored here.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Broker</span><span class="p">,</span> <span class="n">task</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis.standard</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBackend</span>
+
+<span class="n">broker</span> <span class="o">=</span> <span class="n">Broker</span><span class="p">(</span><span class="n">RedisBackend</span><span class="p">())</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="n">broker</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">simple_task</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="mi">99</span>
+
+<span class="n">message</span> <span class="o">=</span> <span class="n">simple_task</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
+</code></pre></div>
+<p>First, let's print the message:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span>
+
+<span class="n">Message</span><span class="p">(</span>
+    <span class="n">task_name</span><span class="o">=</span><span class="s1">&#39;simple_task&#39;</span><span class="p">,</span>
+    <span class="n">queue</span><span class="o">=</span><span class="s1">&#39;alsek_queue&#39;</span><span class="p">,</span>
+    <span class="n">args</span><span class="o">=</span><span class="p">(),</span>
+    <span class="n">kwargs</span><span class="o">=</span><span class="p">{},</span>
+    <span class="n">metadata</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">exception_details</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">result_ttl</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">uuid</span><span class="o">=</span><span class="s1">&#39;67de0e4c-9816-11eb-8cb0-acde48001122&#39;</span><span class="p">,</span>
+    <span class="n">progenitor_uuid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">retries</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">timeout</span><span class="o">=</span><span class="mi">3600000</span><span class="p">,</span>
+    <span class="n">created_at</span><span class="o">=</span><span class="s1">&#39;2021-04-08 05:59:16.424000&#39;</span><span class="p">,</span>
+    <span class="n">updated_at</span><span class="o">=</span><span class="s1">&#39;2021-04-08 05:59:16.424000&#39;</span><span class="p">,</span>
+    <span class="n">delay</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">previous_result</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">previous_message_uuid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">callback_message_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">backoff_settings</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;algorithm&#39;</span><span class="p">:</span> <span class="s1">&#39;ExponentialBackoff&#39;</span><span class="p">,</span> <span class="s1">&#39;parameters&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;base&#39;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s1">&#39;factor&#39;</span><span class="p">:</span> <span class="mi">10000</span><span class="p">,</span> <span class="s1">&#39;floor&#39;</span><span class="p">:</span> <span class="mi">60000</span><span class="p">,</span> <span class="s1">&#39;ceiling&#39;</span><span class="p">:</span> <span class="mi">3600000</span><span class="p">,</span> <span class="s1">&#39;zero_override&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}},</span>
+    <span class="n">mechanism</span><span class="o">=</span><span class="s1">&#39;thread&#39;</span><span class="p">,</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Next, we can take a quick look at the key properties of the <code>message</code>
+object.</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Dictionary containing all of the data that can be,</span>
+<span class="c1"># and will be, persisted to the backend by the broker.</span>
+<span class="n">message</span><span class="o">.</span><span class="n">data</span>
+<span class="c1"># Output: {&#39;task_name&#39;: &#39;simple_task&#39;, ...}</span>
+
+<span class="c1"># High-level summary of the message</span>
+<span class="n">message</span><span class="o">.</span><span class="n">summary</span>
+<span class="c1"># Output: Message(uuid=&#39;67de0e4c-9816-11eb-8cb0-acde48001122&#39;, queue=&#39;alsek_queue&#39;, task=&#39;simple_task&#39;)</span>
+
+<span class="c1"># UTC Timestamp for when the message will next be ready for processing </span>
+<span class="n">message</span><span class="o">.</span><span class="n">ready_at</span>
+<span class="c1"># Output: 1617861556424</span>
+
+<span class="c1"># Time until the message is ready for processing</span>
+<span class="n">message</span><span class="o">.</span><span class="n">ttr</span>
+<span class="c1"># Output: 0</span>
+
+<span class="c1"># UUIDs which have descended or will descend from this message</span>
+<span class="n">message</span><span class="o">.</span><span class="n">descendant_uuids</span>
+<span class="c1"># Output: None</span>
+
+<span class="c1"># Whether the message is ready for processing</span>
+<span class="n">message</span><span class="o">.</span><span class="n">ready</span>
+<span class="c1"># Output: True</span>
+</code></pre></div>
+<h2 id="brokers">Brokers</h2>
+<p>A message broker is responsible for adding and managing tasks on the backend.
+In Alsek, the <code>Broker</code> class provides the following main methods:</p>
+<ul>
+<li><code>exists()</code>: whether a message exists on the backend</li>
+<li><code>sumbit()</code>: submit a message to a queue</li>
+<li><code>retry()</code>: retry a message on a queue</li>
+<li><code>remove()</code>: remove a message from the backend</li>
+<li><code>fail()</code>: remove a message, and move it to the Dead Letter Queue (DQL), if enabled</li>
+</ul>
+<p>Notably, <code>Broker</code> also exposes:</p>
+<ul>
+<li><code>ack()</code>: acknowledge the message. (This is a convenience method and is 
+    functionally the same as <code>remove()</code>.)</li>
+</ul>
+<h2 id="tasks">Tasks</h2>
+<p>In this section we will take a closer look at the capabilities of Alsek tasks.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The original behaviour of a function is conserved after it has been
+decorated with <code>task</code>. This is illustrated in the example below.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">task</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">a</span> <span class="o">+</span> <span class="n">b</span>
+
+<span class="k">assert</span> <span class="n">add</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">b</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>  <span class="c1"># True</span>
+</code></pre></div>
+</div>
+<h3 id="mechanisms">Mechanisms</h3>
+<p>Tasks can be executed on a <em>Worker Pool</em> using either a <code>'thread'</code> or <code>'process'</code> mechanism.
+We can specify which mechanism the worker pool should use when we construct the task.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">task</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">mechanism</span><span class="o">=</span><span class="s2">&quot;thread&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">my_task</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="mi">99</span>
+</code></pre></div>
+<p>While the default mechanism is <code>'process'</code>, threads can be used in cases where 
+lower overhead is desirable, or the task in question is largely I/O bound.  </p>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>Many implementations of Python use a <a href="https://en.wikipedia.org/wiki/Global_interpreter_lock">Global Interpreter Lock</a>
+(GIL), including the most common one: <a href="https://en.wikipedia.org/wiki/CPython">CPython</a>. In such implementations, 
+only one thread can do work at any one time within any given Python process. As a consequence, using 
+<code>mechanism="thread"</code> carries the risk of interfering with the threads used by the <em>Worker Pool</em> itself (see below). 
+In the worst case, a task specified with <code>mechanism="thread"</code> may never relinquish the GIL and, as a result, the 
+process in which that thread will cease to function (along with any other tasks running in threads in that process).</p>
+<p>While this problem is relatively uncommon in practice, it is an important risk 
+to keep in mind when building your application.</p>
+</div>
+<h3 id="timeouts">Timeouts</h3>
+<p>All Alsek tasks must include a <code>timeout</code> (in milliseconds), which is used to 
+safeguard against hanging tasks. The default timeout is 3,600,000 milliseconds (1 hour).</p>
+<p>Tasks which exceed their timeout will be shutdown by the worker
+pool. If a task is eligible to be retried (see below) against a <code>TimeoutError</code>,
+it will be. Otherwise, the corresponding message will be failed and deleted.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">task</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">90</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>  <span class="c1"># lower timeout to 90 seconds</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">my_task</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="mi">99</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Enforcement of timeouts for tasks which use <code>mechanism='thread'</code> is only available
+for <a href="https://en.wikipedia.org/wiki/CPython">CPython</a> (see below).</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Timeout enforcement for tasks which use <code>mechanism='thread'</code> is not as reliable as it
+is for tasks which use <code>mechanism='process'</code>. This is because Alsek effectuates timeouts in 
+thread tasks by asynchronously setting a <code>TimeoutError</code> inside them. In order for this error 
+to be raised, the thread in question must first acquire the GIL (see above). If the thread
+never acquires the GIL, the error will <em>never</em> be raised. Conversely, Alsek implements timeouts
+for process tasks by directly terminating them, which is generally extremely reliable. The reasons
+for this dichotomy are beyond Alsek's control and stem from the implementation details of CPython
+itself.</p>
+<p>As above, while this problem is relatively uncommon in practice, it is an important risk 
+to keep in mind when building your application.</p>
+</div>
+<h3 id="priority">Priority</h3>
+<p>As with timeouts, priority values can be set for each message.</p>
+<p>Let's take a look at an example.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">task</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">queue</span><span class="o">=</span><span class="s2">&quot;my_queue&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">task_a</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+    <span class="k">return</span> <span class="s2">&quot;A!&quot;</span>
+
+<span class="n">message_1</span> <span class="o">=</span> <span class="n">task_a</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">priority</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">message_2</span> <span class="o">=</span> <span class="n">task_a</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">priority</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+<p>In Alsek, <code>priority</code> is inverted. That is, lower integers correspond to higher priority.
+Thus, in the example above, <code>message_2</code> will take priority over <code>message_1</code>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Alsek implements <em>intra-queue</em> message priority. In other words, priority 
+is enforced within, but not between, queues (which themselves can be prioritized).</p>
+</div>
+<h3 id="triggers">Triggers</h3>
+<p>Alsek supports cron, date as well as interval triggers. Let's explore this using the example below.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Broker</span><span class="p">,</span> <span class="n">task</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis.standard</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBackend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">apscheduler.triggers.interval</span><span class="w"> </span><span class="kn">import</span> <span class="n">IntervalTrigger</span>
+
+<span class="n">broker</span> <span class="o">=</span> <span class="n">Broker</span><span class="p">(</span><span class="n">RedisBackend</span><span class="p">())</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="n">broker</span><span class="p">,</span> <span class="n">trigger</span><span class="o">=</span><span class="n">IntervalTrigger</span><span class="p">(</span><span class="n">hours</span><span class="o">=</span><span class="mi">1</span><span class="p">))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">check_system_usage</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="mi">99</span>
+</code></pre></div>
+<p>The result will be a special of a type: <code>TriggerTask</code>.
+Like <code>Task</code>, we can generate an instance of the task by
+calling <code>generate()</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="n">message</span> <span class="o">=</span> <span class="n">check_system_usage</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
+</code></pre></div>
+<p>The task will now be submitted to the broker every hour for as long 
+as the Python process in which it was created is alive.</p>
+<p>There are three main ways we can interrupt these kinds of tasks.</p>
+<p>First, we can pause the scheduler:</p>
+<div class="highlight"><pre><span></span><code><span class="n">check_resource_usage</span><span class="o">.</span><span class="n">pause</span><span class="p">()</span>
+</code></pre></div>
+<p>(Note that this can be undone by running <code>check_resource_usage.resume()</code>.)</p>
+<p>Second, we can clear the scheduled task:</p>
+<div class="highlight"><pre><span></span><code><span class="n">check_resource_usage</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+</code></pre></div>
+<p>Finally, we can shut down the underlying scheduler:</p>
+<div class="highlight"><pre><span></span><code><span class="n">check_resource_usage</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Function parameters are not permitted for tasks which use a trigger.</p>
+</div>
+<h3 id="message-passing">Message Passing</h3>
+<p>The message itself will be passed to <code>task</code>s which include a <code>message</code> parameter. </p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Broker</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">task</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis.standard</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBackend</span>
+
+<span class="n">broker</span> <span class="o">=</span> <span class="n">Broker</span><span class="p">(</span><span class="n">RedisBackend</span><span class="p">())</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="n">broker</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">my_task</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># note: type hints are optional</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The message will not be passed to the task if:</p>
+<ul>
+<li>a "message" key is included in <code>kwargs</code>, e.g., <code>my_task.generate(kwargs={"message": "string"})</code></li>
+<li>a type hint that does not resolve to <code>Message</code> is used for <code>message</code>.</li>
+</ul>
+</div>
+<h3 id="callbacks">Callbacks</h3>
+<p>When a task completes, another task can be automatically triggered through
+the use of a <em>callback</em>.</p>
+<p>To see this, let's contrive two simple tasks: <code>add_1()</code> and <code>print_result()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Broker</span><span class="p">,</span> <span class="n">Message</span><span class="p">,</span> <span class="n">task</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis.standard</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBackend</span>
+
+<span class="n">broker</span> <span class="o">=</span> <span class="n">Broker</span><span class="p">(</span><span class="n">RedisBackend</span><span class="p">())</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="n">broker</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_1</span><span class="p">(</span><span class="n">number</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">number</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="n">broker</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">print_result</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">previous_result</span><span class="p">)</span>
+</code></pre></div>
+<p>In order to make <code>print_result()</code> execute when <code>add_1()</code>
+completes, we simply need to pass a generated message to <code>callback</code>.
+It's also advisable to set <code>submit=False</code> so that submission to the broker is 
+deferred until <em>after</em> the first message completes.</p>
+<div class="highlight"><pre><span></span><code><span class="n">add_1</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
+    <span class="n">callback</span><span class="o">=</span><span class="n">print_result</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">submit</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>As a convenience, we can also use <em>deferred mode</em>, which instructs
+the next call of <code>generate()</code> to skip submitting the message to
+the broker.</p>
+<div class="highlight"><pre><span></span><code><span class="n">add_1</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
+    <span class="n">callback</span><span class="o">=</span><span class="n">print_result</span><span class="o">.</span><span class="n">defer</span><span class="p">()</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
+<span class="p">)</span>
+</code></pre></div>
+<h4 id="nested">Nested</h4>
+<p>Callbacks of arbitrary depth are also supported.</p>
+<p>To see this, let's add another task into the mix.</p>
+<div class="highlight"><pre><span></span><code><span class="nd">@task</span><span class="p">(</span><span class="n">broker</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_1_previous</span><span class="p">(</span><span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">message</span><span class="o">.</span><span class="n">previous_result</span> <span class="o">+</span> <span class="mi">1</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="n">add_1</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
+    <span class="n">callback</span><span class="o">=</span><span class="p">(</span>
+        <span class="n">add_1_previous</span><span class="o">.</span><span class="n">defer</span><span class="p">()</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+            <span class="n">callback</span><span class="o">=</span><span class="n">add_1_previous</span><span class="o">.</span><span class="n">defer</span><span class="p">()</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+                <span class="n">callback</span><span class="o">=</span><span class="n">add_1_previous</span><span class="o">.</span><span class="n">defer</span><span class="p">()</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+                    <span class="n">callback</span><span class="o">=</span><span class="n">print_result</span><span class="o">.</span><span class="n">defer</span><span class="p">()</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
+                <span class="p">)</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>While the code above will "work", it is very difficult to read. 
+A better solution is to use a <code>tuple</code> of messages.</p>
+<div class="highlight"><pre><span></span><code><span class="n">add_1</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span>
+    <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
+    <span class="n">callback</span><span class="o">=</span><span class="p">(</span>
+        <span class="n">add_1_previous</span><span class="o">.</span><span class="n">defer</span><span class="p">()</span><span class="o">.</span><span class="n">generate</span><span class="p">(),</span>
+        <span class="n">add_1_previous</span><span class="o">.</span><span class="n">defer</span><span class="p">()</span><span class="o">.</span><span class="n">generate</span><span class="p">(),</span>
+        <span class="n">add_1_previous</span><span class="o">.</span><span class="n">defer</span><span class="p">()</span><span class="o">.</span><span class="n">generate</span><span class="p">(),</span>
+        <span class="n">print_result</span><span class="o">.</span><span class="n">defer</span><span class="p">()</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
+    <span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+<p>Internally, a message nesting procedure will be run against the tuple passed to <code>callback</code>.
+As a result, the two different approaches to multiple callbacks shown above are functionally 
+<em>identical</em>.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The internal process described above for nesting a flat
+tuple of callbacks will update the <code>callback_message_data</code> 
+fields in the original messages.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Deferred mode is automatically cancelled by <code>generate()</code>
+prior to it returning.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The progenitor for a callback message is considered to be the root callback.  </p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>Each callback message's <code>previous_result</code> and <code>progenitor_uuid</code> fields 
+will be set on the worker pool after successful execution of the 
+previous message, and are not available prior to this.</p>
+</div>
+<div class="admonition danger">
+<p class="admonition-title">Danger</p>
+<p>While it is valid for a task with a trigger to have callbacks,
+callbacks should not include tasks with triggers.</p>
+</div>
+<h4 id="control">Control</h4>
+<p>If a callback is present for a message it will be executed by default.
+However, it is possible to override this behaviour by reasoning about
+the original message itself, the result of the task or both. </p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.core.task</span><span class="w"> </span><span class="kn">import</span> <span class="n">Task</span><span class="p">,</span> <span class="n">task</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomTask1</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">do_callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">result</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">base_task</span><span class="o">=</span><span class="n">CustomTask1</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">simple_task</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="mi">99</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The <code>do_callback()</code> method is only evaluated for messages which contain a callback.</p>
+</div>
+<h3 id="prepost-ops">Pre/Post Ops</h3>
+<p>The <code>pre_op()</code> and <code>post_op()</code> methods of <code>Task</code> can be used to 
+perform operations before and/or after the <code>function</code> itself executes, respectively.
+To do this, a new <code>base_task</code> must be created.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.core.task</span><span class="w"> </span><span class="kn">import</span> <span class="n">Task</span><span class="p">,</span> <span class="n">task</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomTask2</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">pre_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;About to process </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">summary</span><span class="si">}</span><span class="s2">!&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">post_op</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="n">result</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Processed </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">summary</span><span class="si">}</span><span class="s2"> and got &#39;</span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">&#39;!&quot;</span><span class="p">)</span>
+
+
+<span class="nd">@task</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">base_task</span><span class="o">=</span><span class="n">CustomTask2</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">simple_task</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="mi">99</span>
+</code></pre></div>
+<h3 id="retries">Retries</h3>
+<p>The number of times a task will be retried is determined by
+<code>max_retries</code> by default. In cases where this is not sufficiently 
+sophisticated to determine if message should be retried, the <code>do_retry()</code> 
+method of the <code>Task</code> class can be overridden.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Message</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.core.task</span><span class="w"> </span><span class="kn">import</span> <span class="n">Task</span><span class="p">,</span> <span class="n">task</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">CustomTask3</span><span class="p">(</span><span class="n">Task</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">do_retry</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="n">exception</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">exception</span><span class="p">,</span> <span class="ne">ZeroDivisionError</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">message</span><span class="o">.</span><span class="n">retries</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">max_retries</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">base_task</span><span class="o">=</span><span class="n">CustomTask3</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">simple_task</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="mi">99</span>
+</code></pre></div>
+<h3 id="backoff">Backoff</h3>
+<p>Rather than reprocessing a task immediately after it fails,
+Alsek uses a backoff procedure. By default, <code>ExponentialBackoff()</code> 
+is used with "sensible" defaults. However, the type of backoff algorithm 
+as well as its parameters are extremely customizable. </p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">task</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.core.backoff</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">ConstantBackoff</span><span class="p">,</span> 
+    <span class="n">ExponentialBackoff</span><span class="p">,</span>
+    <span class="n">LinearBackoff</span><span class="p">,</span> 
+<span class="p">)</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">backoff</span><span class="o">=</span><span class="n">ConstantBackoff</span><span class="p">(</span><span class="n">constant</span><span class="o">=</span><span class="mi">30</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">task_a</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="mi">99</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">backoff</span><span class="o">=</span><span class="n">LinearBackoff</span><span class="p">(</span><span class="n">factor</span><span class="o">=</span><span class="mi">30</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">task_b</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="mi">99</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">backoff</span><span class="o">=</span><span class="n">ExponentialBackoff</span><span class="p">(</span><span class="n">ceiling</span><span class="o">=</span><span class="mi">90</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">task_c</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="mi">99</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Backoff duration is determined by the number of 'incidents'.
+Here, an incident is a failed attempt to process the message.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Setting <code>backoff=None</code> is functionally equivalent to 
+<code>ConstantBackoff(constant=0, floor=0, ceiling=0, zero_override=True)</code>.</p>
+</div>
+<h2 id="status-tracking">Status Tracking</h2>
+<p>The status of tasks can be tracked using <code>StatusTracker()</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Broker</span><span class="p">,</span> <span class="n">StatusTracker</span><span class="p">,</span> <span class="n">task</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBackend</span>
+
+<span class="n">backend</span> <span class="o">=</span> <span class="n">RedisBackend</span><span class="p">(</span><span class="s2">&quot;&lt;connection_url&gt;&quot;</span><span class="p">)</span>
+
+<span class="n">broker</span> <span class="o">=</span> <span class="n">Broker</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+<span class="n">status_tracker</span> <span class="o">=</span> <span class="n">StatusTracker</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="n">broker</span><span class="p">,</span> <span class="n">status_tracker</span><span class="o">=</span><span class="n">status_tracker</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sum_n</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+
+<span class="n">message</span> <span class="o">=</span> <span class="n">sum_n</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;n&quot;</span><span class="p">:</span> <span class="mi">100</span><span class="p">})</span>
+</code></pre></div>
+<p>The status can be checked using <code>.get()</code>:</p>
+<div class="highlight"><pre><span></span><code><span class="n">status_tracker</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+</code></pre></div>
+<p>and can be any one of the following:</p>
+<ul>
+<li><code>&lt;TaskStatus.UNKNOWN: 0&gt;</code></li>
+<li><code>&lt;TaskStatus.SUBMITTED: 1&gt;</code></li>
+<li><code>&lt;TaskStatus.RUNNING: 2&gt;</code></li>
+<li><code>&lt;TaskStatus.RETRYING: 3&gt;</code></li>
+<li><code>&lt;TaskStatus.FAILED: 4&gt;</code></li>
+<li><code>&lt;TaskStatus.SUCCEEDED: 5&gt;</code></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>StatusTracker()</code> can be paired with <code>StatusTrackerIntegryScanner()</code>, which
+will periodically scan for message statuses which have become invalid. Specifically, 
+a scan will be performed to check for messages with statuses which are non-terminal (i.e., not 
+<code>TaskStatus.FAILED</code> or <code>TaskStatus.SUCCEEDED</code>) and no longer exist
+in the broker. Any messages meeting these criteria will have their status
+updated to <code>TaskStatus.UNKNOWN</code>.  Status information can become corrupt in 
+this way in cases where a worker pool is unable to update the message status 
+before exiting (i.e., in the event of an ungraceful shutdown) and the message
+is never subsequently retried.</p>
+<p>The frequency of status integrity scans can be changed by altering the
+<code>trigger</code> parameter of <code>StatusTrackerIntegryScanner()</code>..</p>
+</div>
+<h3 id="asynchronous-status-tracking">Asynchronous Status Tracking</h3>
+<p>An asynchronous status tracker is also available, <code>AsyncStatusTracker()</code>.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncRedisBackend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.core.status.asyncio</span><span class="w"> </span><span class="kn">import</span> <span class="n">AsyncStatusTracker</span>
+
+<span class="n">backend</span> <span class="o">=</span> <span class="n">AsyncRedisBackend</span><span class="p">(</span><span class="s2">&quot;&lt;connection_url&gt;&quot;</span><span class="p">)</span>
+<span class="n">status_tracker</span> <span class="o">=</span> <span class="n">AsyncStatusTracker</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+<span class="o">...</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+</div>
+<p>Currently, the <code>Task()</code> class, used by the <code>task()</code> decorator by default, does <em>not</em> support 
+   instances of <code>AsyncStatusTracker()</code> and will raise an error if one is provided to it.</p>
+<h2 id="result-storage">Result Storage</h2>
+<p>Task results can be persisted to a <code>backend</code> using <code>ResultStore()</code>. </p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Broker</span><span class="p">,</span> <span class="n">task</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBackend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.result</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultStore</span>
+
+<span class="n">backend</span> <span class="o">=</span> <span class="n">RedisBackend</span><span class="p">(</span><span class="s2">&quot;&lt;connection_url&gt;&quot;</span><span class="p">)</span>
+
+<span class="n">broker</span> <span class="o">=</span> <span class="n">Broker</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+<span class="n">result_store</span> <span class="o">=</span> <span class="n">ResultStore</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="n">broker</span><span class="p">,</span> <span class="n">result_store</span><span class="o">=</span><span class="n">result_store</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">valuable_output</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">]:</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;a&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;b&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;c&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">}</span>
+</code></pre></div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>In order for data to be persisted via <code>result_store</code>, it must be
+of a type supported by the <code>backend</code>'s <code>serializer</code>.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>By default, results are automatically deleted once they are fetched. 
+To disable this behavior, set <code>keep=True</code> when invoking <code>get()</code>.</p>
+</div>
+<h3 id="triggers-result-storage">Triggers &amp; Result Storage</h3>
+<p>We can request result storage for tasks with triggers, just as we did with a standard task above. 
+However, fetching the results of a task requires us to know its <code>uuid</code>. While it is possible
+to collect this information (e.g., via <code>pre_op()</code> or <code>post_op()</code>), it is often far easier to 
+simply store the <em>progenitor</em> message or, at the least, its <code>uuid</code>. With this information, 
+we can obtain all <em>descendant</em> messages.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">random</span><span class="w"> </span><span class="kn">import</span> <span class="n">randint</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">apscheduler.triggers.interval</span><span class="w"> </span><span class="kn">import</span> <span class="n">IntervalTrigger</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Broker</span><span class="p">,</span> <span class="n">task</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis.standard</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBackend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.result</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultStore</span>
+
+<span class="n">backend</span> <span class="o">=</span> <span class="n">RedisBackend</span><span class="p">()</span>
+<span class="n">broker</span> <span class="o">=</span> <span class="n">Broker</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+<span class="n">result_storage</span> <span class="o">=</span> <span class="n">ResultStore</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+
+
+<span class="nd">@task</span><span class="p">(</span><span class="n">broker</span><span class="p">,</span> <span class="n">result_store</span><span class="o">=</span><span class="n">result_storage</span><span class="p">,</span> <span class="n">trigger</span><span class="o">=</span><span class="n">IntervalTrigger</span><span class="p">(</span><span class="n">seconds</span><span class="o">=</span><span class="mi">10</span><span class="p">))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">harvest_data</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">randint</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span>
+
+<span class="c1"># Start </span>
+<span class="n">message</span> <span class="o">=</span> <span class="n">harvest_data</span><span class="o">.</span><span class="n">generate</span><span class="p">()</span>
+
+<span class="c1"># Get all of the results as a list. By setting `descendants=True` we</span>
+<span class="c1"># will also data for any descendant messages which have completed.</span>
+<span class="n">results</span> <span class="o">=</span> <span class="n">result_storage</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">30</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">,</span> <span class="n">descendants</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">results</span><span class="p">)</span>
+<span class="c1"># [3, 5, 88, ...]</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Metadata for each result can be included by specifying <code>with_metadata=True</code>.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The order of results when <code>descendants=True</code> is determined by the 
+time at which the data was written to the backend, not when the corresponding task 
+completed. While this difference is usually very small, if this is
+not appropriate for your application, you must include timestamp information 
+in the output of the task function and re-sort the results accordingly.</p>
+</div>
+<h3 id="result-iteration">Result Iteration</h3>
+<p>The <code>ResultPool()</code> class provides an intuitive means of iterating over 
+stored results. To see how, we can define a task, just as we have done 
+several times before, and create an instance of the <code>ResultPool()</code> class.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Broker</span><span class="p">,</span> <span class="n">task</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBackend</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.result</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultStore</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResultPool</span>
+
+<span class="n">backend</span> <span class="o">=</span> <span class="n">RedisBackend</span><span class="p">(</span><span class="s2">&quot;&lt;connection_url&gt;&quot;</span><span class="p">)</span>
+
+<span class="n">broker</span> <span class="o">=</span> <span class="n">Broker</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+<span class="n">result_store</span> <span class="o">=</span> <span class="n">ResultStore</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+<span class="n">result_pool</span> <span class="o">=</span> <span class="n">ResultPool</span><span class="p">(</span><span class="n">result_store</span><span class="p">)</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="n">broker</span><span class="p">,</span> <span class="n">result_store</span><span class="o">=</span><span class="n">result_store</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sum_n</span><span class="p">(</span><span class="n">n</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">n</span> <span class="o">*</span> <span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
+</code></pre></div>
+<p>From here we can use the <code>istream()</code> method of <code>result_pool</code> to 
+iterate over message results as they become available.</p>
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">message</span><span class="p">,</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">result_pool</span><span class="o">.</span><span class="n">istream</span><span class="p">(</span>
+    <span class="n">sum_n</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">10</span><span class="p">)),</span>
+    <span class="n">sum_n</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">100</span><span class="p">)),</span>
+    <span class="n">sum_n</span><span class="o">.</span><span class="n">generate</span><span class="p">(</span><span class="n">kwargs</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">n</span><span class="o">=</span><span class="mi">1000</span><span class="p">)),</span>
+    <span class="n">descendants</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># enable if any messages contain callbacks</span>
+<span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;The result of message &#39;</span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">uuid</span><span class="si">}</span><span class="s2">&#39; is </span><span class="si">{</span><span class="n">result</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
+</code></pre></div>
+<p>Result pools can be used in applications, or for interactive distributed computing.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If your use case requires a guarantee that results will be yielded 
+in the same order in which the messages were provided, use the <code>stream()</code> 
+method instead.</p>
+</div>
+<h2 id="concurrency">Concurrency</h2>
+<p>Alsek's concurrency <code>Lock()</code> provides a straightforward way limit 
+simultaneity across a distributed application to a single task, as shown here:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Lock</span><span class="p">,</span> <span class="n">task</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis.standard</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBackend</span>
+
+<span class="n">backend</span> <span class="o">=</span> <span class="n">RedisBackend</span><span class="p">()</span>
+
+<span class="nd">@task</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">send_data</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">Lock</span><span class="p">(</span><span class="s2">&quot;send_data&quot;</span><span class="p">,</span> <span class="n">backend</span><span class="o">=</span><span class="n">backend</span><span class="p">)</span> <span class="k">as</span> <span class="n">lock</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">lock</span><span class="o">.</span><span class="n">acquire</span><span class="p">(</span><span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Sending data...&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Failed to acquire lock&quot;</span><span class="p">)</span>
+</code></pre></div>
+<h2 id="consumers">Consumers</h2>
+<p>As their name suggests, consumers pull messages inserted by the broker
+onto workers. A concurrency lock (similar to what is shown above) is
+used to ensure than one, and only one, consumer can hold a message
+at any given time.</p>
+<p>Standard use of Alsek does not typically entail direct interaction with consumers,
+as they are managed by <em>Worker Pools</em> (see below). However, in the interest 
+of completeness, an illustrative example of working with consumers is provided below.</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Broker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.core.consumer</span><span class="w"> </span><span class="kn">import</span> <span class="n">Consumer</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBackend</span>
+
+<span class="n">broker</span> <span class="o">=</span> <span class="n">Broker</span><span class="p">(</span><span class="n">RedisBackend</span><span class="p">())</span>
+<span class="n">consumer</span> <span class="o">=</span> <span class="n">Consumer</span><span class="p">(</span><span class="n">broker</span><span class="p">)</span>
+
+<span class="k">for</span> <span class="n">message</span> <span class="ow">in</span> <span class="n">consumer</span><span class="o">.</span><span class="n">stream</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Got </span><span class="si">{</span><span class="n">message</span><span class="o">.</span><span class="n">summary</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Consumers backoff following one or more passes over the backend that 
+do not yield any ready messages. By default, <code>LinearBackoff()</code> is used.</p>
+</div>
+<h2 id="worker-pools">Worker Pools</h2>
+<p>Alsek provides two distinct worker pool implementations for processing tasks: <code>ThreadWorkerPool</code> and <code>ProcessWorkerPool</code>. Each offers different performance characteristics and scaling capabilities.</p>
+<h3 id="thread-worker-pool">Thread Worker Pool</h3>
+<p>The <code>ThreadWorkerPool</code> uses a hierarchical architecture with process groups that each manage multiple threads:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Broker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.core.worker.thread</span><span class="w"> </span><span class="kn">import</span> <span class="n">ThreadWorkerPool</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBackend</span>
+
+<span class="n">backend</span> <span class="o">=</span> <span class="n">RedisBackend</span><span class="p">()</span>
+<span class="n">broker</span> <span class="o">=</span> <span class="n">Broker</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+
+<span class="n">pool</span> <span class="o">=</span> <span class="n">ThreadWorkerPool</span><span class="p">(</span>
+    <span class="n">tasks</span><span class="o">=</span><span class="p">[</span><span class="n">task_a</span><span class="p">,</span> <span class="n">task_b</span><span class="p">],</span>  <span class="c1"># tasks to process</span>
+    <span class="n">n_threads</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>             <span class="c1"># threads per process group</span>
+    <span class="n">n_processes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>           <span class="c1"># maximum number of process groups</span>
+<span class="p">)</span>
+<span class="n">pool</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</code></pre></div>
+<p>Key features of the <code>ThreadWorkerPool</code>:</p>
+<ul>
+<li><strong>Elastic Scaling</strong>: Automatically creates new process groups as needed and prunes them when they're no longer required</li>
+<li><strong>Hierarchical Design</strong>: Each process group manages its own set of threads</li>
+<li><strong>Total Capacity</strong>: The maximum number of concurrent tasks is <code>n_threads × n_processes</code></li>
+<li><strong>Resource Efficiency</strong>: Ideal for I/O-bound tasks or when lower overhead is desired</li>
+</ul>
+<p>The <code>ThreadWorkerPool</code> will dynamically scale up to <code>n_processes</code> process groups, each managing up to <code>n_threads</code> threads, for a maximum capacity of <code>n_threads × n_processes</code>. When a message needs to be processed, it is assigned to an available process group, which then executes it on one of its threads.</p>
+<h3 id="process-worker-pool">Process Worker Pool</h3>
+<p>The <code>ProcessWorkerPool</code> uses a direct approach where each task runs in its own dedicated process:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">alsek</span><span class="w"> </span><span class="kn">import</span> <span class="n">Broker</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.core.worker.process</span><span class="w"> </span><span class="kn">import</span> <span class="n">ProcessWorkerPool</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">alsek.storage.backends.redis</span><span class="w"> </span><span class="kn">import</span> <span class="n">RedisBackend</span>
+
+<span class="n">backend</span> <span class="o">=</span> <span class="n">RedisBackend</span><span class="p">()</span>
+<span class="n">broker</span> <span class="o">=</span> <span class="n">Broker</span><span class="p">(</span><span class="n">backend</span><span class="p">)</span>
+
+<span class="n">pool</span> <span class="o">=</span> <span class="n">ProcessWorkerPool</span><span class="p">(</span>
+    <span class="n">tasks</span><span class="o">=</span><span class="p">[</span><span class="n">task_a</span><span class="p">,</span> <span class="n">task_b</span><span class="p">],</span>  <span class="c1"># tasks to process</span>
+    <span class="n">n_processes</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>           <span class="c1"># maximum number of processes</span>
+    <span class="n">prune_interval</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>      <span class="c1"># milliseconds between prune scans</span>
+<span class="p">)</span>
+<span class="n">pool</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+</code></pre></div>
+<p>Key features of the <code>ProcessWorkerPool</code>:</p>
+<ul>
+<li><strong>Process Isolation</strong>: Each task runs in its own dedicated process</li>
+<li><strong>Fixed Capacity</strong>: Limited to a maximum of <code>n_processes</code> concurrent tasks</li>
+<li><strong>Background Pruning</strong>: Uses a background scheduler to periodically prune spent futures</li>
+<li><strong>Resource Safety</strong>: Ideal for CPU-bound tasks or when process isolation is necessary</li>
+</ul>
+<p>The <code>ProcessWorkerPool</code> will execute each task in its own dedicated process, up to the maximum of <code>n_processes</code> concurrent processes. This offers stronger isolation between tasks but with slightly higher overhead compared to threads.</p>
+<h3 id="performance-considerations">Performance Considerations</h3>
+<p>When choosing between worker pool types, consider:</p>
+<ol>
+<li>
+<p><strong>I/O vs CPU Bound Tasks</strong>: For I/O-bound tasks (e.g., network requests, database operations), <code>ThreadWorkerPool</code> often offers better performance. For CPU-bound tasks, <code>ProcessWorkerPool</code> can better utilize multiple cores.</p>
+</li>
+<li>
+<p><strong>Memory Usage</strong>: <code>ThreadWorkerPool</code> is typically more memory-efficient as threads share memory within their process group.</p>
+</li>
+<li>
+<p><strong>Isolation Needs</strong>: If tasks need strong isolation from each other, <code>ProcessWorkerPool</code> provides better separation.</p>
+</li>
+<li>
+<p><strong>Elasticity</strong>: If your workload has variable demand, <code>ThreadWorkerPool</code>'s elastic scaling may be more efficient.</p>
+</li>
+<li>
+<p><strong>Shutdown Reliability</strong>: <code>ProcessWorkerPool</code> offers more robust shutdown logic since it can directly terminate processes, avoiding potential GIL-related issues where a thread might never relinquish control and prevent proper shutdown (see above).</p>
+</li>
+</ol>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Both worker pool types use timeouts to manage hanging tasks and provide similar retry and backoff capabilities.</p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>For tasks using <code>mechanism='thread'</code>, be aware of Python's Global Interpreter Lock (GIL) which can limit true parallelism within a single process group.</p>
+</div>
+<h2 id="cli">CLI</h2>
+<p>Alsek's command line interface (CLI) provides an easy way to bring a pool of
+workers online to process tasks for which we can provide the definition. </p>
+<p>Alsek offers two types of worker pools:</p>
+<ul>
+<li><code>thread-pool</code>: Uses a hierarchical architecture with process groups that each manage multiple threads</li>
+<li><code>process-pool</code>: Uses a direct approach where each task runs in its own process</li>
+</ul>
+<p>Each worker pool relies on a <code>Consumer</code> to pull messages written to the backend by the <code>Broker</code>. 
+When the worker pool reaches capacity, it will pause the stream of data from the consumer. 
+This is done to both reduce load on the backend and to allow other worker pools (perhaps 
+running on different machines) to acquire messages for processing.</p>
+<h3 id="basics">Basics</h3>
+<p>The CLI requires that we inform it where tasks can be found.</p>
+<p>To start with a simple case, let's imagine our one and only task
+is located in the current working directory in a file titled <code>my_task.py</code>. </p>
+<p>Then, starting a worker pool against this task can be accomplished by running:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># For a process-based worker pool</span>
+alsek<span class="w"> </span>process-pool<span class="w"> </span>my_tasks
+
+<span class="c1"># For a thread-based worker pool</span>
+alsek<span class="w"> </span>thread-pool<span class="w"> </span>my_tasks
+</code></pre></div>
+<h4 id="nested-files">Nested files</h4>
+<p>Alternatively, we might have a file of task definitions inside a directory, like this:</p>
+<div class="highlight"><pre><span></span><code>my_project
+    ├── __init__.py
+    ├── singletons.py
+    └── my_tasks.py
+</code></pre></div>
+<p>Starting a pool with this kind of structure can be accomplished by passing
+the dot-separated "path" to the file: </p>
+<div class="highlight"><pre><span></span><code>alsek<span class="w"> </span>process-pool<span class="w"> </span>my_project.my_tasks
+</code></pre></div>
+<h4 id="recursive">Recursive</h4>
+<p>We can also simply specify the directory where the task definitions live, 
+and it will be scanned recursively in order to recover <em>all</em> task definitions.</p>
+<div class="highlight"><pre><span></span><code>alsek<span class="w"> </span>thread-pool<span class="w"> </span>my_project
+</code></pre></div>
+<h3 id="advanced-options">Advanced options</h3>
+<p>Alsek's CLI includes several dials to achieve fine-grain control over the worker pool.
+We won't cover all of them here, but there are at least a few worth highlighting.</p>
+<h4 id="queue-selection">Queue Selection</h4>
+<p>The <code>-qu</code>/<code>--queues</code> option allows you to limit the queues which will be consumed by the worker pool. 
+It can be set using a comma-separated list.</p>
+<div class="highlight"><pre><span></span><code>alsek<span class="w"> </span>process-pool<span class="w"> </span>my_project<span class="w"> </span>-qu<span class="w"> </span>queue_a
+</code></pre></div>
+<div class="highlight"><pre><span></span><code>alsek<span class="w"> </span>thread-pool<span class="w"> </span>my_project<span class="w"> </span>-qu<span class="w"> </span>queue_a,queue_b,queue_z
+</code></pre></div>
+<h4 id="worker-capacity">Worker Capacity</h4>
+<h5 id="thread-based-worker-pools">Thread-based Worker Pools</h5>
+<p>For thread-based worker pools, you can control both the number of threads per process group and 
+the maximum number of process groups:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Configure 8 threads per process group</span>
+alsek<span class="w"> </span>thread-pool<span class="w"> </span>my_project<span class="w"> </span>--n_threads<span class="w"> </span><span class="m">8</span>
+
+<span class="c1"># Configure a maximum of 4 process groups</span>
+alsek<span class="w"> </span>thread-pool<span class="w"> </span>my_project<span class="w"> </span>--n_processes<span class="w"> </span><span class="m">4</span>
+</code></pre></div>
+<p>The total maximum capacity of a thread-based worker pool is <code>n_threads × n_processes</code>.</p>
+<p>Thread pools support elastic scaling, automatically creating new process groups up to the configured maximum
+as needed, and pruning them when no longer needed.</p>
+<h5 id="process-based-worker-pools">Process-based Worker Pools</h5>
+<p>For process-based worker pools, you can control the maximum number of concurrent processes:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Configure a maximum of 4 processes</span>
+alsek<span class="w"> </span>process-pool<span class="w"> </span>my_project<span class="w"> </span>--n_processes<span class="w"> </span><span class="m">4</span>
+</code></pre></div>
+<h4 id="performance-tuning">Performance Tuning</h4>
+<p>Both worker pool types support additional performance tuning options:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># Configure slot wait interval (milliseconds to wait when pool is full)</span>
+alsek<span class="w"> </span>thread-pool<span class="w"> </span>my_project<span class="w"> </span>--slot_wait_interval<span class="w"> </span><span class="m">50</span>
+
+<span class="c1"># For process-based worker pools, configure prune interval</span>
+alsek<span class="w"> </span>process-pool<span class="w"> </span>my_project<span class="w"> </span>--prune_interval<span class="w"> </span><span class="m">100</span>
+
+<span class="c1"># For thread-based worker pools, wait for thread exit to mark as complete</span>
+alsek<span class="w"> </span>thread-pool<span class="w"> </span>my_project<span class="w"> </span>--complete_only_on_thread_exit
+</code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The worker pool's <code>Consumer</code> will respect the order in which queues
+are listed for the <code>-qu</code>/<code>--queues</code> option. If, this option is not specified, 
+queues will be consumed in alphabetical order.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Worker pools scale up and down dynamically based on load.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The full documentation for Alsek's CLI can be obtained by
+running:</p>
+<div class="highlight"><pre><span></span><code>alsek<span class="w"> </span>--help
+</code></pre></div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>If a worker pool encounters a message which refers to an unknown 
+task, an error will be logged and the message will be failed.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Copyright &copy; 2021 - 2025 Tariq Hassan
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      <script id="__config" type="application/json">{"base": "..", "features": [], "search": "../assets/javascripts/workers/search.f8cc74c7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.c8b220af.min.js"></script>
+      
+        <script src="../javascripts/config.js"></script>
+      
+        <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+      
+        <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
