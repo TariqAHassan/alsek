@@ -442,7 +442,10 @@ class Task:
         """
 
     def on_revocation(
-        self, message: Message, exception: Optional[BaseException], result: Any
+        self,
+        message: Message,
+        exception: Optional[BaseException],
+        result: Any,
     ) -> None:
         """Handles the event when a message is revoked and logs the associated exception.
 
