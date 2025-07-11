@@ -31,7 +31,7 @@ from alsek.storage.backends.redis import AsyncRedisBackend
 async_backend = AsyncRedisBackend()
 ```
 
-!!!warning
+!!! warning
    Currently, not all parts of Avalis support asynchronous backends.
 
 ### Lazy Initialization
@@ -638,7 +638,7 @@ status_tracker = AsyncStatusTracker(backend)
 ...
 ```
 
-!!!warning
+!!! warning
    Currently, the `Task()` class, used by the `task()` decorator by default, does _not_ support 
    instances of `AsyncStatusTracker()` and will raise an error if one is provided to it.
 
