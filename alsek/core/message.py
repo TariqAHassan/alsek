@@ -103,28 +103,28 @@ class Message:
     """
 
     def __init__(
-            self,
-            task_name: str,
-            queue: Optional[str] = None,
-            args: Optional[Union[list[Any], tuple[Any, ...]]] = None,
-            kwargs: Optional[dict[Any, Any]] = None,
-            priority: int = 0,
-            metadata: Optional[dict[Any, Any]] = None,
-            exception_details: Optional[Union[dict[str, Any], ExceptionDetails]] = None,
-            result_ttl: Optional[int] = None,
-            uuid: Optional[str] = None,
-            progenitor_uuid: Optional[str] = None,
-            retries: int = 0,
-            timeout: int = DEFAULT_TASK_TIMEOUT,
-            created_at: Optional[int] = None,
-            updated_at: Optional[int] = None,
-            delay: Optional[int] = None,
-            previous_result: Optional[Any] = None,
-            previous_message_uuid: Optional[str] = None,
-            callback_message_data: Optional[dict[str, Any]] = None,
-            backoff_settings: Optional[dict[str, Any]] = None,
-            mechanism: SupportedMechanismType = DEFAULT_MECHANISM,
-            linked_lock: Optional[LinkedLock] = None,
+        self,
+        task_name: str,
+        queue: Optional[str] = None,
+        args: Optional[Union[list[Any], tuple[Any, ...]]] = None,
+        kwargs: Optional[dict[Any, Any]] = None,
+        priority: int = 0,
+        metadata: Optional[dict[Any, Any]] = None,
+        exception_details: Optional[Union[dict[str, Any], ExceptionDetails]] = None,
+        result_ttl: Optional[int] = None,
+        uuid: Optional[str] = None,
+        progenitor_uuid: Optional[str] = None,
+        retries: int = 0,
+        timeout: int = DEFAULT_TASK_TIMEOUT,
+        created_at: Optional[int] = None,
+        updated_at: Optional[int] = None,
+        delay: Optional[int] = None,
+        previous_result: Optional[Any] = None,
+        previous_message_uuid: Optional[str] = None,
+        callback_message_data: Optional[dict[str, Any]] = None,
+        backoff_settings: Optional[dict[str, Any]] = None,
+        mechanism: SupportedMechanismType = DEFAULT_MECHANISM,
+        linked_lock: Optional[LinkedLock] = None,
     ) -> None:
         self.task_name = task_name
         self.queue = queue or DEFAULT_QUEUE
@@ -169,8 +169,8 @@ class Message:
 
     @exception_details.setter
     def exception_details(
-            self,
-            value: Optional[Union[ExceptionDetails, dict[str, Any]]],
+        self,
+        value: Optional[Union[ExceptionDetails, dict[str, Any]]],
     ) -> None:
         """Set information about any exception raised."""
         if isinstance(value, (ExceptionDetails, dict, type(None))):
