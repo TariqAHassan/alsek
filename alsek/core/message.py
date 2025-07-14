@@ -94,32 +94,37 @@ class Message:
     Notes:
         * While *not* recommended, ``timeout`` can be disabled,
           in effect, by setting it to a very large integer.
+        * Messages have `ephemeral_state`, which is a dictionary
+          where items can be added and removed as needed. However,
+          this state is NOT persisted to the backend, and only intended
+          to be used within the lifetime of a single task execution,
+          e.g., updating the state in `pre_op()` for use it in `op()`.
 
     """
 
     def __init__(
-        self,
-        task_name: str,
-        queue: Optional[str] = None,
-        args: Optional[Union[list[Any], tuple[Any, ...]]] = None,
-        kwargs: Optional[dict[Any, Any]] = None,
-        priority: int = 0,
-        metadata: Optional[dict[Any, Any]] = None,
-        exception_details: Optional[Union[dict[str, Any], ExceptionDetails]] = None,
-        result_ttl: Optional[int] = None,
-        uuid: Optional[str] = None,
-        progenitor_uuid: Optional[str] = None,
-        retries: int = 0,
-        timeout: int = DEFAULT_TASK_TIMEOUT,
-        created_at: Optional[int] = None,
-        updated_at: Optional[int] = None,
-        delay: Optional[int] = None,
-        previous_result: Optional[Any] = None,
-        previous_message_uuid: Optional[str] = None,
-        callback_message_data: Optional[dict[str, Any]] = None,
-        backoff_settings: Optional[dict[str, Any]] = None,
-        mechanism: SupportedMechanismType = DEFAULT_MECHANISM,
-        linked_lock: Optional[LinkedLock] = None,
+            self,
+            task_name: str,
+            queue: Optional[str] = None,
+            args: Optional[Union[list[Any], tuple[Any, ...]]] = None,
+            kwargs: Optional[dict[Any, Any]] = None,
+            priority: int = 0,
+            metadata: Optional[dict[Any, Any]] = None,
+            exception_details: Optional[Union[dict[str, Any], ExceptionDetails]] = None,
+            result_ttl: Optional[int] = None,
+            uuid: Optional[str] = None,
+            progenitor_uuid: Optional[str] = None,
+            retries: int = 0,
+            timeout: int = DEFAULT_TASK_TIMEOUT,
+            created_at: Optional[int] = None,
+            updated_at: Optional[int] = None,
+            delay: Optional[int] = None,
+            previous_result: Optional[Any] = None,
+            previous_message_uuid: Optional[str] = None,
+            callback_message_data: Optional[dict[str, Any]] = None,
+            backoff_settings: Optional[dict[str, Any]] = None,
+            mechanism: SupportedMechanismType = DEFAULT_MECHANISM,
+            linked_lock: Optional[LinkedLock] = None,
     ) -> None:
         self.task_name = task_name
         self.queue = queue or DEFAULT_QUEUE
@@ -148,6 +153,8 @@ class Message:
         else:
             self.created_at, self.updated_at = created_at, updated_at
 
+        self.ephemeral_state: dict[Any, Any] = dict()
+
     @property
     def exception_details(self) -> Optional[ExceptionDetails]:
         """information about any exception raised."""
@@ -162,8 +169,8 @@ class Message:
 
     @exception_details.setter
     def exception_details(
-        self,
-        value: Optional[Union[ExceptionDetails, dict[str, Any]]],
+            self,
+            value: Optional[Union[ExceptionDetails, dict[str, Any]]],
     ) -> None:
         """Set information about any exception raised."""
         if isinstance(value, (ExceptionDetails, dict, type(None))):
@@ -372,6 +379,28 @@ class Message:
 
         self.metadata = dict_merge_update_into_origin(
             origin=self.metadata or dict(),
+            update=data,
+            inplace=False,
+        )
+        return self
+
+    def add_to_ephemeral_state(self, **data: Any) -> Message:
+        """Adds ephemeral information to the current instance by merging provided data into the
+        existing ephemeral_state. The function performs a non-inplace merge operation,
+        ensuring the original metadata is not directly altered unless returned
+        and reassigned.
+
+        Args:
+            **data: Key-value pairs to merge into the existing metadata.
+
+        Returns:
+            Message: The updated instance with the merged metadata.
+        """
+        if not data:
+            raise ValueError("No data provided to add to metadata.")
+
+        self.ephemeral_state = dict_merge_update_into_origin(
+            origin=self.ephemeral_state or dict(),
             update=data,
             inplace=False,
         )
