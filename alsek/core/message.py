@@ -94,6 +94,11 @@ class Message:
     Notes:
         * While *not* recommended, ``timeout`` can be disabled,
           in effect, by setting it to a very large integer.
+        * Messages have `ephemeral_state`, which is a dictionary
+          where items can be added and removed as needed. However,
+          this state is NOT persisted to the backend, and only intended
+          to be used within the lifetime of a single task execution,
+          e.g., updating the state in `pre_op()` for use in `op()`.
 
     """
 
@@ -147,6 +152,8 @@ class Message:
             raise ValueError("Time data is corrupt")
         else:
             self.created_at, self.updated_at = created_at, updated_at
+
+        self.ephemeral_state: dict[Any, Any] = dict()
 
     @property
     def exception_details(self) -> Optional[ExceptionDetails]:
@@ -356,10 +363,10 @@ class Message:
         return self
 
     def add_to_metadata(self, **data: Any) -> Message:
-        """Adds metadata to the current instance by merging provided data into the
-        existing metadata. The function performs a non-inplace merge operation,
-        ensuring the original metadata is not directly altered unless returned
-        and reassigned.
+        """Adds metadata to the current instance by merging provided data into
+        the existing metadata. The function performs a non-inplace merge operation,
+        ensuring the original metadata is not directly altered unless returned and
+        reassigned.
 
         Args:
             **data: Key-value pairs to merge into the existing metadata.
@@ -372,6 +379,28 @@ class Message:
 
         self.metadata = dict_merge_update_into_origin(
             origin=self.metadata or dict(),
+            update=data,
+            inplace=False,
+        )
+        return self
+
+    def add_to_ephemeral_state(self, **data: Any) -> Message:
+        """Adds ephemeral information to the current instance by merging provided data into
+        the existing `ephemeral_state`. The function performs a non-inplace merge operation,
+        ensuring the original metadata is not directly altered unless returned
+        and reassigned.
+
+        Args:
+            **data: Key-value pairs to merge into the existing metadata.
+
+        Returns:
+            Message: The updated instance with the merged metadata.
+        """
+        if not data:
+            raise ValueError("No data provided to add to metadata.")
+
+        self.ephemeral_state = dict_merge_update_into_origin(
+            origin=self.ephemeral_state or dict(),
             update=data,
             inplace=False,
         )

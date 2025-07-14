@@ -10,4 +10,4 @@ from alsek.core.message import Message
 from alsek.core.status.standard import StatusTracker
 from alsek.core.task import task
 
-__version__: str = "1.2.0"
+__version__: str = "1.3.0"
