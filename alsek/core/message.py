@@ -363,10 +363,10 @@ class Message:
         return self
 
     def add_to_metadata(self, **data: Any) -> Message:
-        """Adds metadata to the current instance by merging provided data into the
-        existing metadata. The function performs a non-inplace merge operation,
-        ensuring the original metadata is not directly altered unless returned
-        and reassigned.
+        """Adds metadata to the current instance by merging provided data into
+        the existing metadata. The function performs a non-inplace merge operation,
+        ensuring the original metadata is not directly altered unless returned and
+        reassigned.
 
         Args:
             **data: Key-value pairs to merge into the existing metadata.
@@ -385,8 +385,8 @@ class Message:
         return self
 
     def add_to_ephemeral_state(self, **data: Any) -> Message:
-        """Adds ephemeral information to the current instance by merging provided data into the
-        existing ephemeral_state. The function performs a non-inplace merge operation,
+        """Adds ephemeral information to the current instance by merging provided data into
+        the existing `ephemeral_state`. The function performs a non-inplace merge operation,
         ensuring the original metadata is not directly altered unless returned
         and reassigned.
 
