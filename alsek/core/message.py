@@ -98,7 +98,7 @@ class Message:
           where items can be added and removed as needed. However,
           this state is NOT persisted to the backend, and only intended
           to be used within the lifetime of a single task execution,
-          e.g., updating the state in `pre_op()` for use it in `op()`.
+          e.g., updating the state in `pre_op()` for use in `op()`.
 
     """
 
