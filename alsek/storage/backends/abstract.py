@@ -52,6 +52,7 @@ class BaseBackend(ABC):
         )
 
     def encode(self) -> bytes:
+        # ToDo: drop `backend` and just dump settings.
         data = dict(backend=self.__class__, settings=gather_init_params(self))
         return cast(bytes, dill.dumps(data))
 
