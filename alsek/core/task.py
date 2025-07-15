@@ -11,7 +11,6 @@ import logging
 from functools import partial
 from typing import Any, Callable, Optional, Type, Union, cast
 
-import dill
 from apscheduler.job import Job
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -181,8 +180,7 @@ class Task:
 
         # Broker
         settings["broker_class"] = self.broker.__class__
-        settings["broker"] = gather_init_params(self.broker, ignore=("backend",))
-        settings["broker"]["backend"] = self.broker.backend.encode()
+        settings["broker"] = self.broker.serialize()
 
         # Status Tracker
         if self.status_tracker:
@@ -201,9 +199,7 @@ class Task:
         def unwind_settings(settings: dict[str, Any]) -> dict[str, Any]:
             # Broker
             broker_class = settings.pop("broker_class")
-            backend_data = dill.loads(settings["broker"]["backend"])
-            settings["broker"]["backend"] = backend_data["backend"].from_settings(backend_data["settings"])  # fmt: skip
-            settings["broker"] = broker_class(**settings["broker"])
+            settings["broker"] = broker_class.deserialize(settings["broker"])
 
             # Status Tracker
             if status_tracker_settings := settings.get("status_tracker"):
