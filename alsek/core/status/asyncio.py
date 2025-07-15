@@ -34,7 +34,7 @@ class AsyncStatusTracker(BaseStatusTracker):
     @staticmethod
     def deserialize(data: dict[str, Any]) -> AsyncStatusTracker:
         backend_data = dill.loads(data["backend"])
-        backend = backend_data["backend"]._from_settings(backend_data["settings"])
+        backend = backend_data["backend"].from_settings(backend_data["settings"])
         return AsyncStatusTracker(
             backend=backend,
             ttl=data["ttl"],
