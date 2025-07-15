@@ -457,5 +457,7 @@ class ProcessTaskFuture(TaskFuture):
             except BaseException as error:
                 log.error("Error processing %s.", self.message.summary, exc_info=True)
                 _error_encountered_future_handler(
-                    self.task, self.message, exception=error
+                    self.task,
+                    self.message,
+                    exception=error,
                 )
