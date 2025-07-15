@@ -5,8 +5,8 @@
 """
 
 import logging
-
 import os
+
 from alsek.defaults import ALSEK_WORKER_POOL_ENV_VAR
 
 log = logging.getLogger(__name__)

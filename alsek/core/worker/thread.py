@@ -6,13 +6,13 @@
 
 from __future__ import annotations
 
+import importlib
 import logging
 import queue
 from builtins import TimeoutError
 from typing import Any, List, Optional
 
 import dill
-import importlib
 
 from alsek import Message
 from alsek.core import Event, Process, Queue
