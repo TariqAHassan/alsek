@@ -216,6 +216,7 @@ def thread_pool(
         n_process_floor=n_process_floor,
         slot_wait_interval=slot_wait_interval,
         complete_only_on_thread_exit=complete_only_on_thread_exit,
+        package_name=package,
         backoff=LinearBackoff(
             factor=consumer_backoff_factor,
             floor=consumer_backoff_floor,
