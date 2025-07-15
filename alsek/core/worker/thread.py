@@ -12,6 +12,7 @@ from builtins import TimeoutError
 from typing import Any, List, Optional
 
 import dill
+import importlib
 
 from alsek import Message
 from alsek.core import Event, Process, Queue
@@ -114,8 +115,11 @@ def _start_thread_worker(
     n_threads: int,
     slot_wait_interval_seconds: float,
     log_level: int,
+    package_name: Optional[str] = None,
 ) -> None:
-    # We construct the worker *inside* the child so we don’t have to pickle it.
+    if package_name:
+        importlib.import_module(package_name)
+
     worker = ThreadsInProcessGroup(
         q=q,
         shutdown_event=shutdown_event,
@@ -132,10 +136,12 @@ class ProcessGroup:
         n_threads: int,
         complete_only_on_thread_exit: bool,
         slot_wait_interval_seconds: float,
+        package_name: Optional[str] = None,
     ) -> None:
         self._n_threads = n_threads
         self.complete_only_on_thread_exit = complete_only_on_thread_exit
         self.slot_wait_interval_seconds = slot_wait_interval_seconds
+        self.package_name = package_name
 
         self.queue: Queue = Queue(maxsize=n_threads)
         self.shutdown_event: Event = Event()
@@ -147,6 +153,7 @@ class ProcessGroup:
                 n_threads,
                 slot_wait_interval_seconds,
                 get_logger().level,
+                package_name,
             ),
             daemon=True,
         )
@@ -198,15 +205,17 @@ class ThreadWorkerPool(BaseWorkerPool):
             as complete when the thread formally exits (i.e., is not alive).
             Pro: more rigorous — avoids marking the task complete until the thread fully terminates.
             Useful when you need strict control over thread lifecycle (e.g., for resource management).
-            Con: may lead to hanging if the thread doesn’t terminate quickly (e.g., when using
+            Con: may lead to hanging if the thread doesn't terminate quickly (e.g., when using
             `thread_raise()` during revocation). This can also temporarily result in more than the
             allotted number of threads running, because it entails treating a thread as
             expired regardless of its actual status.
+        package_name (str, optional): the name of the package to import in worker processes
+            to trigger any initialization code in its `__init__.py`.
         **kwargs (Keyword Args): Keyword arguments to pass to ``BaseWorkerPool()``.
 
     Notes:
         * Spawns a new **process** (ThreadProcessGroup) only when all existing
-          groups are saturated and the hard ceiling `n_processes` hasn’t been hit.
+          groups are saturated and the hard ceiling `n_processes` hasn't been hit.
         * Each group runs up to `n_threads` true ThreadTaskFutures concurrently.
         * Total worker capacity is ``n_threads * n_processes``.
 
@@ -218,6 +227,7 @@ class ThreadWorkerPool(BaseWorkerPool):
         n_processes: Optional[int] = None,
         n_process_floor: int = 1,
         complete_only_on_thread_exit: bool = False,
+        package_name: Optional[str] = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(mechanism="thread", **kwargs)
@@ -225,6 +235,7 @@ class ThreadWorkerPool(BaseWorkerPool):
         self.n_processes = n_processes or smart_cpu_count()
         self.n_process_floor = n_process_floor
         self.complete_only_on_thread_exit = complete_only_on_thread_exit
+        self.package_name = package_name
 
         if self.n_threads <= 0:
             raise ValueError(f"n_threads must be > 0")
@@ -247,6 +258,7 @@ class ThreadWorkerPool(BaseWorkerPool):
             n_threads=self.n_threads,
             complete_only_on_thread_exit=self.complete_only_on_thread_exit,
             slot_wait_interval_seconds=self._slot_wait_interval_seconds,
+            package_name=self.package_name,
         )
         self._progress_groups.append(new_process_group)
         return new_process_group
