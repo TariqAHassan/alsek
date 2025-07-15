@@ -4,15 +4,19 @@
 
 """
 
-import logging
-from typing import Optional
+from __future__ import annotations
 
-from alsek.core.concurrency import Lock
+import logging
+from typing import Optional, Any
+
+import dill
+
 from alsek.core.message import Message
 from alsek.defaults import DEFAULT_TTL
 from alsek.exceptions import MessageAlreadyExistsError, MessageDoesNotExistsError
 from alsek.storage.backends.abstract import Backend
 from alsek.types import Empty
+from alsek.utils.aggregation import gather_init_params
 from alsek.utils.logging import magic_logger
 from alsek.utils.namespacing import (
     get_dlq_message_name,
@@ -48,6 +52,23 @@ class Broker:
             backend=self.backend,
             dlq_ttl=self.dlq_ttl,
         )
+
+    def serialize(self) -> dict[str, Any]:
+        settings = gather_init_params(self, ignore=("backend",))
+        settings["backend"] = dict(
+            cls=self.backend.__class__,
+            encoding=self.backend.encode(),
+        )
+        return settings
+
+    @classmethod
+    def deserialize(cls, settings: dict[str, Any]) -> Broker:
+        settings = settings.copy()
+        backend_data = dill.loads(settings["backend"]["encoding"])
+        settings["backend"] = settings["backend"]["cls"].from_settings(
+            backend_data["settings"]
+        )
+        return cls(**settings)
 
     def exists(self, message: Message) -> bool:
         """Determine if the message exists in the backend.

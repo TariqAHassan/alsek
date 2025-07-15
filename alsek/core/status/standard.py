@@ -20,11 +20,11 @@ from alsek.exceptions import ValidationError
 class StatusTracker(BaseStatusTracker):
     __doc__ = BaseStatusTracker.__doc__
 
-    @staticmethod
-    def deserialize(data: dict[str, Any]) -> StatusTracker:
+    @classmethod
+    def deserialize(cls, data: dict[str, Any]) -> StatusTracker:
         backend_data = dill.loads(data["backend"])
-        backend = backend_data["backend"]._from_settings(backend_data["settings"])
-        return StatusTracker(
+        backend = backend_data["backend"].from_settings(backend_data["settings"])
+        return cls(
             backend=backend,
             ttl=data["ttl"],
             enable_pubsub=data["enable_pubsub"],

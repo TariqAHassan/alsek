@@ -38,11 +38,11 @@ class ResultStore:
             "backend": self.backend.encode(),
         }
 
-    @staticmethod
-    def deserialize(data: dict[str, Any]) -> ResultStore:
+    @classmethod
+    def deserialize(cls, data: dict[str, Any]) -> ResultStore:
         backend_data = dill.loads(data["backend"])
-        backend = backend_data["backend"]._from_settings(backend_data["settings"])
-        return ResultStore(
+        backend = backend_data["backend"].from_settings(backend_data["settings"])
+        return cls(
             backend=backend,
         )
 

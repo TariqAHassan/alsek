@@ -11,7 +11,6 @@ import logging
 from functools import partial
 from typing import Any, Callable, Optional, Type, Union, cast
 
-import dill
 from apscheduler.job import Job
 from apscheduler.jobstores.base import JobLookupError
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -177,42 +176,45 @@ class Task:
         self._deferred: bool = False
 
     def serialize(self) -> dict[str, Any]:
-        settings = gather_init_params(self, ignore=("broker",))
+        settings = gather_init_params(
+            self,
+            ignore=("broker", "status_tracker", "result_store"),
+        )
 
         # Broker
-        settings["broker"] = gather_init_params(self.broker, ignore=("backend",))
-        settings["broker"]["backend"] = self.broker.backend.encode()
+        settings["broker_class"] = self.broker.__class__
+        settings["broker_state"] = self.broker.serialize()
 
         # Status Tracker
         if self.status_tracker:
-            settings["status_tracker"] = self.status_tracker.serialize()
+            settings["status_tracker_class"] = self.status_tracker.__class__
+            settings["status_tracker_state"] = self.status_tracker.serialize()
 
         # Result Store
         if self.result_store:
-            settings["result_store"] = self.result_store.serialize()
+            settings["result_store_class"] = self.result_store.__class__
+            settings["result_store_state"] = self.result_store.serialize()
 
         return dict(task=self.__class__, settings=settings)
 
     @staticmethod
     def deserialize(data: dict[str, Any]) -> Task:
         def unwind_settings(settings: dict[str, Any]) -> dict[str, Any]:
-            backend_data = dill.loads(settings["broker"]["backend"])
+            settings = settings.copy()
 
             # Broker
-            settings["broker"]["backend"] = backend_data["backend"]._from_settings(
-                backend_data["settings"]
-            )
-            settings["broker"] = Broker(**settings["broker"])
+            broker_class = settings.pop("broker_class")
+            settings["broker"] = broker_class.deserialize(settings.pop("broker_state"))
 
             # Status Tracker
-            if status_tracker_settings := settings.get("status_tracker"):
-                settings["status_tracker"] = StatusTracker.deserialize(status_tracker_settings)  # fmt: skip
+            if status_tracker_state := settings.pop("status_tracker_state", None):
+                status_tracker_class = settings.pop("status_tracker_class")
+                settings["status_tracker"] = status_tracker_class.deserialize(status_tracker_state)  # fmt: skip
 
             # Result Store
-            if result_store_settings := settings.get("result_store"):
-                settings["result_store"] = ResultStore.deserialize(
-                    result_store_settings
-                )
+            if result_store_state := settings.pop("result_store_state", None):
+                result_store_class = settings.pop("result_store_class")
+                settings["result_store"] = result_store_class.deserialize(result_store_state)  # fmt: skip
 
             return settings
 

@@ -86,7 +86,7 @@ def test_context(auto_release: bool, rolling_backend: Backend) -> None:
 def _rebuild_backend(encoded: bytes) -> Backend:
     data: dict[str, Any] = dill.loads(encoded)
     backend_cls = data["backend"]
-    return backend_cls._from_settings(data["settings"])  # noqa
+    return backend_cls.from_settings(data["settings"])  # noqa
 
 
 def test_owner_id_isolation(rolling_backend: Backend) -> None:

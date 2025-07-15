@@ -52,11 +52,12 @@ class BaseBackend(ABC):
         )
 
     def encode(self) -> bytes:
+        # ToDo: drop `backend` and just dump settings.
         data = dict(backend=self.__class__, settings=gather_init_params(self))
         return cast(bytes, dill.dumps(data))
 
     @classmethod
-    def _from_settings(cls, settings: dict[str, Any]) -> Backend:
+    def from_settings(cls, settings: dict[str, Any]) -> BaseBackend:
         return cls(**settings)
 
     def in_namespace(self, name: str) -> bool:
