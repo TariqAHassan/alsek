@@ -14,6 +14,7 @@ from apscheduler.triggers.interval import IntervalTrigger
 from pytest_mock import MockFixture
 from schema import Schema
 
+from alsek import StatusTracker
 from alsek.core.broker import Broker
 from alsek.core.message import Message
 from alsek.core.task import Task, TriggerTask
@@ -25,6 +26,18 @@ from tests._helpers import sleeper
 TestTriggerTask = partial(TriggerTask, trigger=IntervalTrigger(days=1))
 
 
+class CustomBroker(Broker):
+    pass
+
+
+class CustomStatusTracker(StatusTracker):
+    pass
+
+
+class CustomResultStore(ResultStore):
+    pass
+
+
 @pytest.mark.parametrize("task_class", [Task, TestTriggerTask])
 def test_task_serialization(
     task_class: Type[Task],
@@ -34,6 +47,29 @@ def test_task_serialization(
     Schema({"task": type, "settings": dict}).validate(task_data)
     reconstructed_task = Task.deserialize(task_data)
     assert isinstance(reconstructed_task, Task)
+
+
+def test_task_serialization_with_custom_classes(rolling_broker: Broker) -> None:
+    # 1. Create an original task
+    custom_broker = CustomBroker(rolling_broker.backend)
+    task_original = Task(
+        lambda: None,
+        broker=custom_broker,
+        status_tracker=CustomStatusTracker(backend=rolling_broker.backend),
+        result_store=CustomResultStore(backend=custom_broker.backend),
+    )
+
+    # 2. Serialize it
+    serialization = task_original.serialize()
+
+    # 3. Reconstruct the Task
+    task_reconstruction = task_original.deserialize(serialization)
+
+    # 4. Verify
+    assert isinstance(task_reconstruction, Task)
+    assert isinstance(task_reconstruction.broker, CustomBroker)
+    assert isinstance(task_reconstruction.status_tracker, CustomStatusTracker)
+    assert isinstance(task_reconstruction.result_store, CustomResultStore)
 
 
 @pytest.mark.parametrize(
