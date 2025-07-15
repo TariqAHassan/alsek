@@ -21,6 +21,7 @@ from alsek.core.task import Task
 from alsek.core.worker._base import BaseWorkerPool
 from alsek.exceptions import TerminationError
 from alsek.utils.decorators import suppress_exception
+from alsek.utils.environment import set_alsek_worker_pool_env_var
 from alsek.utils.logging import get_logger, setup_logging
 from alsek.utils.system import smart_cpu_count
 
@@ -117,6 +118,7 @@ def _start_thread_worker(
     log_level: int,
     package_name: Optional[str] = None,
 ) -> None:
+    set_alsek_worker_pool_env_var()
     if package_name:
         importlib.import_module(package_name)
 

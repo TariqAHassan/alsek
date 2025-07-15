@@ -21,6 +21,7 @@ from alsek.core.status.types import TaskStatus
 from alsek.core.task import Task
 from alsek.exceptions import RevokedError, TerminationError
 from alsek.utils.decorators import suppress_exception
+from alsek.utils.environment import set_alsek_worker_pool_env_var
 from alsek.utils.logging import get_logger, setup_logging
 from alsek.utils.parsing import parse_exception
 from alsek.utils.system import thread_raise
@@ -387,6 +388,7 @@ class ProcessTaskFuture(TaskFuture):
         log_level: int,
         wrapper_exit_queue: Queue,
     ) -> None:
+        set_alsek_worker_pool_env_var()
         setup_logging(log_level)
         task, message = _process_future_decoder(encoded_data)
         log.info("Received %s...", message.summary)
