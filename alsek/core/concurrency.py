@@ -15,9 +15,13 @@ from typing import Any, Literal, Optional, Type, cast, get_args
 
 import redis_lock
 
+import logging
 from alsek.storage.backends.abstract import Backend
 from alsek.storage.backends.redis import RedisBackend
 from alsek.utils.printing import auto_repr
+
+# Suppresses unneeded 'Failed to acquire Lock(...)' errors
+logging.getLogger(redis_lock.logger_for_acquire.name).setLevel(logging.ERROR)
 
 IF_ALREADY_ACQUIRED_TYPE = Literal["raise_error", "return_true", "return_false"]
 
@@ -67,12 +71,12 @@ class Lock:
     """
 
     def __init__(
-        self,
-        name: str,
-        backend: Backend,
-        ttl: Optional[int] = 60 * 60 * 1000,
-        auto_release: bool = True,
-        owner_id: str = CURRENT_HOST_OWNER_ID,
+            self,
+            name: str,
+            backend: Backend,
+            ttl: Optional[int] = 60 * 60 * 1000,
+            auto_release: bool = True,
+            owner_id: str = CURRENT_HOST_OWNER_ID,
     ) -> None:
         self.name = name
         self.backend = backend
@@ -127,9 +131,9 @@ class Lock:
         return self.holder == self.owner_id
 
     def acquire(
-        self,
-        wait: Optional[int] = None,
-        if_already_acquired: IF_ALREADY_ACQUIRED_TYPE = "raise_error",
+            self,
+            wait: Optional[int] = None,
+            if_already_acquired: IF_ALREADY_ACQUIRED_TYPE = "raise_error",
     ) -> bool:
         """Try to acquire the lock.
 
@@ -188,10 +192,10 @@ class Lock:
         return self
 
     def __exit__(
-        self,
-        exc_type: Optional[Type[BaseException]],
-        exc_val: Optional[BaseException],
-        exc_tb: Optional[TracebackType],
+            self,
+            exc_type: Optional[Type[BaseException]],
+            exc_val: Optional[BaseException],
+            exc_tb: Optional[TracebackType],
     ) -> None:
         """Exit the context. If ``auto_release`` is enabled,
          the lock will be released.
