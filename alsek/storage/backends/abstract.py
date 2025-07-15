@@ -56,7 +56,7 @@ class BaseBackend(ABC):
         return cast(bytes, dill.dumps(data))
 
     @classmethod
-    def _from_settings(cls, settings: dict[str, Any]) -> Backend:
+    def from_settings(cls, settings: dict[str, Any]) -> Backend:
         return cls(**settings)
 
     def in_namespace(self, name: str) -> bool:

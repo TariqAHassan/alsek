@@ -100,7 +100,7 @@ class RedisBackend(Backend):
         return cast(bytes, dill.dumps(data))
 
     @classmethod
-    def _from_settings(cls, settings: dict[str, Any]) -> RedisBackend:
+    def from_settings(cls, settings: dict[str, Any]) -> RedisBackend:
         settings["conn"] = Redis(
             connection_pool=ConnectionPool(
                 connection_class=settings["conn"]["connection_class"],

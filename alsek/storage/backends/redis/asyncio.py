@@ -117,7 +117,7 @@ class AsyncRedisBackend(AsyncBackend):
         return dill.dumps(data)
 
     @classmethod
-    def _from_settings(cls, settings: dict[str, Any]) -> AsyncRedisBackend:
+    def from_settings(cls, settings: dict[str, Any]) -> AsyncRedisBackend:
         settings["conn"] = RedisAsync(
             connection_pool=AsyncConnectionPool(
                 connection_class=settings["conn"]["connection_class"],
